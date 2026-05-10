@@ -11,10 +11,13 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import moriyashiine.bewitchment.client.integration.emi.BWEmiIntegration;
 import moriyashiine.bewitchment.common.recipe.CauldronBrewingRecipe;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.nbt.NbtCompound;
+
 
 import java.util.Collections;
 import java.util.List;
@@ -23,10 +26,10 @@ public class EmiCauldronBrewingRecipe extends BasicEmiRecipe {
 	public EmiCauldronBrewingRecipe(CauldronBrewingRecipe recipe) {
 		super(BWEmiIntegration.CAULDRON_BREWING_CATEGORY, recipe.getId(), 76, 18);
 		inputs.add(EmiIngredient.of(recipe.input));
-		List<StatusEffectInstance> effects = Collections.singletonList(new StatusEffectInstance(recipe.output, recipe.time));
-		ItemStack potion = PotionUtil.setCustomPotionEffects(new ItemStack(Items.POTION), effects);
-		potion.getOrCreateNbt().putInt("CustomPotionColor", PotionUtil.getColor(effects));
-		potion.getOrCreateNbt().putBoolean("BewitchmentBrew", true);
+		ItemStack potion = new ItemStack(Items.POTION);
+		NbtCompound nbt = new NbtCompound();
+		nbt.putBoolean("BewitchmentBrew", true);
+		potion.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 		outputs.add(EmiStack.of(potion));
 	}
 

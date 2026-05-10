@@ -45,7 +45,7 @@ public class BottleOfBloodItem extends Item {
 	}
 
 	@Override
-	public int getMaxUseTime(ItemStack stack) {
-		return Items.POTION.getMaxUseTime(stack);
+	public int getMaxUseTime(ItemStack stack, net.minecraft.entity.LivingEntity user) {
+		return Items.POTION.getMaxUseTime(stack, user);
 	}
 }

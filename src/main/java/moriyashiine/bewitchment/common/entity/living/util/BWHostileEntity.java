@@ -25,9 +25,9 @@ public abstract class BWHostileEntity extends HostileEntity {
 	}
 
 	@Override
-	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityTag) {
+	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
 		initializeVariant();
-		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
+		return super.initialize(world, difficulty, spawnReason, entityData);
 	}
 
 	public void initializeVariant() {
@@ -46,10 +46,10 @@ public abstract class BWHostileEntity extends HostileEntity {
 	}
 
 	@Override
-	protected void initDataTracker() {
-		super.initDataTracker();
+	protected void initDataTracker(DataTracker.Builder builder) {
+		super.initDataTracker(builder);
 		if (getVariants() > 1) {
-			dataTracker.startTracking(VARIANT, 1);
+			builder.add(VARIANT, 1);
 		}
 	}
 

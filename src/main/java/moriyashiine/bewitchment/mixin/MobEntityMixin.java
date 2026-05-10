@@ -12,6 +12,7 @@ import moriyashiine.bewitchment.common.registry.BWTags;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -38,7 +39,7 @@ public abstract class MobEntityMixin extends LivingEntity {
 			if (target instanceof MobEntity mob && getUuid().equals(BWComponents.MINION_COMPONENT.get(mob).getMaster())) {
 				return null;
 			}
-			if (isUndead()) {
+			if (getType().isIn(EntityTypeTags.UNDEAD)) {
 				for (BlockPos foundPos : BWUtil.getBlockPoses(target.getBlockPos(), 2)) {
 					if (getWorld().getWorldBorder().contains(foundPos) && getWorld().getBlockState(foundPos).isIn(BWTags.UNDEAD_MASK)) {
 						return null;

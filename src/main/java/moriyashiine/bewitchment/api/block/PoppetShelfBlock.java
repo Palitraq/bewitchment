@@ -4,6 +4,7 @@
 
 package moriyashiine.bewitchment.api.block;
 
+import com.mojang.serialization.MapCodec;
 import moriyashiine.bewitchment.common.block.entity.PoppetShelfBlockEntity;
 import moriyashiine.bewitchment.common.world.BWWorldState;
 import net.minecraft.block.*;
@@ -16,7 +17,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
@@ -30,6 +30,10 @@ import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("ConstantConditions")
 public class PoppetShelfBlock extends HorizontalFacingBlock implements BlockEntityProvider, Waterloggable {
+	@Override
+	public MapCodec<? extends HorizontalFacingBlock> getCodec() {
+		return createCodec(PoppetShelfBlock::new);
+	}
 	private static final VoxelShape NORTH_SHAPE = createCuboidShape(0, 0, 0, 16, 16, 4);
 	private static final VoxelShape SOUTH_SHAPE = createCuboidShape(0, 0, 12, 16, 16, 16);
 	private static final VoxelShape WEST_SHAPE = createCuboidShape(0, 0, 0, 4, 16, 16);
@@ -56,10 +60,10 @@ public class PoppetShelfBlock extends HorizontalFacingBlock implements BlockEnti
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
 		boolean client = world.isClient;
 		if (!client) {
-			((PoppetShelfBlockEntity) world.getBlockEntity(pos)).onUse(world, pos, player, hand);
+			((PoppetShelfBlockEntity) world.getBlockEntity(pos)).onUse(world, pos, player, player.getActiveHand());
 		}
 		return ActionResult.success(client);
 	}
@@ -67,7 +71,11 @@ public class PoppetShelfBlock extends HorizontalFacingBlock implements BlockEnti
 	@Nullable
 	@Override
 	public BlockState getPlacementState(ItemPlacementContext ctx) {
-		return super.getPlacementState(ctx).with(Properties.WATERLOGGED, ctx.getWorld().getFluidState(ctx.getBlockPos()).getFluid() == Fluids.WATER).with(FACING, ctx.getHorizontalPlayerFacing());
+		return createBlockState(ctx).with(Properties.WATERLOGGED, ctx.getWorld().getFluidState(ctx.getBlockPos()).getFluid() == Fluids.WATER).with(FACING, ctx.getHorizontalPlayerFacing());
+	}
+
+	protected BlockState createBlockState(ItemPlacementContext ctx) {
+		return this.getDefaultState();
 	}
 
 	@Override

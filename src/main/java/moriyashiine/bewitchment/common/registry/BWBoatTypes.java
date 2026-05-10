@@ -1,38 +1,32 @@
-/*
- * All Rights Reserved (c) MoriyaShiine
- */
-
 package moriyashiine.bewitchment.common.registry;
 
-import com.terraformersmc.terraform.boat.api.TerraformBoatType;
-import com.terraformersmc.terraform.boat.api.TerraformBoatTypeRegistry;
-import com.terraformersmc.terraform.boat.api.item.TerraformBoatItemHelper;
 import moriyashiine.bewitchment.common.Bewitchment;
+import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.item.BoatItem;
 import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.Identifier;
 
 public class BWBoatTypes {
 	public static void init() {
-		registerBoat("juniper", BWObjects.JUNIPER_PLANKS.asItem());
-		registerBoat("cypress", BWObjects.CYPRESS_PLANKS.asItem());
-		registerBoat("elder", BWObjects.ELDER_PLANKS.asItem());
-		registerBoat("dragons_blood", BWObjects.DRAGONS_BLOOD_PLANKS.asItem());
+		register("juniper");
+		register("cypress");
+		register("elder");
+		register("dragons_blood");
 	}
 
-	private static void registerBoat(String name, Item planks) {
-		Identifier boatId = Bewitchment.id(name + "_boat");
-		RegistryKey<TerraformBoatType> key = TerraformBoatTypeRegistry.createKey(boatId);
-		Item boat = TerraformBoatItemHelper.registerBoatItem(boatId, key, false);
-		Item chest_boat = TerraformBoatItemHelper.registerBoatItem(Bewitchment.id(name + "_chest_boat"), key, true);
-		TerraformBoatType boatType = new TerraformBoatType.Builder()
-				.item(boat)
-				.chestItem(chest_boat)
-				.planks(planks)
-				.build();
-		Registry.register(TerraformBoatTypeRegistry.INSTANCE, key, boatType);
-		BWObjects.BOATS.add(boat);
-		BWObjects.BOATS.add(chest_boat);
+	private static void register(String name) {
+		Item boatItem = Registry.register(
+				Registries.ITEM,
+				Bewitchment.id(name + "_boat"),
+				new BoatItem(false, BoatEntity.Type.OAK, new Item.Settings().maxCount(1))
+		);
+		Item chestBoatItem = Registry.register(
+				Registries.ITEM,
+				Bewitchment.id(name + "_chest_boat"),
+				new BoatItem(true, BoatEntity.Type.OAK, new Item.Settings().maxCount(1))
+		);
+		BWObjects.BOATS.add(boatItem);
+		BWObjects.BOATS.add(chestBoatItem);
 	}
 }

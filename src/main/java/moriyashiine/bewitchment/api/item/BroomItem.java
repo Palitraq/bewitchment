@@ -5,11 +5,14 @@
 package moriyashiine.bewitchment.api.item;
 
 import moriyashiine.bewitchment.api.entity.BroomEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -32,8 +35,10 @@ public class BroomItem extends Item {
 				Entity entity = broom.create(world);
 				if (entity instanceof BroomEntity broomEntity) {
 					entity.updatePositionAndAngles(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, context.getPlayerYaw(), context.getPlayer() == null ? 0 : context.getPlayer().getPitch());
-					if (context.getPlayer() != null) {
-						context.getStack().getOrCreateNbt().putUuid("OwnerUUID", context.getPlayer().getUuid());
+				if (context.getPlayer() != null) {
+						NbtCompound ownerTag = new NbtCompound();
+						ownerTag.putUuid("OwnerUUID", context.getPlayer().getUuid());
+						context.getStack().set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(ownerTag));
 					}
 					ItemStack stack = context.getStack().split(1);
 					broomEntity.init(stack);

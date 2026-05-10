@@ -4,14 +4,14 @@
 
 package moriyashiine.bewitchment.api.component;
 
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.common.registry.BWPledges;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class PledgeComponent implements AutoSyncedComponent, ServerTickingComponent {
+public class PledgeComponent implements Component {
 	private final PlayerEntity obj;
 	private String pledge = BWPledges.NONE, pledgeNextTick = "";
 
@@ -19,8 +19,7 @@ public class PledgeComponent implements AutoSyncedComponent, ServerTickingCompon
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		String pledge = tag.getString("Pledge");
 		if (pledge.isEmpty()) {
 			pledge = BWPledges.NONE;
@@ -29,13 +28,11 @@ public class PledgeComponent implements AutoSyncedComponent, ServerTickingCompon
 		setPledgeNextTick(tag.getString("PledgeNextTick"));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putString("Pledge", getPledge());
 		tag.putString("PledgeNextTick", getPledgeNextTick());
 	}
 
-	@Override
 	public void serverTick() {
 		if (!getPledgeNextTick().isEmpty()) {
 			setPledge(getPledgeNextTick());

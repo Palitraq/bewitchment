@@ -8,6 +8,7 @@ import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.api.registry.Contract;
 import moriyashiine.bewitchment.client.packet.SyncContractsPacket;
 import moriyashiine.bewitchment.client.packet.SyncDemonTradesPacket;
+import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.client.screen.DemonScreenHandler;
 import moriyashiine.bewitchment.common.entity.DemonMerchant;
 import moriyashiine.bewitchment.common.entity.living.util.BWHostileEntity;
@@ -16,6 +17,7 @@ import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.common.registry.BWMaterials;
 import moriyashiine.bewitchment.common.registry.BWRegistries;
 import moriyashiine.bewitchment.common.registry.BWSoundEvents;
+import moriyashiine.bewitchment.common.registry.BWTags;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.PathNodeType;
@@ -31,6 +33,9 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.SmallFireballEntity;
 import net.minecraft.item.ArmorItem;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -83,7 +88,7 @@ public class DemonEntity extends BWHostileEntity implements DemonMerchant {
 			if (target != null) {
 				lookAtEntity(target, 360, 360);
 				if ((age + getId()) % 40 == 0) {
-					SmallFireballEntity fireball = new SmallFireballEntity(getWorld(), this, target.getX() - getX(), target.getBodyY(0.5) - getBodyY(0.5), target.getZ() - getZ());
+					SmallFireballEntity fireball = new SmallFireballEntity(getWorld(), this, new Vec3d(target.getX() - getX(), target.getBodyY(0.5) - getBodyY(0.5), target.getZ() - getZ()));
 					fireball.updatePosition(fireball.getX(), getBodyY(0.5), fireball.getZ());
 					getWorld().playSound(null, getBlockPos(), BWSoundEvents.ENTITY_GENERIC_SHOOT, getSoundCategory(), getSoundVolume(), getSoundPitch());
 					getWorld().spawnEntity(fireball);
@@ -103,10 +108,7 @@ public class DemonEntity extends BWHostileEntity implements DemonMerchant {
 		return 5;
 	}
 
-	@Override
-	public EntityGroup getGroup() {
-		return BewitchmentAPI.DEMON;
-	}
+
 
 	@Nullable
 	@Override
@@ -134,7 +136,7 @@ public class DemonEntity extends BWHostileEntity implements DemonMerchant {
 				setCurrentCustomer(player);
 			}
 			if (!getOffers().isEmpty()) {
-				SyncContractsPacket.send(serverPlayer);
+				SyncContractsPacket.send(serverPlayer, BWComponents.CONTRACTS_COMPONENT.maybeGet(serverPlayer).map(comp -> { NbtCompound tag = new NbtCompound(); tag.put("Contracts", comp.toNbtContract()); return tag; }).orElse(new NbtCompound()));
 				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, customer) -> new DemonScreenHandler(id, this), getDisplayName())).ifPresent(syncId -> SyncDemonTradesPacket.send(serverPlayer, this, syncId));
 			} else {
 				setCurrentCustomer(null);
@@ -143,7 +145,6 @@ public class DemonEntity extends BWHostileEntity implements DemonMerchant {
 		return ActionResult.success(getWorld().isClient);
 	}
 
-	@Override
 	public boolean canBeLeashedBy(PlayerEntity player) {
 		return false;
 	}
@@ -165,9 +166,9 @@ public class DemonEntity extends BWHostileEntity implements DemonMerchant {
 	}
 
 	@Override
-	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityTag) {
+	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
 		dataTracker.set(MALE, random.nextBoolean());
-		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
+		return super.initialize(world, difficulty, spawnReason, entityData);
 	}
 
 	@Override
@@ -199,9 +200,9 @@ public class DemonEntity extends BWHostileEntity implements DemonMerchant {
 	}
 
 	@Override
-	protected void initDataTracker() {
-		super.initDataTracker();
-		dataTracker.startTracking(MALE, false);
+	protected void initDataTracker(DataTracker.Builder builder) {
+		super.initDataTracker(builder);
+		builder.add(MALE, false);
 	}
 
 	@Override
@@ -213,7 +214,7 @@ public class DemonEntity extends BWHostileEntity implements DemonMerchant {
 		goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 8));
 		goalSelector.add(5, new LookAroundGoal(this));
 		targetSelector.add(0, new RevengeGoal(this));
-		targetSelector.add(1, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false, entity -> !(entity instanceof ArmorStandEntity) && BWUtil.getArmorPieces(entity, stack -> stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getMaterial() == BWMaterials.BESMIRCHED_ARMOR) < 3 && (entity.getGroup() != BewitchmentAPI.DEMON || entity instanceof PlayerEntity)));
+		targetSelector.add(1, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false, entity -> !(entity instanceof ArmorStandEntity) && BWUtil.getArmorPieces(entity, stack -> stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getMaterial().value() == BWMaterials.BESMIRCHED_ARMOR) < 3 && (!entity.getType().isIn(BWTags.DEMON) || entity instanceof PlayerEntity)));
 	}
 
 	@Override
@@ -272,7 +273,7 @@ public class DemonEntity extends BWHostileEntity implements DemonMerchant {
 		private final int duration, cost;
 
 		public DemonTradeOffer(NbtCompound tag) {
-			this(BWRegistries.CONTRACT.get(new Identifier(tag.getString("Contract"))), tag.getInt("Duration"), tag.getInt("Cost"));
+			this(BWRegistries.CONTRACT.get(Identifier.tryParse(tag.getString("Contract"))), tag.getInt("Duration"), tag.getInt("Cost"));
 		}
 
 		public DemonTradeOffer(Contract contract, int duration, int cost) {

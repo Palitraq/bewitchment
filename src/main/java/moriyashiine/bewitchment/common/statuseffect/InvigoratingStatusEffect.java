@@ -26,9 +26,10 @@ public class InvigoratingStatusEffect extends StatusEffect {
 	}
 
 	@Override
-	public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
 		if (entity instanceof PlayerEntity player) {
 			BewitchmentAPI.fillMagic(player, 20 * (amplifier + 1), false);
 		}
+		return true;
 	}
 }

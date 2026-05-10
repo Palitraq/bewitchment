@@ -8,6 +8,7 @@ import moriyashiine.bewitchment.api.block.WitchAltarBlock;
 import moriyashiine.bewitchment.api.block.entity.UsesAltarPower;
 import moriyashiine.bewitchment.common.block.entity.GlyphBlockEntity;
 import moriyashiine.bewitchment.common.registry.BWObjects;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -23,6 +24,7 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -44,6 +46,11 @@ public class GlyphBlock extends HorizontalFacingBlock implements BlockEntityProv
 		super(settings);
 	}
 
+	@Override
+	public MapCodec<GlyphBlock> getCodec() {
+		return createCodec(GlyphBlock::new);
+	}
+
 	@Nullable
 	@Override
 	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
@@ -62,15 +69,27 @@ public class GlyphBlock extends HorizontalFacingBlock implements BlockEntityProv
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		if (this == BWObjects.GOLDEN_GLYPH) {
 			boolean client = world.isClient;
 			if (!client) {
 				((GlyphBlockEntity) world.getBlockEntity(pos)).onUse(world, pos, player, hand, null);
 			}
+			return ItemActionResult.success(client);
+		}
+		return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
+	}
+
+	@Override
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+		if (this == BWObjects.GOLDEN_GLYPH) {
+			boolean client = world.isClient;
+			if (!client) {
+				((GlyphBlockEntity) world.getBlockEntity(pos)).onUse(world, pos, player, Hand.MAIN_HAND, null);
+			}
 			return ActionResult.success(client);
 		}
-		return super.onUse(state, world, pos, player, hand, hit);
+		return super.onUse(state, world, pos, player, hit);
 	}
 
 	@Nullable
@@ -81,17 +100,17 @@ public class GlyphBlock extends HorizontalFacingBlock implements BlockEntityProv
 
 	@Override
 	public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState newState, WorldAccess world, BlockPos pos, BlockPos posFrom) {
-		return Blocks.TORCH.getStateForNeighborUpdate(state, direction, newState, world, pos, posFrom);
+		return super.getStateForNeighborUpdate(state, direction, newState, world, pos, posFrom);
 	}
 
-	@Override
 	public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
 		return new ItemStack(this == BWObjects.GLYPH ? BWObjects.CHALK : this == BWObjects.GOLDEN_GLYPH ? BWObjects.GOLDEN_CHALK : this == BWObjects.FIERY_GLYPH ? BWObjects.FIERY_CHALK : BWObjects.ELDRITCH_CHALK);
 	}
 
 	@Override
 	public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-		return BWObjects.SALT_LINE.canPlaceAt(state, world, pos);
+		BlockPos blockPos = pos.down();
+		return world.getBlockState(blockPos).isSideSolidFullSquare(world, blockPos, Direction.UP);
 	}
 
 	@Override

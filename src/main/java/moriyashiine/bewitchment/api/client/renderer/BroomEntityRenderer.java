@@ -29,7 +29,7 @@ public abstract class BroomEntityRenderer<T extends BroomEntity> extends EntityR
 		matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90 - yaw + 90));
 		matrices.translate(0, 0, -0.35);
 		model.setAngles(entity, yaw, 0, entity.age + entity.getId(), 0, 0);
-		model.render(matrices, vertexConsumers.getBuffer(model.getLayer(getTexture(entity))), light, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
+		model.render(matrices, vertexConsumers.getBuffer(model.getLayer(getTexture(entity))), light, OverlayTexture.DEFAULT_UV, 0xFFFFFFFF);
 		matrices.pop();
 		super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
 	}

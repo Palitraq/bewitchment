@@ -6,7 +6,7 @@ package moriyashiine.bewitchment.common.registry;
 
 import moriyashiine.bewitchment.common.Bewitchment;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
-import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.registry.Registries;
@@ -19,8 +19,8 @@ import java.util.Map;
 public class BWParticleTypes {
 	private static final Map<ParticleType<?>, Identifier> PARTICLE_TYPES = new LinkedHashMap<>();
 
-	public static final ParticleType<DefaultParticleType> CAULDRON_BUBBLE = create("cauldron_bubble", FabricParticleTypes.simple());
-	public static final ParticleType<DefaultParticleType> INCENSE_SMOKE = create("incense_smoke", FabricParticleTypes.simple());
+	public static final ParticleType<SimpleParticleType> CAULDRON_BUBBLE = create("cauldron_bubble", FabricParticleTypes.simple());
+	public static final ParticleType<SimpleParticleType> INCENSE_SMOKE = create("incense_smoke", FabricParticleTypes.simple());
 
 	private static <T extends ParticleEffect> ParticleType<T> create(String name, ParticleType<T> type) {
 		PARTICLE_TYPES.put(type, Bewitchment.id(name));

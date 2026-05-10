@@ -4,17 +4,17 @@
 
 package moriyashiine.bewitchment.common.entity.living;
 
-import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
-import dev.emi.stepheightentityattribute.StepHeightEntityAttributeMain;
 import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.client.packet.SpawnSmokeParticlesPacket;
 import moriyashiine.bewitchment.common.entity.living.util.BWHostileEntity;
 import moriyashiine.bewitchment.common.misc.BWUtil;
 import moriyashiine.bewitchment.common.registry.BWComponents;
+import moriyashiine.bewitchment.common.registry.BWEntityAttributes;
 import moriyashiine.bewitchment.common.registry.BWSoundEvents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
 import net.minecraft.entity.*;
+import net.minecraft.entity.mob.IllagerEntity;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -45,7 +45,7 @@ public class WerewolfEntity extends BWHostileEntity {
 	}
 
 	public static DefaultAttributeContainer.Builder createAttributes() {
-		return MobEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 15).add(EntityAttributes.GENERIC_ARMOR, 20).add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 8).add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4).add(ReachEntityAttributes.ATTACK_RANGE, 1).add(StepHeightEntityAttributeMain.STEP_HEIGHT, 1);
+		return MobEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 15).add(EntityAttributes.GENERIC_ARMOR, 20).add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 8).add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4).add(BWEntityAttributes.ATTACK_RANGE, 1).add(EntityAttributes.GENERIC_STEP_HEIGHT, 1);
 	}
 
 	public static boolean canSpawn(EntityType<WerewolfEntity> type, ServerWorldAccess world, SpawnReason spawnReason, BlockPos pos, Random random) {
@@ -96,11 +96,6 @@ public class WerewolfEntity extends BWHostileEntity {
 		return getVariantsStatic();
 	}
 
-	@Override
-	public EntityGroup getGroup() {
-		return BewitchmentAPI.DEMON;
-	}
-
 	@Nullable
 	@Override
 	protected SoundEvent getAmbientSound() {
@@ -118,8 +113,8 @@ public class WerewolfEntity extends BWHostileEntity {
 	}
 
 	@Override
-	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityTag) {
-		EntityData data = super.initialize(world, difficulty, spawnReason, entityData, entityTag);
+	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
+		EntityData data = super.initialize(world, difficulty, spawnReason, entityData);
 		if (dataTracker.get(VARIANT) != 0) {
 			RegistryEntry<Biome> biome = world.getBiome(getBlockPos());
 			if (biome.isIn(ConventionalBiomeTags.FOREST)) {
@@ -163,7 +158,7 @@ public class WerewolfEntity extends BWHostileEntity {
 		goalSelector.add(3, new LookAtEntityGoal(this, PlayerEntity.class, 8));
 		goalSelector.add(3, new LookAroundGoal(this));
 		targetSelector.add(0, new RevengeGoal(this));
-		targetSelector.add(1, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false, entity -> entity instanceof PlayerEntity || entity instanceof SheepEntity || entity instanceof MerchantEntity || entity.getGroup() == EntityGroup.ILLAGER));
+		targetSelector.add(1, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false, entity -> entity instanceof PlayerEntity || entity instanceof SheepEntity || entity instanceof MerchantEntity || entity instanceof IllagerEntity));
 	}
 
 	public static int getVariantsStatic() {

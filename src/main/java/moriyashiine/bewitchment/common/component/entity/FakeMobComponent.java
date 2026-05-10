@@ -4,19 +4,19 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.common.registry.BWCurses;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.UUID;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class FakeMobComponent implements AutoSyncedComponent, ServerTickingComponent {
+public class FakeMobComponent implements Component {
 	private final MobEntity obj;
 	private UUID target = null;
 
@@ -24,17 +24,14 @@ public class FakeMobComponent implements AutoSyncedComponent, ServerTickingCompo
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		setTarget(tag.getString("TargetUUID").isEmpty() ? null : UUID.fromString(tag.getString("TargetUUID")));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putString("TargetUUID", getTarget() == null ? "" : getTarget().toString());
 	}
 
-	@Override
 	public void serverTick() {
 		if (getTarget() != null) {
 			LivingEntity entity = (LivingEntity) ((ServerWorld) obj.getWorld()).getEntity(getTarget());

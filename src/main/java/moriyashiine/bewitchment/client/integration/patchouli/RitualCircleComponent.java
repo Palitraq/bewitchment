@@ -6,6 +6,7 @@ package moriyashiine.bewitchment.client.integration.patchouli;
 
 import moriyashiine.bewitchment.common.Bewitchment;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import vazkii.patchouli.api.IComponentRenderContext;
 import vazkii.patchouli.api.ICustomComponent;
@@ -34,7 +35,7 @@ public class RitualCircleComponent implements ICustomComponent {
 	}
 
 	@Override
-	public void onVariablesAvailable(UnaryOperator<IVariable> lookup) {
+	public void onVariablesAvailable(UnaryOperator<IVariable> lookup, RegistryWrapper.WrapperLookup registries) {
 		circles[0] = Bewitchment.id("textures/gui/patchouli/chalk/" + lookup.apply(inner).asString() + ".png");
 		if (!lookup.apply(outer).asString().isEmpty()) {
 			circles[1] = Bewitchment.id("textures/gui/patchouli/chalk/" + lookup.apply(outer).asString() + ".png");

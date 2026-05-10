@@ -4,7 +4,6 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.client.packet.SpawnSmokeParticlesPacket;
 import moriyashiine.bewitchment.common.entity.living.WerewolfEntity;
@@ -15,9 +14,12 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import org.jetbrains.annotations.NotNull;
 
-public class WerewolfVillagerComponent implements ServerTickingComponent {
+import org.ladysnake.cca.api.v3.component.Component;
+
+public class WerewolfVillagerComponent implements Component {
 	private final VillagerEntity obj;
 	private NbtCompound storedWerewolf = null;
 	private int despawnTimer = 2400;
@@ -26,8 +28,7 @@ public class WerewolfVillagerComponent implements ServerTickingComponent {
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		if (tag.contains("StoredWerewolf")) {
 			storedWerewolf = tag.getCompound("StoredWerewolf");
 		}
@@ -36,15 +37,13 @@ public class WerewolfVillagerComponent implements ServerTickingComponent {
 		}
 	}
 
-	@Override
-	public void writeToNbt(@NotNull NbtCompound tag) {
+	public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		if (storedWerewolf != null) {
 			tag.put("StoredWerewolf", storedWerewolf);
 		}
 		tag.putInt("DespawnTimer", despawnTimer);
 	}
 
-	@Override
 	public void serverTick() {
 		if (getStoredWerewolf() != null) {
 			if (!obj.hasCustomName() && getDespawnTimer() > 0) {

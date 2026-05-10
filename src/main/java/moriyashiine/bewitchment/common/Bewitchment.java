@@ -12,6 +12,7 @@ import moriyashiine.bewitchment.common.block.CoffinBlock;
 import moriyashiine.bewitchment.common.block.entity.BrazierBlockEntity;
 import moriyashiine.bewitchment.common.block.entity.GlyphBlockEntity;
 import moriyashiine.bewitchment.common.block.entity.SigilBlockEntity;
+import moriyashiine.bewitchment.common.component.BWComponentTicker;
 import moriyashiine.bewitchment.common.item.AthameItem;
 import moriyashiine.bewitchment.common.misc.BWUtil;
 import moriyashiine.bewitchment.common.packet.CauldronTeleportPacket;
@@ -30,13 +31,20 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
+
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EntityGroup;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.ChickenEntity;
 import net.minecraft.entity.passive.WolfEntity;
@@ -62,9 +70,9 @@ public class Bewitchment implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		MidnightConfig.init(MOD_ID, BWConfig.class);
-		ServerPlayNetworking.registerGlobalReceiver(CauldronTeleportPacket.ID, new CauldronTeleportPacket.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(TransformationAbilityPacket.ID, new TransformationAbilityPacket.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(TogglePressingForwardPacket.ID, new TogglePressingForwardPacket.Receiver());
+		CauldronTeleportPacket.register();
+		TransformationAbilityPacket.register();
+		TogglePressingForwardPacket.register();
 		CommandRegistrationCallback.EVENT.register(BWCommands::init);
 		ServerLifecycleEvents.SERVER_STOPPED.register(server -> BewitchmentAPI.fakePlayer = null);
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
@@ -78,7 +86,7 @@ public class Bewitchment implements ModInitializer {
 		});
 		ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((world, entity, killedEntity) -> {
 			if (entity instanceof LivingEntity livingEntity) {
-				if (livingEntity instanceof PlayerEntity player && killedEntity.getGroup() == EntityGroup.ARTHROPOD && BewitchmentAPI.getFamiliar(player) == BWEntityTypes.TOAD) {
+				if (livingEntity instanceof PlayerEntity player && killedEntity.isLiving() && BewitchmentAPI.getFamiliar(player) == BWEntityTypes.TOAD) {
 					livingEntity.heal(livingEntity.getMaxHealth() * 1 / 4f);
 				}
 				if (livingEntity instanceof PlayerEntity player && BWComponents.CONTRACTS_COMPONENT.get(player).hasContract(BWContracts.DEATH)) {
@@ -109,18 +117,23 @@ public class Bewitchment implements ModInitializer {
 								if (brazierPos != null) {
 									world.breakBlock(brazierPos, false);
 									world.createExplosion(null, brazierPos.getX() + 0.5, brazierPos.getY() + 0.5, brazierPos.getZ() + 0.5, 3, World.ExplosionSourceType.TNT);
-									boss.initialize(world, world.getLocalDifficulty(brazierPos), SpawnReason.EVENT, null, null);
+									boss.initialize(world, world.getLocalDifficulty(brazierPos), SpawnReason.EVENT, null);
 									boss.updatePositionAndAngles(brazierPos.getX() + 0.5, brazierPos.getY(), brazierPos.getZ() + 0.5, world.random.nextFloat() * 360, 0);
 									world.spawnEntity(boss);
 								}
 							}
 						}
 					}
-					for (AthameDropRecipe recipe : world.getRecipeManager().listAllOfType(BWRecipeTypes.ATHAME_DROP_RECIPE_TYPE)) {
-						if (recipe.entity_type.equals(killedEntity.getType()) && world.random.nextFloat() < recipe.chance * (EnchantmentHelper.getLooting(livingEntity) + 1)) {
-							ItemStack drop = recipe.getOutput(entity.getWorld().getRegistryManager()).copy();
+					for (var recipeEntry : world.getRecipeManager().listAllOfType(BWRecipeTypes.ATHAME_DROP_RECIPE_TYPE)) {
+						AthameDropRecipe recipe = recipeEntry.value();
+						int lootingLevel = livingEntity.getMainHandStack().getEnchantments().getLevel(world.getRegistryManager().get(RegistryKeys.ENCHANTMENT).entryOf(Enchantments.LOOTING));
+						if (recipe.entity_type.equals(killedEntity.getType()) && world.random.nextFloat() < recipe.chance * (lootingLevel + 1)) {
+							ItemStack drop = recipe.getResult(entity.getWorld().getRegistryManager()).copy();
 							if (recipe.entity_type == EntityType.PLAYER) {
-								drop.getOrCreateNbt().putString("SkullOwner", killedEntity.getName().getString());
+								NbtComponent nbtComponent = drop.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+								NbtCompound nbt = nbtComponent.copyNbt();
+								nbt.putString("SkullOwner", killedEntity.getName().getString());
+								drop.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 							}
 							ItemScatterer.spawn(world, killedEntity.getX() + 0.5, killedEntity.getY() + 0.5, killedEntity.getZ() + 0.5, drop);
 						}
@@ -187,17 +200,20 @@ public class Bewitchment implements ModInitializer {
 								}
 							}
 						}
-						entity.addStatusEffect(new StatusEffectInstance(recipe.effect, 24000 * durationMultiplier, recipe.amplifier, true, false));
+						entity.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(recipe.effect), 24000 * durationMultiplier, recipe.amplifier, true, false));
 					}
 				}
 			}
 		});
 		BWScaleTypes.init();
+		BWComponentTicker.init();
+		BWWoodTypes.init();
 		BWObjects.init();
 		BWBoatTypes.init();
 		BWBlockEntityTypes.init();
 		BWEntityTypes.init();
 		BWStatusEffects.init();
+		BWEntityAttributes.init();
 		BWEnchantments.init();
 		BWRitualFunctions.init();
 		BWFortunes.init();
@@ -222,6 +238,6 @@ public class Bewitchment implements ModInitializer {
 	}
 
 	public static Identifier id(String value) {
-		return new Identifier(MOD_ID, value);
+		return Identifier.of(MOD_ID, value);
 	}
 }

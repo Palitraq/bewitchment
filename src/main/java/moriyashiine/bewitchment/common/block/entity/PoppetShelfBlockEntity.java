@@ -18,6 +18,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
@@ -55,9 +57,9 @@ public class PoppetShelfBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt() {
-		NbtCompound nbt = super.toInitialChunkDataNbt();
-		writeNbt(nbt);
+	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup lookup) {
+		NbtCompound nbt = super.toInitialChunkDataNbt(lookup);
+		writeNbt(nbt, lookup);
 		return nbt;
 	}
 
@@ -68,19 +70,19 @@ public class PoppetShelfBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public void readNbt(NbtCompound nbt) {
-		super.readNbt(nbt);
+	public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.readNbt(nbt, lookup);
 		clientInventory.clear();
-		Inventories.readNbt(nbt, clientInventory);
+		Inventories.readNbt(nbt, clientInventory, lookup);
 	}
 
 	@Override
-	protected void writeNbt(NbtCompound nbt) {
-		super.writeNbt(nbt);
+	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.writeNbt(nbt, lookup);
 		if (world != null && !world.isClient) {
 			DefaultedList<ItemStack> inventory = BWWorldState.get(world).poppetShelves.get(pos.asLong());
 			if (inventory != null) {
-				Inventories.writeNbt(nbt, inventory);
+				Inventories.writeNbt(nbt, inventory, lookup);
 			}
 		}
 	}

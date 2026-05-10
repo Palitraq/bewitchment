@@ -10,7 +10,8 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.FoodComponent;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -38,11 +39,10 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 	}
 
 	@Inject(method = "eatFood", at = @At("HEAD"))
-	private void eatFood(World world, ItemStack stack, CallbackInfoReturnable<ItemStack> callbackInfo) {
+	private void eatFood(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> callbackInfo) {
 		if (!world.isClient) {
-			FoodComponent foodComponent = stack.getItem().getFoodComponent();
 			if (foodComponent != null && BWComponents.CONTRACTS_COMPONENT.get(this).hasContract(BWContracts.GLUTTONY)) {
-				getHungerManager().add(foodComponent.getHunger(), foodComponent.getSaturationModifier());
+				getHungerManager().add(foodComponent.nutrition(), foodComponent.saturation());
 			}
 		}
 	}

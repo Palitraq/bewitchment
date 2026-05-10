@@ -1,0 +1,6 @@
+{
+  "textures": {
+    "sign": "bewitchment:entity/signs/hanging/cypress",
+    "gui": "bewitchment:gui/hanging_signs/cypress"
+  }
+}

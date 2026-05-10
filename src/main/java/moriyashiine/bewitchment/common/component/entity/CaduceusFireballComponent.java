@@ -4,19 +4,18 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.Component;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import org.ladysnake.cca.api.v3.component.Component;
 
 public class CaduceusFireballComponent implements Component {
 	private boolean fromCaduceus = false;
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		setFromCaduceus(tag.getBoolean("FromCaduceus"));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putBoolean("FromCaduceus", isFromCaduceus());
 	}
 

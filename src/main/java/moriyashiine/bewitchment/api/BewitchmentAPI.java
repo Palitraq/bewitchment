@@ -23,9 +23,12 @@ import moriyashiine.bewitchment.common.world.BWUniversalWorldState;
 import moriyashiine.bewitchment.common.world.BWWorldState;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityGroup;
+
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.passive.BatEntity;
@@ -37,7 +40,10 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.DyeColor;
@@ -48,15 +54,17 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.registry.tag.EntityTypeTags;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 @SuppressWarnings("ConstantConditions")
 public class BewitchmentAPI {
 	public static final Set<AltarMapEntry> ALTAR_MAP_ENTRIES = new HashSet<>();
 
 	@SuppressWarnings("InstantiationOfUtilityClass")
-	public static final EntityGroup DEMON = new EntityGroup();
+
 
 	public static ServerPlayerEntity fakePlayer = null;
 
@@ -132,11 +140,13 @@ public class BewitchmentAPI {
 	public static ServerPlayerEntity getFakePlayer(World world) {
 		if (!world.isClient) {
 			if (fakePlayer == null) {
-				fakePlayer = new ServerPlayerEntity(world.getServer(), (ServerWorld) world, new GameProfile(UUID.randomUUID(), "FAKE_PLAYER"));
-				fakePlayer.networkHandler = new ServerPlayNetworkHandler(world.getServer(), new ClientConnection(NetworkSide.SERVERBOUND), fakePlayer);
-				ItemStack axe = new ItemStack(Items.WOODEN_AXE);
-				axe.getOrCreateNbt().putBoolean("Unbreakable", true);
-				fakePlayer.setStackInHand(Hand.MAIN_HAND, axe);
+			fakePlayer = new ServerPlayerEntity(world.getServer(), (ServerWorld) world, new GameProfile(UUID.randomUUID(), "FAKE_PLAYER"), SyncedClientOptions.createDefault());
+			fakePlayer.networkHandler = new ServerPlayNetworkHandler(world.getServer(), new ClientConnection(NetworkSide.SERVERBOUND), fakePlayer, ConnectedClientData.createDefault(new GameProfile(UUID.randomUUID(), "FAKE_PLAYER"), false));
+			ItemStack axe = new ItemStack(Items.WOODEN_AXE);
+			NbtCompound unbreakableTag = new NbtCompound();
+			unbreakableTag.putBoolean("Unbreakable", true);
+			axe.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(unbreakableTag));
+			fakePlayer.setStackInHand(Hand.MAIN_HAND, axe);
 			}
 			return fakePlayer;
 		}
@@ -161,7 +171,7 @@ public class BewitchmentAPI {
 			BWUniversalWorldState universalWorldState = BWUniversalWorldState.get(player.getWorld());
 			for (Pair<UUID, NbtCompound> pair : universalWorldState.familiars) {
 				if (player.getUuid().equals(pair.getLeft())) {
-					return Registries.ENTITY_TYPE.get(new Identifier(pair.getRight().getString("id")));
+					return Registries.ENTITY_TYPE.get(Identifier.tryParse(pair.getRight().getString("id")));
 				}
 			}
 		}
@@ -182,7 +192,7 @@ public class BewitchmentAPI {
 		if (player.isCreative()) {
 			return true;
 		}
-		if (player.hasStatusEffect(BWStatusEffects.INHIBITED)) {
+		if (player.hasStatusEffect(RegistryEntry.of(BWStatusEffects.INHIBITED))) {
 			return false;
 		}
 		return BWComponents.MAGIC_COMPONENT.get(player).drainMagic(amount, simulate);
@@ -219,7 +229,7 @@ public class BewitchmentAPI {
 		if (livingEntity.getType().isIn(BWTags.IMMUNE_TO_SILVER)) {
 			return false;
 		}
-		return livingEntity.isUndead() || livingEntity.getGroup() == DEMON || livingEntity.getType().isIn(BWTags.VULNERABLE_TO_SILVER);
+		return livingEntity.getType().isIn(EntityTypeTags.UNDEAD) || livingEntity.getType().isIn(BWTags.VULNERABLE_TO_SILVER);
 	}
 
 	public static boolean isPledged(PlayerEntity player, String pledge) {
@@ -241,7 +251,8 @@ public class BewitchmentAPI {
 		PoppetData poppetData = BewitchmentAPI.getPoppet(living.getWorld(), BWObjects.VOODOO_PROTECTION_POPPET, living);
 		if (!poppetData.stack().isEmpty()) {
 			boolean sync = false;
-			if (poppetData.stack().damage(damage, living.getRandom(), null) && poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
+			poppetData.stack().damage(damage, living, EquipmentSlot.MAINHAND);
+		if (poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
 				poppetData.stack().decrement(1);
 				sync = true;
 			}

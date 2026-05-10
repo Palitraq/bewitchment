@@ -5,16 +5,19 @@
 package moriyashiine.bewitchment.common.item;
 
 import moriyashiine.bewitchment.common.Bewitchment;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.Item.TooltipContext;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -29,8 +32,10 @@ public class WaystoneItem extends Item {
 		World world = context.getWorld();
 		boolean client = world.isClient;
 		if (!client) {
-			context.getStack().getOrCreateNbt().putLong("LocationPos", context.getBlockPos().offset(context.getSide()).asLong());
-			context.getStack().getOrCreateNbt().putString("LocationWorld", world.getRegistryKey().getValue().toString());
+			context.getStack().apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(nbt -> {
+				nbt.putLong("LocationPos", context.getBlockPos().offset(context.getSide()).asLong());
+				nbt.putString("LocationWorld", world.getRegistryKey().getValue().toString());
+			}));
 		}
 		return ActionResult.success(client);
 	}
@@ -41,10 +46,12 @@ public class WaystoneItem extends Item {
 	}
 
 	@Override
-	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		if (stack.hasNbt() && stack.getNbt().contains("LocationPos")) {
-			BlockPos pos = BlockPos.fromLong(stack.getNbt().getLong("LocationPos"));
-			tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.location", pos.getX(), pos.getY(), pos.getZ(), stack.getNbt().getString("LocationWorld")).formatted(Formatting.GRAY));
+	public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+		NbtComponent nbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+		NbtCompound nbt = nbtComponent.copyNbt();
+		if (nbt.contains("LocationPos")) {
+			BlockPos pos = BlockPos.fromLong(nbt.getLong("LocationPos"));
+			tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.location", pos.getX(), pos.getY(), pos.getZ(), nbt.getString("LocationWorld")).formatted(Formatting.GRAY));
 		}
 	}
 }

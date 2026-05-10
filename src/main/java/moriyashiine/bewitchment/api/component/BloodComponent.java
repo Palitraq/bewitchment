@@ -4,16 +4,16 @@
 
 package moriyashiine.bewitchment.api.component;
 
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.api.event.BloodSetEvents;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.common.registry.BWTags;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class BloodComponent implements AutoSyncedComponent, ServerTickingComponent {
+public class BloodComponent implements Component {
 	public static final int MAX_BLOOD = 100;
 
 	private final LivingEntity obj;
@@ -23,23 +23,14 @@ public class BloodComponent implements AutoSyncedComponent, ServerTickingCompone
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		if (tag.contains("Blood")) {
 			setBlood(tag.getInt("Blood"));
 		}
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putInt("Blood", getBlood());
-	}
-
-	@Override
-	public void serverTick() {
-		if (obj.getType().isIn(BWTags.HAS_BLOOD) && !BewitchmentAPI.isVampire(obj, true) && obj.getRandom().nextFloat() < (obj.isSleeping() ? 1 / 50f : 1 / 500f)) {
-			fillBlood(1, false);
-		}
 	}
 
 	public int getBlood() {
@@ -61,6 +52,9 @@ public class BloodComponent implements AutoSyncedComponent, ServerTickingCompone
 			return true;
 		}
 		return false;
+	}
+
+	public void serverTick() {
 	}
 
 	public boolean drainBlood(int amount, boolean simulate) {

@@ -6,6 +6,8 @@ package moriyashiine.bewitchment.mixin;
 
 import moriyashiine.bewitchment.common.misc.BWUtil;
 import moriyashiine.bewitchment.common.registry.BWComponents;
+import net.minecraft.entity.EntityType;
+import net.minecraft.registry.tag.EntityTypeTags;
 import moriyashiine.bewitchment.common.registry.BWObjects;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -31,7 +33,7 @@ public abstract class ActiveTargetGoalMixin<T extends LivingEntity> extends Trac
 	private void findClosestTarget(CallbackInfo callbackInfo) {
 		if (targetEntity instanceof PlayerEntity player && BWComponents.FULL_INVISIBILITY_COMPONENT.get(player).isFullInvisible()) {
 			targetEntity = null;
-		} else if (BWComponents.MINION_COMPONENT.get(mob).getMaster() == null && mob.isUndead() && targetEntity != null && BWUtil.getArmorPieces(targetEntity, stack -> stack.getItem() == BWObjects.HARBINGER) > 0) {
+		} else if (BWComponents.MINION_COMPONENT.get(mob).getMaster() == null && mob.getType().isIn(EntityTypeTags.UNDEAD) && targetEntity != null && BWUtil.getArmorPieces(targetEntity, stack -> stack.getItem() == BWObjects.HARBINGER) > 0) {
 			targetEntity = null;
 		}
 	}

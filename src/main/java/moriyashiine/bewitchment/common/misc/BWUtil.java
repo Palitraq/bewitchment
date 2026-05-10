@@ -12,6 +12,7 @@ import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.common.registry.BWCurses;
 import moriyashiine.bewitchment.common.registry.BWMaterials;
 import moriyashiine.bewitchment.common.registry.BWSoundEvents;
+import moriyashiine.bewitchment.common.registry.BWTags;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -20,11 +21,16 @@ import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.item.*;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import java.util.Set;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.village.TradeOfferList;
@@ -51,10 +57,10 @@ public class BWUtil {
 				if (BewitchmentAPI.isPledged(player, ((Pledgeable) entity).getPledgeID())) {
 					return false;
 				}
-			} else if (foundEntity.getGroup() == BewitchmentAPI.DEMON) {
+			} else if (foundEntity.getType().isIn(BWTags.DEMON)) {
 				return false;
 			}
-			return BWUtil.getArmorPieces(foundEntity, stack -> stack.getItem() instanceof ArmorItem armorItem && armorItem.getMaterial() == BWMaterials.BESMIRCHED_ARMOR) < 3;
+			return BWUtil.getArmorPieces(foundEntity, stack -> stack.getItem() instanceof ArmorItem armorItem && armorItem.getMaterial().value() == BWMaterials.BESMIRCHED_ARMOR) < 3;
 		});
 	}
 
@@ -70,7 +76,7 @@ public class BWUtil {
 	public static int getArmorPieces(LivingEntity livingEntity, Predicate<ItemStack> predicate) {
 		int amount = 0;
 		for (EquipmentSlot slot : EquipmentSlot.values()) {
-			if (slot.getType() == EquipmentSlot.Type.ARMOR && predicate.test(livingEntity.getEquippedStack(slot))) {
+			if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR && predicate.test(livingEntity.getEquippedStack(slot))) {
 				amount++;
 			}
 		}
@@ -129,7 +135,9 @@ public class BWUtil {
 				livingEntity.wakeUp();
 			}
 		}
-		entity.teleport(x, y + 0.5, z);
+		if (entity.getWorld() instanceof ServerWorld serverWorld) {
+			entity.teleport(serverWorld, x, y + 0.5, z, java.util.Set.of(), entity.getYaw(), entity.getPitch());
+		}
 		if (hasEffects) {
 			if (!entity.isSilent()) {
 				entity.getWorld().playSound(null, entity.getBlockPos(), BWSoundEvents.ENTITY_GENERIC_TELEPORT, entity.getSoundCategory(), 1, 1);

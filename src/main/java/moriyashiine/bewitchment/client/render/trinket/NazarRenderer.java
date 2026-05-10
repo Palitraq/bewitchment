@@ -13,12 +13,17 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.RotationAxis;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 
 public class NazarRenderer implements TrinketRenderer {
 	@Override
 	public void render(ItemStack stack, SlotReference slotReference, EntityModel<? extends LivingEntity> contextModel, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, LivingEntity entity, float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
 		ItemStack copy = stack.copy();
-		copy.getOrCreateNbt().putBoolean("Worn", true);
+		var nbtComponent = copy.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+		var nbt = nbtComponent.copyNbt();
+		nbt.putBoolean("Worn", true);
+		copy.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 		TrinketRenderer.translateToChest(matrices, (PlayerEntityModel<AbstractClientPlayerEntity>) contextModel, (AbstractClientPlayerEntity) entity);
 		matrices.translate(0, -1 / 4.25f, 1 / 48f);
 		matrices.scale(1 / 3f, 1 / 3f, 1 / 3f);

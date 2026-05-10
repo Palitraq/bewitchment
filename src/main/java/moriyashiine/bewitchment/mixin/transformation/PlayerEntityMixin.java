@@ -13,7 +13,8 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.FoodComponent;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.world.World;
@@ -62,12 +63,11 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 	}
 
 	@Inject(method = "eatFood", at = @At("HEAD"))
-	private void eat(World world, ItemStack stack, CallbackInfoReturnable<ItemStack> callbackInfo) {
+	private void eat(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> callbackInfo) {
 		if (!world.isClient) {
-			FoodComponent foodComponent = stack.getItem().getFoodComponent();
 			if (foodComponent != null) {
 				boolean vampire = BewitchmentAPI.isVampire(this, true);
-				if (vampire || (BewitchmentAPI.isWerewolf(this, true) && !foodComponent.isMeat())) {
+				if (vampire) {
 					addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 100, 1));
 					addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, 1));
 					addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 100, 1));

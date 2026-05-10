@@ -19,7 +19,7 @@ import net.minecraft.util.Identifier;
 
 @SuppressWarnings("ConstantConditions")
 public class DemonScreen extends HandledScreen<DemonScreenHandler> {
-	private static final Identifier HEARTS = new Identifier("textures/gui/icons.png");
+	private static final Identifier HEARTS = Identifier.ofVanilla("textures/gui/icons.png");
 
 	public DemonScreen(DemonScreenHandler handler, PlayerInventory inventory, Text title) {
 		super(handler, inventory, title);
@@ -27,7 +27,7 @@ public class DemonScreen extends HandledScreen<DemonScreenHandler> {
 
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-		renderBackground(context);
+		renderBackground(context, mouseX, mouseY, delta);
 		super.render(context, mouseX, mouseY, delta);
 		for (Slot slot : getScreenHandler().slots) {
 			if (slot instanceof DemonScreenHandler.DemonTradeSlot tradeSlot) {
@@ -55,7 +55,7 @@ public class DemonScreen extends HandledScreen<DemonScreenHandler> {
 		RenderSystem.enableScissor(scissorX, scissorY, scissorWidth, scissorHeight);
 		context.drawTexture(getBackground(), x, y, 176, 16, 64, 72);
 		int height = (int) (handler.demonMerchant.getDemonTrader().getHeight() * 55);
-		InventoryScreen.drawEntity(context, x + 32, y + height, 50, (float) (x + 32) - mouseX, (float) (y + 105 - 50) - mouseY, handler.demonMerchant.getDemonTrader());
+		InventoryScreen.drawEntity(context, x + 32, y + height, 50, mouseX, mouseY, (float) (x + 32) - mouseX, (float) (y + 105 - 50) - mouseY, 1.0f, handler.demonMerchant.getDemonTrader());
 		RenderSystem.disableScissor();
 	}
 

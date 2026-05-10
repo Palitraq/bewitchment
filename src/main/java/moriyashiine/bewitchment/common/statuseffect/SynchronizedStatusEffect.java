@@ -6,10 +6,10 @@ package moriyashiine.bewitchment.common.statuseffect;
 
 import moriyashiine.bewitchment.common.registry.BWStatusEffects;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.registry.entry.RegistryEntry;
 
 public class SynchronizedStatusEffect extends StatusEffect {
 	public SynchronizedStatusEffect(StatusEffectCategory category, int color) {
@@ -22,19 +22,20 @@ public class SynchronizedStatusEffect extends StatusEffect {
 	}
 
 	@Override
-	public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
 		if (!entity.getWorld().isClient && entity.age % 20 == 0) {
 			entity.getWorld().getEntitiesByClass(LivingEntity.class, entity.getBoundingBox().expand(3 * (amplifier + 1)), foundEntity -> foundEntity != entity).forEach(livingEntity -> entity.getStatusEffects().forEach(effect -> {
-				if (effect.getEffectType() != this) {
+				if (effect.getEffectType().value() != this) {
 					livingEntity.addStatusEffect(new StatusEffectInstance(effect.getEffectType(), effect.getDuration() / 2, effect.getAmplifier()));
 				}
 			}));
 		}
+		return true;
 	}
 
 	@Override
-	public void onApplied(LivingEntity entity, AttributeContainer attributes, int amplifier) {
-		super.onApplied(entity, attributes, amplifier);
-		entity.removeStatusEffect(BWStatusEffects.THEFT);
+	public void onApplied(LivingEntity entity, int amplifier) {
+		super.onApplied(entity, amplifier);
+		entity.removeStatusEffect(RegistryEntry.of(BWStatusEffects.THEFT));
 	}
 }

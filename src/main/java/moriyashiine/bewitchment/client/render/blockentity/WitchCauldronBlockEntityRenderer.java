@@ -17,6 +17,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.EntityEffectParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
@@ -62,7 +63,7 @@ public class WitchCauldronBlockEntityRenderer implements BlockEntityRenderer<Wit
 							world.addParticle(ParticleTypes.ENCHANTED_HIT, pos.getX() + 0.5 + MathHelper.nextDouble(world.random, -width, width), pos.getY() + fluidHeight, pos.getZ() + 0.5 + MathHelper.nextDouble(world.random, -width, width), 0, 0, 0);
 						}
 						if (entity.mode == WitchCauldronBlockEntity.Mode.BREWING) {
-							world.addParticle(ParticleTypes.ENTITY_EFFECT, pos.getX() + 0.5 + MathHelper.nextDouble(world.random, -width, width), pos.getY() + fluidHeight, pos.getZ() + 0.5 + MathHelper.nextDouble(world.random, -width, width), ((entity.color >> 16) & 0xff) / 255f, ((entity.color >> 8) & 0xff) / 255f, (entity.color & 0xff) / 255f);
+							world.addParticle(EntityEffectParticleEffect.create(ParticleTypes.ENTITY_EFFECT, entity.color), pos.getX() + 0.5 + MathHelper.nextDouble(world.random, -width, width), pos.getY() + fluidHeight, pos.getZ() + 0.5 + MathHelper.nextDouble(world.random, -width, width), 0, 0, 0);
 						}
 						world.addParticle((ParticleEffect) BWParticleTypes.CAULDRON_BUBBLE, pos.getX() + 0.5 + MathHelper.nextDouble(world.random, -width, width), pos.getY() + fluidHeight, pos.getZ() + 0.5 + MathHelper.nextDouble(world.random, -width, width), ((entity.color >> 16) & 0xff) / 255f, ((entity.color >> 8) & 0xff) / 255f, (entity.color & 0xff) / 255f);
 					}
@@ -89,10 +90,10 @@ public class WitchCauldronBlockEntityRenderer implements BlockEntityRenderer<Wit
 		matrices.push();
 		Matrix4f matrix4f = matrices.peek().getPositionMatrix();
 		VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEndPortal());
-		vertexConsumer.vertex(matrix4f, 0.125f, 0, 0.875f).next();
-		vertexConsumer.vertex(matrix4f, 0.875f, 0, 0.875f).next();
-		vertexConsumer.vertex(matrix4f, 0.875f, 0, 0.125f).next();
-		vertexConsumer.vertex(matrix4f, 0.125f, 0, 0.125f).next();
+		vertexConsumer.vertex(matrix4f, 0.125f, 0, 0.875f);
+		vertexConsumer.vertex(matrix4f, 0.875f, 0, 0.875f);
+		vertexConsumer.vertex(matrix4f, 0.875f, 0, 0.125f);
+		vertexConsumer.vertex(matrix4f, 0.125f, 0, 0.125f);
 		matrices.pop();
 	}
 
@@ -106,10 +107,10 @@ public class WitchCauldronBlockEntityRenderer implements BlockEntityRenderer<Wit
 		matrices.push();
 		Matrix4f mat = matrices.peek().getPositionMatrix();
 		VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getTranslucent());
-		vertexConsumer.vertex(mat, sizeFactor, 0, 1 - sizeFactor).color(red, green, blue, 255).texture(sprite.getMinU(), sprite.getMinV() + maxV).light(light).overlay(overlay).normal(1, 1, 1).next();
-		vertexConsumer.vertex(mat, 1 - sizeFactor, 0, 1 - sizeFactor).color(red, green, blue, 255).texture(sprite.getMaxU(), sprite.getMinV() + maxV).light(light).overlay(overlay).normal(1, 1, 1).next();
-		vertexConsumer.vertex(mat, 1 - sizeFactor, 0, sizeFactor).color(red, green, blue, 255).texture(sprite.getMaxU(), sprite.getMinV() + minV).light(light).overlay(overlay).normal(1, 1, 1).next();
-		vertexConsumer.vertex(mat, sizeFactor, 0, sizeFactor).color(red, green, blue, 255).texture(sprite.getMinU(), sprite.getMinV() + minV).light(light).overlay(overlay).normal(1, 1, 1).next();
+		vertexConsumer.vertex(mat, sizeFactor, 0, 1 - sizeFactor).color(red, green, blue, 255).texture(sprite.getMinU(), sprite.getMinV() + maxV).light(light).overlay(overlay).normal(1, 1, 1);
+		vertexConsumer.vertex(mat, 1 - sizeFactor, 0, 1 - sizeFactor).color(red, green, blue, 255).texture(sprite.getMaxU(), sprite.getMinV() + maxV).light(light).overlay(overlay).normal(1, 1, 1);
+		vertexConsumer.vertex(mat, 1 - sizeFactor, 0, sizeFactor).color(red, green, blue, 255).texture(sprite.getMaxU(), sprite.getMinV() + minV).light(light).overlay(overlay).normal(1, 1, 1);
+		vertexConsumer.vertex(mat, sizeFactor, 0, sizeFactor).color(red, green, blue, 255).texture(sprite.getMinU(), sprite.getMinV() + minV).light(light).overlay(overlay).normal(1, 1, 1);
 		matrices.pop();
 	}
 }

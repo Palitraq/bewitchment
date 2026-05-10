@@ -17,10 +17,11 @@ import moriyashiine.bewitchment.common.misc.BWUtil;
 import moriyashiine.bewitchment.common.registry.BWPledges;
 import moriyashiine.bewitchment.common.registry.BWRegistries;
 import moriyashiine.bewitchment.common.registry.BWSoundEvents;
+import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.common.registry.BWStatusEffects;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityGroup;
+
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.*;
@@ -37,6 +38,8 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -101,7 +104,7 @@ public class BaphometEntity extends BWHostileEntity implements Pledgeable, Demon
 				lookAtEntity(target, 360, 360);
 				if (timer % 60 == 0) {
 					for (int i = -1; i <= 1; i++) {
-						FireballEntity fireball = new FireballEntity(getWorld(), this, target.getX() - getX() + (i * 2), target.getBodyY(0.5) - getBodyY(0.5), target.getZ() - getZ() + (i * 2), 1);
+						FireballEntity fireball = new FireballEntity(getWorld(), this, new Vec3d(target.getX() - getX() + (i * 2), target.getBodyY(0.5) - getBodyY(0.5), target.getZ() - getZ() + (i * 2)), 1);
 						fireball.updatePosition(fireball.getX(), getBodyY(0.5), fireball.getZ());
 						fireball.setOwner(this);
 						getWorld().playSound(null, getBlockPos(), BWSoundEvents.ENTITY_GENERIC_SHOOT, getSoundCategory(), getSoundVolume(), getSoundPitch());
@@ -138,7 +141,7 @@ public class BaphometEntity extends BWHostileEntity implements Pledgeable, Demon
 
 	@Override
 	public Collection<StatusEffectInstance> getMinionBuffs() {
-		return Sets.newHashSet(new StatusEffectInstance(StatusEffects.RESISTANCE, Integer.MAX_VALUE), new StatusEffectInstance(BWStatusEffects.HARDENING, Integer.MAX_VALUE, 1));
+		return Sets.newHashSet(new StatusEffectInstance(StatusEffects.RESISTANCE, Integer.MAX_VALUE), new StatusEffectInstance(RegistryEntry.of(BWStatusEffects.HARDENING), Integer.MAX_VALUE, 1));
 	}
 
 	@Override
@@ -159,11 +162,6 @@ public class BaphometEntity extends BWHostileEntity implements Pledgeable, Demon
 	@Override
 	public int getVariants() {
 		return 1;
-	}
-
-	@Override
-	public EntityGroup getGroup() {
-		return BewitchmentAPI.DEMON;
 	}
 
 	@Nullable
@@ -192,7 +190,7 @@ public class BaphometEntity extends BWHostileEntity implements Pledgeable, Demon
 				setCurrentCustomer(player);
 			}
 			if (!getOffers().isEmpty()) {
-				SyncContractsPacket.send(serverPlayer);
+				SyncContractsPacket.send(serverPlayer, BWComponents.CONTRACTS_COMPONENT.maybeGet(serverPlayer).map(comp -> { NbtCompound tag = new NbtCompound(); tag.put("Contracts", comp.toNbtContract()); return tag; }).orElse(new NbtCompound()));
 				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, customer) -> new BaphometScreenHandler(id, this), getDisplayName())).ifPresent(syncId -> SyncDemonTradesPacket.send(serverPlayer, this, syncId));
 			} else {
 				setCurrentCustomer(null);
@@ -201,7 +199,6 @@ public class BaphometEntity extends BWHostileEntity implements Pledgeable, Demon
 		return ActionResult.success(getWorld().isClient);
 	}
 
-	@Override
 	public boolean canBeLeashedBy(PlayerEntity player) {
 		return false;
 	}
@@ -213,7 +210,7 @@ public class BaphometEntity extends BWHostileEntity implements Pledgeable, Demon
 
 	@Override
 	public boolean canHaveStatusEffect(StatusEffectInstance effect) {
-		return effect.getEffectType().getCategory() == StatusEffectCategory.BENEFICIAL;
+		return effect.getEffectType().value().getCategory() == StatusEffectCategory.BENEFICIAL;
 	}
 
 	@Override

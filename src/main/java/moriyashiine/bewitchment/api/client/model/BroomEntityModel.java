@@ -10,6 +10,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.registry.entry.RegistryEntry;
 
 public class BroomEntityModel extends EntityModel<BroomEntity> {
 	private final ModelPart broom;
@@ -31,7 +32,7 @@ public class BroomEntityModel extends EntityModel<BroomEntity> {
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-		broom.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+		broom.render(matrices, vertices, light, overlay, color);
 	}
 }

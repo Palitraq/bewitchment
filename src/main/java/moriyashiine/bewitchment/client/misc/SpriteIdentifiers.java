@@ -40,5 +40,5 @@ public class SpriteIdentifiers {
 	public static final SpriteIdentifier DRAGONS_BLOOD_CHEST_RIGHT = new SpriteIdentifier(CHEST_ATLAS_TEXTURE, Bewitchment.id("entity/chest/dragons_blood_right"));
 	public static final SpriteIdentifier TRAPPED_DRAGONS_BLOOD_CHEST_RIGHT = new SpriteIdentifier(CHEST_ATLAS_TEXTURE, Bewitchment.id("entity/chest/trapped_dragons_blood_right"));
 
-	public static final SpriteIdentifier CAULDRON_WATER = new SpriteIdentifier(BLOCK_ATLAS_TEXTURE, new Identifier("block/water_still"));
+	public static final SpriteIdentifier CAULDRON_WATER = new SpriteIdentifier(BLOCK_ATLAS_TEXTURE, Identifier.ofVanilla("block/water_still"));
 }

@@ -82,11 +82,11 @@ public class SnakeEntity extends BWTameableEntity {
 	public PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
 		SnakeEntity child = BWEntityTypes.SNAKE.create(world);
 		if (child != null) {
-			child.initialize(world, world.getLocalDifficulty(getBlockPos()), SpawnReason.BREEDING, null, null);
+			child.initialize(world, world.getLocalDifficulty(getBlockPos()), SpawnReason.BREEDING, null);
 			UUID owner = getOwnerUuid();
 			if (owner != null) {
 				child.setOwnerUuid(owner);
-				child.setTamed(true);
+				child.setTamed(true, true);
 			}
 			if (entity instanceof SnakeEntity && random.nextFloat() < 95 / 100f) {
 				child.dataTracker.set(VARIANT, random.nextBoolean() ? dataTracker.get(VARIANT) : entity.getDataTracker().get(VARIANT));
@@ -133,8 +133,8 @@ public class SnakeEntity extends BWTameableEntity {
 	}
 
 	@Override
-	public void setTamed(boolean tamed) {
-		super.setTamed(tamed);
+	public void setTamed(boolean tamed, boolean calledByOwner) {
+		super.setTamed(tamed, calledByOwner);
 		EntityAttributeInstance maxHealth = getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
 		EntityAttributeInstance attackDamage = getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
 		if (tamed) {
@@ -171,7 +171,7 @@ public class SnakeEntity extends BWTameableEntity {
 			}
 		});
 		goalSelector.add(3, new MeleeAttackGoal(this, 1, true));
-		goalSelector.add(4, new FollowOwnerGoal(this, 1, 10, 2, false));
+		goalSelector.add(4, new FollowOwnerGoal(this, 1, 10, 2));
 		goalSelector.add(5, new AnimalMateGoal(this, 1));
 		goalSelector.add(6, new WanderAroundFarGoal(this, 1));
 		goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 8));

@@ -19,7 +19,8 @@ public class IgnitionStatusEffect extends StatusEffect {
 	}
 
 	@Override
-	public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
 		entity.setOnFireFor(1);
+		return true;
 	}
 }

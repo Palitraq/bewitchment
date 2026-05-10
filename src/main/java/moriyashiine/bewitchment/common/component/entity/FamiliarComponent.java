@@ -4,15 +4,15 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
-import dev.onyxstudios.cca.api.v3.component.tick.CommonTickingComponent;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.MathHelper;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class FamiliarComponent implements AutoSyncedComponent, CommonTickingComponent {
+public class FamiliarComponent implements Component {
 	private final LivingEntity obj;
 	private boolean familiar = false;
 
@@ -20,17 +20,14 @@ public class FamiliarComponent implements AutoSyncedComponent, CommonTickingComp
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		setFamiliar(tag.getBoolean("Familiar"));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putBoolean("Familiar", isFamiliar());
 	}
 
-	@Override
 	public void tick() {
 		if (isFamiliar()) {
 			if (!obj.getWorld().isClient) {

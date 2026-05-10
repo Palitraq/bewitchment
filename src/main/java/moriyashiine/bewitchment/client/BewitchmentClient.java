@@ -4,13 +4,10 @@
 
 package moriyashiine.bewitchment.client;
 
-import com.terraformersmc.terraform.boat.api.client.TerraformBoatClientHelper;
-import com.terraformersmc.terraform.sign.SpriteIdentifierRegistry;
 import dev.emi.trinkets.api.client.TrinketRendererRegistry;
 import moriyashiine.bewitchment.api.client.model.BroomEntityModel;
 import moriyashiine.bewitchment.client.event.CauldronTeleportEvent;
 import moriyashiine.bewitchment.client.event.TransformationAbilityEvent;
-import moriyashiine.bewitchment.client.misc.SpriteIdentifiers;
 import moriyashiine.bewitchment.client.model.ContributorHornsModel;
 import moriyashiine.bewitchment.client.model.entity.living.*;
 import moriyashiine.bewitchment.client.model.equipment.armor.WitchArmorModel;
@@ -50,12 +47,11 @@ import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.block.entity.ChestBlockEntityRenderer;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.util.SpriteIdentifier;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.glfw.GLFW;
 
@@ -88,14 +84,14 @@ public class BewitchmentClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ClientPlayNetworking.registerGlobalReceiver(SyncContractsPacket.ID, new SyncContractsPacket.Receiver());
-		ClientPlayNetworking.registerGlobalReceiver(SyncDemonTradesPacket.ID, new SyncDemonTradesPacket.Receiver());
-		ClientPlayNetworking.registerGlobalReceiver(SyncPoppetShelfPacket.ID, new SyncPoppetShelfPacket.Receiver());
-		ClientPlayNetworking.registerGlobalReceiver(SyncHornedSpearPacket.ID, new SyncHornedSpearPacket.Receiver());
-		ClientPlayNetworking.registerGlobalReceiver(SpawnSmokeParticlesPacket.ID, new SpawnSmokeParticlesPacket.Receiver());
-		ClientPlayNetworking.registerGlobalReceiver(SpawnPortalParticlesPacket.ID, new SpawnPortalParticlesPacket.Receiver());
-		ClientPlayNetworking.registerGlobalReceiver(SpawnExplosionParticlesPacket.ID, new SpawnExplosionParticlesPacket.Receiver());
-		ClientPlayNetworking.registerGlobalReceiver(SpawnSpecterBangleParticlesPacket.ID, new SpawnSpecterBangleParticlesPacket.Receiver());
+		SyncContractsPacket.register();
+		SyncDemonTradesPacket.register();
+		SyncPoppetShelfPacket.register();
+		SyncHornedSpearPacket.register();
+		SpawnSmokeParticlesPacket.register();
+		SpawnPortalParticlesPacket.register();
+		SpawnExplosionParticlesPacket.register();
+		SpawnSpecterBangleParticlesPacket.register();
 		ClientTickEvents.END_WORLD_TICK.register(new TransformationAbilityEvent());
 		ClientSendMessageEvents.ALLOW_CHAT.register(new CauldronTeleportEvent());
 		ParticleFactoryRegistry.getInstance().register(BWParticleTypes.CAULDRON_BUBBLE, CauldronBubbleParticle.Factory::new);
@@ -109,11 +105,11 @@ public class BewitchmentClient implements ClientModInitializer {
 		ModelPredicateProviderRegistry.register(BWObjects.HEDGEWITCH_HAT, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.getName().getString().toLowerCase().contains("faith") ? 1 : 0);
 		ModelPredicateProviderRegistry.register(BWObjects.ALCHEMIST_HAT, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.getName().getString().toLowerCase().contains("faith") ? 1 : 0);
 		ModelPredicateProviderRegistry.register(BWObjects.BESMIRCHED_HAT, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.getName().getString().toLowerCase().contains("faith") ? 1 : 0);
-		ModelPredicateProviderRegistry.register(BWObjects.NAZAR, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.hasNbt() && stack.getNbt().getBoolean("Worn") ? 1 : 0);
-		ModelPredicateProviderRegistry.register(BWObjects.PRICKLY_BELT, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.hasNbt() && stack.getNbt().getInt("PotionUses") > 0 ? 1 : 0);
+		ModelPredicateProviderRegistry.register(BWObjects.NAZAR, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.contains(DataComponentTypes.CUSTOM_DATA) && stack.get(DataComponentTypes.CUSTOM_DATA).copyNbt().getBoolean("Worn") ? 1 : 0);
+		ModelPredicateProviderRegistry.register(BWObjects.PRICKLY_BELT, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.contains(DataComponentTypes.CUSTOM_DATA) && stack.get(DataComponentTypes.CUSTOM_DATA).copyNbt().getInt("PotionUses") > 0 ? 1 : 0);
 		ModelPredicateProviderRegistry.register(BWObjects.HORNED_SPEAR, Bewitchment.id("variant"), (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getActiveItem() == stack ? 1 : 0);
 		ModelPredicateProviderRegistry.register(BWObjects.TAGLOCK, Bewitchment.id("variant"), (stack, world, entity, seed) -> TaglockItem.hasTaglock(stack) ? 1 : 0);
-		ModelPredicateProviderRegistry.register(BWObjects.WAYSTONE, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.hasNbt() && stack.getOrCreateNbt().contains("LocationPos") ? 1 : 0);
+		ModelPredicateProviderRegistry.register(BWObjects.WAYSTONE, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.contains(DataComponentTypes.CUSTOM_DATA) && stack.get(DataComponentTypes.CUSTOM_DATA).copyNbt().contains("LocationPos") ? 1 : 0);
 		BlockEntityRendererFactories.register(BWBlockEntityTypes.BW_CHEST, ChestBlockEntityRenderer::new);
 		BlockEntityRendererFactories.register(BWBlockEntityTypes.WITCH_ALTAR, ctx -> new WitchAltarBlockEntityRenderer());
 		BlockEntityRendererFactories.register(BWBlockEntityTypes.WITCH_CAULDRON, ctx -> new WitchCauldronBlockEntityRenderer());
@@ -122,10 +118,7 @@ public class BewitchmentClient implements ClientModInitializer {
 		BlockEntityRendererFactories.register(BWBlockEntityTypes.JUNIPER_CHEST, ChestBlockEntityRenderer::new);
 		BlockEntityRendererFactories.register(BWBlockEntityTypes.ELDER_CHEST, ChestBlockEntityRenderer::new);
 		BlockEntityRendererFactories.register(BWBlockEntityTypes.DRAGONS_BLOOD_CHEST, ChestBlockEntityRenderer::new);
-		TerraformBoatClientHelper.registerModelLayers(Bewitchment.id("juniper_boat"), false);
-		TerraformBoatClientHelper.registerModelLayers(Bewitchment.id("cypress_boat"), false);
-		TerraformBoatClientHelper.registerModelLayers(Bewitchment.id("elder_boat"), false);
-		TerraformBoatClientHelper.registerModelLayers(Bewitchment.id("dragons_blood_boat"), false);
+
 		EntityModelLayerRegistry.registerModelLayer(CONTRIBUTOR_HORNS_MODEL_LAYER, ContributorHornsModel::getTexturedModelData);
 		EntityModelLayerRegistry.registerModelLayer(WITCH_ARMOR_MODEL_LAYER, WitchArmorModel::getTexturedModelData);
 		EntityModelLayerRegistry.registerModelLayer(SPECTER_BANGLE_MODEL_LAYER, SpecterBangleModel::getTexturedModelData);
@@ -186,38 +179,6 @@ public class BewitchmentClient implements ClientModInitializer {
 		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(), BWObjects.BRAZIER);
 		HandledScreens.register(BWScreenHandlerTypes.DEMON_SCREEN_HANDLER, DemonScreen::new);
 		HandledScreens.register(BWScreenHandlerTypes.BAPHOMET_SCREEN_HANDLER, DemonScreen::new);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.JUNIPER_CHEST);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_JUNIPER_CHEST);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.JUNIPER_CHEST_LEFT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_JUNIPER_CHEST_LEFT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.JUNIPER_CHEST_RIGHT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_JUNIPER_CHEST_RIGHT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.CYPRESS_CHEST);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_CYPRESS_CHEST);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.CYPRESS_CHEST_LEFT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_CYPRESS_CHEST_LEFT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.CYPRESS_CHEST_RIGHT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_CYPRESS_CHEST_RIGHT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.ELDER_CHEST);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_ELDER_CHEST);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.ELDER_CHEST_LEFT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_ELDER_CHEST_LEFT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.ELDER_CHEST_RIGHT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_ELDER_CHEST_RIGHT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.DRAGONS_BLOOD_CHEST);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_DRAGONS_BLOOD_CHEST);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.DRAGONS_BLOOD_CHEST_LEFT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_DRAGONS_BLOOD_CHEST_LEFT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.DRAGONS_BLOOD_CHEST_RIGHT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(SpriteIdentifiers.TRAPPED_DRAGONS_BLOOD_CHEST_RIGHT);
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(new SpriteIdentifier(TexturedRenderLayers.SIGNS_ATLAS_TEXTURE, BWObjects.JUNIPER_SIGN.getLeft()));
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(new SpriteIdentifier(TexturedRenderLayers.SIGNS_ATLAS_TEXTURE, BWObjects.JUNIPER_SIGN.getRight()));
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(new SpriteIdentifier(TexturedRenderLayers.SIGNS_ATLAS_TEXTURE, BWObjects.CYPRESS_SIGN.getLeft()));
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(new SpriteIdentifier(TexturedRenderLayers.SIGNS_ATLAS_TEXTURE, BWObjects.CYPRESS_SIGN.getRight()));
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(new SpriteIdentifier(TexturedRenderLayers.SIGNS_ATLAS_TEXTURE, BWObjects.ELDER_SIGN.getLeft()));
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(new SpriteIdentifier(TexturedRenderLayers.SIGNS_ATLAS_TEXTURE, BWObjects.ELDER_SIGN.getRight()));
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(new SpriteIdentifier(TexturedRenderLayers.SIGNS_ATLAS_TEXTURE, BWObjects.DRAGONS_BLOOD_SIGN.getLeft()));
-		SpriteIdentifierRegistry.INSTANCE.addIdentifier(new SpriteIdentifier(TexturedRenderLayers.SIGNS_ATLAS_TEXTURE, BWObjects.DRAGONS_BLOOD_SIGN.getRight()));
 		BuiltinItemRendererRegistry.INSTANCE.register(BWObjects.JUNIPER_CHEST, (stack, mode, matrices, vertexConsumers, light, overlay) -> MinecraftClient.getInstance().getBlockEntityRenderDispatcher().renderEntity(new BWChestBlockEntity(BWBlockEntityTypes.BW_CHEST, BlockPos.ORIGIN, BWObjects.JUNIPER_CHEST.getDefaultState(), BWChestBlockEntity.Type.JUNIPER, false), matrices, vertexConsumers, light, overlay));
 		BuiltinItemRendererRegistry.INSTANCE.register(BWObjects.TRAPPED_JUNIPER_CHEST, (stack, mode, matrices, vertexConsumers, light, overlay) -> MinecraftClient.getInstance().getBlockEntityRenderDispatcher().renderEntity(new BWChestBlockEntity(BWBlockEntityTypes.BW_CHEST, BlockPos.ORIGIN, BWObjects.TRAPPED_JUNIPER_CHEST.getDefaultState(), BWChestBlockEntity.Type.JUNIPER, true), matrices, vertexConsumers, light, overlay));
 		BuiltinItemRendererRegistry.INSTANCE.register(BWObjects.CYPRESS_CHEST, (stack, mode, matrices, vertexConsumers, light, overlay) -> MinecraftClient.getInstance().getBlockEntityRenderDispatcher().renderEntity(new BWChestBlockEntity(BWBlockEntityTypes.BW_CHEST, BlockPos.ORIGIN, BWObjects.CYPRESS_CHEST.getDefaultState(), BWChestBlockEntity.Type.CYPRESS, false), matrices, vertexConsumers, light, overlay));

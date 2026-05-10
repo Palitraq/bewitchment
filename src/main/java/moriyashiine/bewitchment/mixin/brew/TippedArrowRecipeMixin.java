@@ -4,11 +4,13 @@
 
 package moriyashiine.bewitchment.mixin.brew;
 
-import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.recipe.TippedArrowRecipe;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.recipe.input.CraftingRecipeInput;
+import net.minecraft.registry.RegistryWrapper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,24 +21,30 @@ import java.util.UUID;
 @SuppressWarnings("ConstantConditions")
 @Mixin(TippedArrowRecipe.class)
 public class TippedArrowRecipeMixin {
-	@Inject(method = "craft(Lnet/minecraft/inventory/RecipeInputInventory;Lnet/minecraft/registry/DynamicRegistryManager;)Lnet/minecraft/item/ItemStack;", at = @At(value = "RETURN", ordinal = 1), cancellable = true)
-	private void craft(RecipeInputInventory recipeInputInventory, DynamicRegistryManager dynamicRegistryManager, CallbackInfoReturnable<ItemStack> cir) {
-		ItemStack stack = recipeInputInventory.getStack(1 + recipeInputInventory.getWidth());
-		if (stack.hasNbt() && stack.getNbt().contains("BewitchmentBrew")) {
-			int color = PotionUtil.getColor(stack);
+	@Inject(method = "craft(Lnet/minecraft/recipe/input/CraftingRecipeInput;Lnet/minecraft/registry/RegistryWrapper$WrapperLookup;)Lnet/minecraft/item/ItemStack;", at = @At(value = "RETURN", ordinal = 1), cancellable = true)
+	private void craft(CraftingRecipeInput craftingRecipeInput, RegistryWrapper.WrapperLookup lookup, CallbackInfoReturnable<ItemStack> cir) {
+		ItemStack stack = craftingRecipeInput.getStackInSlot(1, 1);
+		var inputNbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+		var inputNbt = inputNbtComponent.copyNbt();
+		if (!inputNbt.isEmpty() && inputNbt.contains("BewitchmentBrew")) {
+			PotionContentsComponent potionContents = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
+			int color = PotionContentsComponent.getColor(potionContents.getEffects());
 			UUID uuid = null;
 			String name = null;
-			if (stack.getNbt().contains("PolymorphUUID")) {
-				uuid = stack.getNbt().getUuid("PolymorphUUID");
-				name = stack.getNbt().getString("PolymorphName");
+			if (inputNbt.contains("PolymorphUUID")) {
+				uuid = inputNbt.getUuid("PolymorphUUID");
+				name = inputNbt.getString("PolymorphName");
 			}
 			stack = cir.getReturnValue();
-			stack.getOrCreateNbt().putBoolean("BewitchmentBrew", true);
-			stack.getOrCreateNbt().putInt("CustomPotionColor", color);
+			var resultNbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+			var resultNbt = resultNbtComponent.copyNbt();
+			resultNbt.putBoolean("BewitchmentBrew", true);
+			resultNbt.putInt("CustomPotionColor", color);
 			if (uuid != null) {
-				stack.getOrCreateNbt().putUuid("PolymorphUUID", uuid);
-				stack.getOrCreateNbt().putString("PolymorphName", name);
+				resultNbt.putUuid("PolymorphUUID", uuid);
+				resultNbt.putString("PolymorphName", name);
 			}
+			stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(resultNbt));
 			cir.setReturnValue(stack);
 		}
 	}

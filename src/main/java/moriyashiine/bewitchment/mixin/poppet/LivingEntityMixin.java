@@ -25,6 +25,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -70,13 +71,15 @@ public abstract class LivingEntityMixin extends Entity {
 	@ModifyVariable(method = "applyArmorToDamage", at = @At("HEAD"), argsOnly = true)
 	private float modifyDamage(float amount, DamageSource source) {
 		if (!getWorld().isClient) {
+			ServerWorld serverWorld = (ServerWorld) getWorld();
 			if (amount > 0 && (Object) this instanceof PlayerEntity player && !BewitchmentAPI.isVampire(this, true)) {
 				PoppetData poppetData = BewitchmentAPI.getPoppetFromInventory(getWorld(), BWObjects.VAMPIRIC_POPPET, null, Stream.concat(player.getInventory().main.stream(), player.getInventory().offHand.stream()).collect(Collectors.toList()));
 				if (!poppetData.stack().isEmpty()) {
 					LivingEntity owner = BewitchmentAPI.getTaglockOwner(getWorld(), poppetData.stack());
 					if (!BewitchmentAPI.isVampire(owner, true) && !getUuid().equals(owner.getUuid()) && owner.damage(BWDamageSources.create(owner.getWorld(), BWDamageSources.VAMPIRE), amount)) {
 						boolean sync = false;
-						if (poppetData.stack().damage((int) (amount * (BewitchmentAPI.getFamiliar(player) == EntityType.WOLF && random.nextBoolean() ? 0.5f : 1)), random, null) && poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
+						poppetData.stack().damage((int) (amount * (BewitchmentAPI.getFamiliar(player) == EntityType.WOLF && random.nextBoolean() ? 0.5f : 1)), serverWorld, null, item -> {});
+						if (poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
 							poppetData.stack().decrement(1);
 							sync = true;
 						}
@@ -89,7 +92,8 @@ public abstract class LivingEntityMixin extends Entity {
 				PoppetData poppetData = BewitchmentAPI.getPoppet(getWorld(), BWObjects.PROTECTION_POPPET, this);
 				if (!poppetData.stack().isEmpty()) {
 					boolean sync = false;
-					if (poppetData.stack().damage((int) (amount * ((Object) this instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.WOLF && random.nextBoolean() ? 0.5f : 1)), random, null) && poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
+					poppetData.stack().damage((int) (amount * ((Object) this instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.WOLF && random.nextBoolean() ? 0.5f : 1)), serverWorld, null, item -> {});
+					if (poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
 						poppetData.stack().decrement(1);
 						sync = true;
 					}
@@ -101,7 +105,8 @@ public abstract class LivingEntityMixin extends Entity {
 				PoppetData poppetData = BewitchmentAPI.getPoppet(getWorld(), BWObjects.JUDGMENT_POPPET, this);
 				if (!poppetData.stack().isEmpty()) {
 					boolean sync = false;
-					if (poppetData.stack().damage((Object) this instanceof PlayerEntity && BewitchmentAPI.getFamiliar((PlayerEntity) (Object) this) == EntityType.WOLF && random.nextBoolean() ? 0 : 1, random, null) && poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
+					poppetData.stack().damage((Object) this instanceof PlayerEntity && BewitchmentAPI.getFamiliar((PlayerEntity) (Object) this) == EntityType.WOLF && random.nextBoolean() ? 0 : 1, serverWorld, null, item -> {});
+					if (poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
 						poppetData.stack().decrement(1);
 						sync = true;
 					}
@@ -112,9 +117,12 @@ public abstract class LivingEntityMixin extends Entity {
 			if (source.getSource() instanceof LivingEntity livingSource) {
 				PoppetData poppetData = BewitchmentAPI.getPoppet(getWorld(), BWObjects.FATIGUE_POPPET, this);
 				boolean sync = false;
-				if (!poppetData.stack().isEmpty() && livingSource.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 60, 1)) && poppetData.stack().damage((Object) this instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.WOLF && random.nextBoolean() ? 0 : 1, random, null) && poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
-					poppetData.stack().decrement(1);
-					sync = true;
+				if (!poppetData.stack().isEmpty() && livingSource.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 60, 1))) {
+					poppetData.stack().damage((Object) this instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.WOLF && random.nextBoolean() ? 0 : 1, serverWorld, null, item -> {});
+					if (poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
+						poppetData.stack().decrement(1);
+						sync = true;
+					}
 				}
 				poppetData.update(getWorld(), sync);
 			}
@@ -125,6 +133,7 @@ public abstract class LivingEntityMixin extends Entity {
 	@Inject(method = "tryUseTotem", at = @At("RETURN"), cancellable = true)
 	private void tryUseTotem(DamageSource source, CallbackInfoReturnable<Boolean> callbackInfo) {
 		if (!getWorld().isClient) {
+			ServerWorld serverWorld = (ServerWorld) getWorld();
 			if (!callbackInfo.getReturnValueZ()) {
 				boolean isPlayer = (Object) this instanceof PlayerEntity;
 				PoppetData poppetData = BewitchmentAPI.getPoppet(getWorld(), BWObjects.DEATH_PROTECTION_POPPET, this);
@@ -133,7 +142,8 @@ public abstract class LivingEntityMixin extends Entity {
 						ReviveEvents.ON_REVIVE.invoker().onRevive((PlayerEntity) (Object) this, source, poppetData.stack());
 					}
 					boolean sync = false;
-					if (poppetData.stack().damage((Object) this instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.WOLF && random.nextBoolean() ? 0 : 1, random, null) && poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
+					poppetData.stack().damage((Object) this instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.WOLF && random.nextBoolean() ? 0 : 1, serverWorld, null, item -> {});
+					if (poppetData.stack().getDamage() >= poppetData.stack().getMaxDamage()) {
 						poppetData.stack().decrement(1);
 						sync = true;
 					}

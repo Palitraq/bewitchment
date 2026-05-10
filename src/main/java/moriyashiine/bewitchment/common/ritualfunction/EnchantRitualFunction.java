@@ -12,11 +12,13 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.particle.ParticleType;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class EnchantRitualFunction extends RitualFunction {
@@ -30,7 +32,7 @@ public class EnchantRitualFunction extends RitualFunction {
 			PlayerEntity closestPlayer = world.getClosestPlayer(itemEntity, 8);
 			if (closestPlayer != null && closestPlayer.experienceLevel >= 5) {
 				closestPlayer.addExperienceLevels(-5);
-				EnchantmentHelper.enchant(world.random, itemEntity.getStack(), catFamiliar ? 60 : 40, false);
+				EnchantmentHelper.enchant(world.random, itemEntity.getStack(), catFamiliar ? 60 : 40, world.getRegistryManager(), Optional.empty());
 			}
 			ItemScatterer.spawn(world, effectivePos.getX() + 0.5, effectivePos.getY() + 0.5, effectivePos.getZ() + 0.5, itemEntity.getStack().copy());
 			itemEntity.getStack().decrement(1);

@@ -154,13 +154,13 @@ public class HerneEntityModel<T extends HerneEntity> extends BipedEntityModel<T>
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-		neck00.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		chest.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		bipedLeftArm.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		bipedRightArm.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		bipedLeftLeg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		bipedRightLeg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+		neck00.render(matrices, vertices, light, overlay, color);
+		chest.render(matrices, vertices, light, overlay, color);
+		bipedLeftArm.render(matrices, vertices, light, overlay, color);
+		bipedRightArm.render(matrices, vertices, light, overlay, color);
+		bipedLeftLeg.render(matrices, vertices, light, overlay, color);
+		bipedRightLeg.render(matrices, vertices, light, overlay, color);
 	}
 
 	@Override

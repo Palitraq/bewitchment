@@ -10,6 +10,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -28,8 +29,8 @@ public class CleansingSigil extends Sigil {
 		}
 		if (flag) {
 			flag = false;
-			for (StatusEffect effect : Registries.STATUS_EFFECT) {
-				if (user.hasStatusEffect(effect) && effect.getCategory() == StatusEffectCategory.HARMFUL) {
+			for (RegistryEntry<StatusEffect> effect : Registries.STATUS_EFFECT.streamEntries().toList()) {
+				if (user.hasStatusEffect(effect) && effect.value().getCategory() == StatusEffectCategory.HARMFUL) {
 					if (!world.isClient) {
 						user.removeStatusEffect(effect);
 					}

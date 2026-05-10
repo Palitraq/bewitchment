@@ -8,6 +8,7 @@ import moriyashiine.bewitchment.common.registry.BWDamageSources;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.registry.entry.RegistryEntry;
 
 @SuppressWarnings("ConstantConditions")
 public class MortalCoilStatusEffect extends StatusEffect {
@@ -21,9 +22,10 @@ public class MortalCoilStatusEffect extends StatusEffect {
 	}
 
 	@Override
-	public void applyUpdateEffect(LivingEntity entity, int amplifier) {
-		if (entity.getStatusEffect(this).getDuration() == 1) {
+	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
+		if (entity.getStatusEffect(RegistryEntry.of(this)).getDuration() == 1) {
 			entity.damage(BWDamageSources.create(entity.getWorld(), BWDamageSources.DEATH), Float.MAX_VALUE);
 		}
+		return true;
 	}
 }

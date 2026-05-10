@@ -28,6 +28,7 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -141,32 +142,29 @@ public class BrambleBlock extends SugarCaneBlock {
 		}
 
 		@Override
-		public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+		public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 			boolean client = world.isClient;
 			if (state.get(BWProperties.HAS_FRUIT)) {
 				if (!client) {
 					world.setBlockState(pos, state.with(Properties.LEVEL_15, 0).with(BWProperties.HAS_FRUIT, false));
 					world.playSound(null, pos, SoundEvents.BLOCK_SWEET_BERRY_BUSH_PICK_BERRIES, SoundCategory.BLOCKS, 1, 1);
-					ItemStack stack = new ItemStack(BWObjects.WITCHBERRY);
-					if (!player.getInventory().insertStack(stack)) {
-						player.dropStack(stack);
+					ItemStack berryStack = new ItemStack(BWObjects.WITCHBERRY);
+					if (!player.getInventory().insertStack(berryStack)) {
+						player.dropStack(berryStack);
 					}
 				}
-				return ActionResult.success(client);
-			} else {
-				ItemStack stack = player.getStackInHand(hand);
-				if (stack.getItem() instanceof BoneMealItem) {
-					if (!world.isClient) {
-						if (!player.isCreative()) {
-							stack.decrement(1);
-						}
-						int level = Math.min(8, state.get(Properties.LEVEL_15) + world.random.nextInt(3) + 2);
-						world.setBlockState(pos, state.with(Properties.LEVEL_15, level).with(BWProperties.HAS_FRUIT, level == 8));
+				return ItemActionResult.success(client);
+			} else if (stack.getItem() instanceof BoneMealItem) {
+				if (!world.isClient) {
+					if (!player.isCreative()) {
+						stack.decrement(1);
 					}
-					return ActionResult.success(client);
+					int level = Math.min(8, state.get(Properties.LEVEL_15) + world.random.nextInt(3) + 2);
+					world.setBlockState(pos, state.with(Properties.LEVEL_15, level).with(BWProperties.HAS_FRUIT, level == 8));
 				}
+				return ItemActionResult.success(client);
 			}
-			return super.onUse(state, world, pos, player, hand, hit);
+			return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
 		}
 
 		@Override

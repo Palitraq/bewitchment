@@ -27,7 +27,7 @@ public class WebbedStatusEffect extends StatusEffect {
 	}
 
 	@Override
-	public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
 		if (!entity.getWorld().isClient) {
 			for (BlockPos foundPos : BWUtil.getBlockPoses(entity.getBlockPos(), Math.min(3, amplifier + 1))) {
 				if (entity.getWorld().getWorldBorder().contains(foundPos) && entity.getWorld().getBlockState(foundPos).isAir()) {
@@ -35,5 +35,6 @@ public class WebbedStatusEffect extends StatusEffect {
 				}
 			}
 		}
+		return true;
 	}
 }

@@ -4,7 +4,6 @@
 
 package moriyashiine.bewitchment.api.component;
 
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.api.registry.Contract;
 import moriyashiine.bewitchment.common.registry.BWRegistries;
 import moriyashiine.bewitchment.common.registry.BWStatusEffects;
@@ -13,12 +12,15 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
+import org.ladysnake.cca.api.v3.component.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContractsComponent implements ServerTickingComponent {
+public class ContractsComponent implements Component {
 	private final PlayerEntity obj;
 	private final List<Contract.Instance> contracts = new ArrayList<>();
 
@@ -26,21 +28,18 @@ public class ContractsComponent implements ServerTickingComponent {
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		NbtList contractsList = tag.getList("Contracts", NbtElement.COMPOUND_TYPE);
 		for (int i = 0; i < contractsList.size(); i++) {
 			NbtCompound contractCompound = contractsList.getCompound(i);
-			addContract(new Contract.Instance(BWRegistries.CONTRACT.get(new Identifier(contractCompound.getString("Contract"))), contractCompound.getInt("Duration"), contractCompound.getInt("Cost")));
+			addContract(new Contract.Instance(BWRegistries.CONTRACT.get(Identifier.tryParse(contractCompound.getString("Contract"))), contractCompound.getInt("Duration"), contractCompound.getInt("Cost")));
 		}
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.put("Contracts", toNbtContract());
 	}
 
-	@Override
 	public void serverTick() {
 		int level = 0;
 		for (int i = contracts.size() - 1; i >= 0; i--) {
@@ -53,7 +52,7 @@ public class ContractsComponent implements ServerTickingComponent {
 			}
 		}
 		if (level > 0) {
-			obj.addStatusEffect(new StatusEffectInstance(BWStatusEffects.PACT, 10, level - 1, true, false));
+			obj.addStatusEffect(new StatusEffectInstance(RegistryEntry.of(BWStatusEffects.PACT), 10, level - 1, true, false));
 			if (obj.getHealth() > obj.getMaxHealth()) {
 				obj.setHealth(obj.getMaxHealth());
 			}

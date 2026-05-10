@@ -9,7 +9,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Pair;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentState.Type;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -19,6 +21,12 @@ import java.util.UUID;
 public class BWUniversalWorldState extends PersistentState {
 	public final List<UUID> pledgesToRemove = new ArrayList<>();
 	public final List<Pair<UUID, NbtCompound>> familiars = new ArrayList<>();
+
+	private static final Type<BWUniversalWorldState> TYPE = new Type<>(
+		BWUniversalWorldState::new,
+		(nbt, lookup) -> readNbt(nbt),
+		null
+	);
 
 	public static BWUniversalWorldState readNbt(NbtCompound nbt) {
 		BWUniversalWorldState universalWorldState = new BWUniversalWorldState();
@@ -35,7 +43,7 @@ public class BWUniversalWorldState extends PersistentState {
 	}
 
 	@Override
-	public NbtCompound writeNbt(NbtCompound nbt) {
+	public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
 		NbtList pledgesToRemoveList = new NbtList();
 		for (UUID uuid : this.pledgesToRemove) {
 			NbtCompound pledgeCompound = new NbtCompound();
@@ -56,6 +64,6 @@ public class BWUniversalWorldState extends PersistentState {
 
 	@SuppressWarnings("ConstantConditions")
 	public static BWUniversalWorldState get(World world) {
-		return world.getServer().getOverworld().getPersistentStateManager().getOrCreate(BWUniversalWorldState::readNbt, BWUniversalWorldState::new, Bewitchment.MOD_ID);
+		return world.getServer().getOverworld().getPersistentStateManager().getOrCreate(TYPE, Bewitchment.MOD_ID);
 	}
 }

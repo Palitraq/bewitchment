@@ -20,7 +20,7 @@ public class GillsStatusEffect extends StatusEffect {
 	}
 
 	@Override
-	public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
 		boolean damage = false;
 		if (!entity.isSubmergedInWater() && !entity.getWorld().hasRain(entity.getBlockPos().up())) {
 			entity.setAir(((LivingEntityAccessor) entity).bw_getNextAirUnderwater(entity.getAir() - ((LivingEntityAccessor) entity).bw_getNextAirOnLand(0)));
@@ -29,7 +29,7 @@ public class GillsStatusEffect extends StatusEffect {
 			}
 		} else if (entity.getAir() < entity.getMaxAir()) {
 			entity.setAir(((LivingEntityAccessor) entity).bw_getNextAirOnLand(entity.getAir()));
-			return;
+			return true;
 		}
 		if (!damage) {
 			damage = entity.getAir() < -20;
@@ -38,5 +38,6 @@ public class GillsStatusEffect extends StatusEffect {
 			entity.damage(entity.getWorld().getDamageSources().generic(), 2);
 			entity.setAir(0);
 		}
+		return true;
 	}
 }

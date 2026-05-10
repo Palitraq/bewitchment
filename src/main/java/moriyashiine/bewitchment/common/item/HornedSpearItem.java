@@ -4,10 +4,9 @@
 
 package moriyashiine.bewitchment.common.item;
 
-import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
 import moriyashiine.bewitchment.client.packet.SyncHornedSpearPacket;
+import moriyashiine.bewitchment.common.Bewitchment;
 import moriyashiine.bewitchment.common.entity.projectile.HornedSpearEntity;
 import moriyashiine.bewitchment.common.registry.BWEntityTypes;
 import moriyashiine.bewitchment.common.registry.BWSoundEvents;
@@ -16,35 +15,28 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
 import net.minecraft.item.SwordItem;
 import net.minecraft.item.ToolMaterial;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.world.World;
 
-import java.util.UUID;
-
 public class HornedSpearItem extends SwordItem {
-	private static final EntityAttributeModifier REACH_MODIFIER = new EntityAttributeModifier(UUID.fromString("1d25c6a0-3f2c-4d4e-8f5f-941f51aab1b7"), "Weapon modifier", 2, EntityAttributeModifier.Operation.ADDITION);
+	private static final EntityAttributeModifier REACH_MODIFIER = new EntityAttributeModifier(Bewitchment.id("spear_reach"), 2, EntityAttributeModifier.Operation.ADD_VALUE);
 
 	public HornedSpearItem(ToolMaterial toolMaterial, int attackDamage, float attackSpeed, Settings settings) {
-		super(toolMaterial, attackDamage, attackSpeed, settings);
-	}
-
-	@Override
-	public Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(EquipmentSlot slot) {
-		Multimap<EntityAttribute, EntityAttributeModifier> map = LinkedHashMultimap.create(super.getAttributeModifiers(slot));
-		if (slot == EquipmentSlot.MAINHAND) {
-			map.put(ReachEntityAttributes.ATTACK_RANGE, REACH_MODIFIER);
-		}
-		return map;
+		super(toolMaterial, settings);
 	}
 
 	@Override
@@ -58,7 +50,7 @@ public class HornedSpearItem extends SwordItem {
 
 	@Override
 	public void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
-		int timer = getMaxUseTime(stack) - remainingUseTicks;
+		int timer = getMaxUseTime(stack, user) - remainingUseTicks;
 		if (timer >= 10) {
 			if (!world.isClient) {
 				spawnEntity(world, user, stack);
@@ -75,12 +67,15 @@ public class HornedSpearItem extends SwordItem {
 	}
 
 	@Override
-	public int getMaxUseTime(ItemStack stack) {
+	public int getMaxUseTime(ItemStack stack, LivingEntity user) {
 		return 72000;
 	}
 
 	public static void spawnEntity(World world, LivingEntity owner, ItemStack stack) {
-		stack.damage(1, owner, stackUser -> stackUser.sendToolBreakStatus(stackUser.getActiveHand()));
+		if (owner instanceof ServerPlayerEntity serverPlayer) {
+			EquipmentSlot slot = serverPlayer.getActiveHand() == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+			stack.damage(1, serverPlayer.getServerWorld(), serverPlayer, item -> {});
+		}
 		HornedSpearEntity spear = new HornedSpearEntity(BWEntityTypes.HORNED_SPEAR, owner, world, stack.copy());
 		spear.setVelocity(owner, owner.getPitch(), owner.getYaw(), 0, 3, 1);
 		if (owner instanceof PlayerEntity player) {

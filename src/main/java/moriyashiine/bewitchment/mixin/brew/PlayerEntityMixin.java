@@ -7,9 +7,11 @@ package moriyashiine.bewitchment.mixin.brew;
 import moriyashiine.bewitchment.common.registry.BWStatusEffects;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,9 +30,9 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 	}
 
 	@Inject(method = "eatFood", at = @At("HEAD"))
-	private void eatFood(World world, ItemStack stack, CallbackInfoReturnable<ItemStack> callbackInfo) {
-		if (!world.isClient && hasStatusEffect(BWStatusEffects.NOURISHING)) {
-			getHungerManager().add(getStatusEffect(BWStatusEffects.NOURISHING).getAmplifier() + 2, 0.5f);
+	private void eatFood(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> callbackInfo) {
+		if (!world.isClient && hasStatusEffect(RegistryEntry.of(BWStatusEffects.NOURISHING))) {
+			getHungerManager().add(getStatusEffect(RegistryEntry.of(BWStatusEffects.NOURISHING)).getAmplifier() + 2, 0.5f);
 		}
 	}
 }

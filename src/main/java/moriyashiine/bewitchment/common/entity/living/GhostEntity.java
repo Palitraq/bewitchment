@@ -25,6 +25,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
@@ -90,10 +91,7 @@ public class GhostEntity extends BWHostileEntity {
 		return 5;
 	}
 
-	@Override
-	public EntityGroup getGroup() {
-		return EntityGroup.UNDEAD;
-	}
+
 
 	@Nullable
 	@Override
@@ -148,9 +146,9 @@ public class GhostEntity extends BWHostileEntity {
 	}
 
 	@Override
-	protected void initDataTracker() {
-		super.initDataTracker();
-		dataTracker.startTracking(HAS_TARGET, false);
+	protected void initDataTracker(DataTracker.Builder builder) {
+		super.initDataTracker(builder);
+		builder.add(HAS_TARGET, false);
 	}
 
 	@Override
@@ -164,7 +162,7 @@ public class GhostEntity extends BWHostileEntity {
 	}
 
 	public static StatusEffectInstance getEffect(int type, int duration) {
-		return new StatusEffectInstance(type == 1 ? StatusEffects.HUNGER : type == 2 ? StatusEffects.SLOWNESS : type == 3 ? BWStatusEffects.CORROSION : BWStatusEffects.SINKING, duration);
+		return new StatusEffectInstance(type == 1 ? StatusEffects.HUNGER : type == 2 ? StatusEffects.SLOWNESS : type == 3 ? RegistryEntry.of(BWStatusEffects.CORROSION) : RegistryEntry.of(BWStatusEffects.SINKING), duration);
 	}
 
 	private class GhostMoveControl extends MoveControl {

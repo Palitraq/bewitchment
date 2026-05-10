@@ -9,10 +9,12 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.input.SingleStackRecipeInput;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ItemScatterer;
@@ -36,10 +38,10 @@ public class SmeltItemsRitualFunction extends RitualFunction {
 				for (ItemEntity itemEntity : world.getEntitiesByType(EntityType.ITEM, new Box(effectivePos).expand(radius, 0, radius), entity -> true)) {
 					if (world.random.nextFloat() < 1 / 4f) {
 						world.getRecipeManager().listAllOfType(RecipeType.SMELTING).forEach(smeltingRecipe -> {
-							for (Ingredient ingredient : smeltingRecipe.getIngredients()) {
+							for (Ingredient ingredient : smeltingRecipe.value().getIngredients()) {
 								if (ingredient.test(itemEntity.getStack())) {
 									world.playSound(null, itemEntity.getBlockPos(), SoundEvents.BLOCK_FURNACE_FIRE_CRACKLE, SoundCategory.BLOCKS, 1, 1);
-									ItemScatterer.spawn(world, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), smeltingRecipe.getOutput(world.getRegistryManager()).copy());
+									ItemScatterer.spawn(world, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), smeltingRecipe.value().craft(new SingleStackRecipeInput(ItemStack.EMPTY), world.getRegistryManager()).copy());
 									world.spawnEntity(new ExperienceOrbEntity(world, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), 1));
 									itemEntity.getStack().decrement(1);
 								}

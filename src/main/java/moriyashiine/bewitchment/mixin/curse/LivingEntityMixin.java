@@ -32,7 +32,7 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@ModifyVariable(method = "addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z", at = @At("HEAD"), argsOnly = true)
 	private StatusEffectInstance modifyStatusEffect(StatusEffectInstance effect) {
-		if (!getWorld().isClient && !effect.isAmbient() && effect.getEffectType().getCategory() == StatusEffectCategory.HARMFUL && BWComponents.CURSES_COMPONENT.get(this).hasCurse(BWCurses.COMPROMISED)) {
+		if (!getWorld().isClient && !effect.isAmbient() && effect.getEffectType().value().getCategory() == StatusEffectCategory.HARMFUL && BWComponents.CURSES_COMPONENT.get(this).hasCurse(BWCurses.COMPROMISED)) {
 			return new StatusEffectInstance(effect.getEffectType(), effect.getDuration(), effect.getAmplifier() + 1, false, effect.shouldShowParticles(), effect.shouldShowIcon());
 		}
 		return effect;
@@ -61,7 +61,7 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@Inject(method = "canHaveStatusEffect", at = @At("RETURN"), cancellable = true)
 	private void canHaveStatusEffect(StatusEffectInstance effect, CallbackInfoReturnable<Boolean> callbackInfo) {
-		if (callbackInfo.getReturnValueZ() && !getWorld().isClient && !effect.isAmbient() && effect.getEffectType().getCategory() == StatusEffectCategory.BENEFICIAL && BWComponents.CURSES_COMPONENT.get(this).hasCurse(BWCurses.UNLUCKY) && random.nextBoolean()) {
+		if (callbackInfo.getReturnValueZ() && !getWorld().isClient && !effect.isAmbient() && effect.getEffectType().value().getCategory() == StatusEffectCategory.BENEFICIAL && BWComponents.CURSES_COMPONENT.get(this).hasCurse(BWCurses.UNLUCKY) && random.nextBoolean()) {
 			callbackInfo.setReturnValue(false);
 		}
 	}

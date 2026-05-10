@@ -27,6 +27,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -108,8 +110,9 @@ public class DragonsBloodBroomEntity extends BroomEntity {
 
 	@Override
 	public void init(ItemStack stack) {
-		if (stack.hasNbt()) {
-			readFromNbt(stack.getNbt());
+		var nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+		if (!nbt.isEmpty()) {
+			readFromNbt(nbt);
 		}
 	}
 
@@ -117,12 +120,16 @@ public class DragonsBloodBroomEntity extends BroomEntity {
 	protected ItemStack getDroppedStack() {
 		ItemStack stack = super.getDroppedStack();
 		if (sigil != null) {
-			writeToNbt(stack.getOrCreateNbt());
-		} else if (stack.hasNbt()) {
-			stack.getNbt().remove("Entities");
-			stack.getNbt().remove("Sigil");
-			stack.getNbt().remove("Uses");
-			stack.getNbt().remove("ModeOnWhitelist");
+			var nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+			writeToNbt(nbt);
+			stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+		} else if (stack.contains(DataComponentTypes.CUSTOM_DATA)) {
+			var nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+			nbt.remove("Entities");
+			nbt.remove("Sigil");
+			nbt.remove("Uses");
+			nbt.remove("ModeOnWhitelist");
+			stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 		}
 		return stack;
 	}
@@ -133,7 +140,7 @@ public class DragonsBloodBroomEntity extends BroomEntity {
 			for (int i = 0; i < entitiesList.size(); i++) {
 				this.entities.add(UUID.fromString(entitiesList.getString(i)));
 			}
-			sigil = BWRegistries.SIGIL.get(new Identifier(nbt.getString("Sigil")));
+			sigil = BWRegistries.SIGIL.get(Identifier.tryParse(nbt.getString("Sigil")));
 			uses = nbt.getInt("Uses");
 			modeOnWhitelist = nbt.getBoolean("ModeOnWhitelist");
 		}

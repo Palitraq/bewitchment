@@ -15,7 +15,7 @@ import moriyashiine.bewitchment.common.registry.*;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityGroup;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.*;
@@ -41,6 +41,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,7 +88,7 @@ public class LilithEntity extends BWHostileEntity implements Pledgeable {
 				lookAtEntity(target, 360, 360);
 				if (timer % 40 == 0) {
 					for (int i = -1; i <= 1; i++) {
-						WitherSkullEntity witherSkull = new WitherSkullEntity(getWorld(), this, target.getX() - getX() + (i * 2), target.getBodyY(0.5) - getBodyY(0.5), target.getZ() - getZ() + (i * 2));
+						WitherSkullEntity witherSkull = new WitherSkullEntity(getWorld(), this, new Vec3d(target.getX() - getX() + (i * 2), target.getBodyY(0.5) - getBodyY(0.5), target.getZ() - getZ() + (i * 2)));
 						witherSkull.updatePosition(witherSkull.getX(), getBodyY(0.5), witherSkull.getZ());
 						witherSkull.setOwner(this);
 						getWorld().playSound(null, getBlockPos(), SoundEvents.ENTITY_WITHER_SHOOT, getSoundCategory(), getSoundVolume(), getSoundPitch());
@@ -123,7 +125,7 @@ public class LilithEntity extends BWHostileEntity implements Pledgeable {
 
 	@Override
 	public Collection<StatusEffectInstance> getMinionBuffs() {
-		return Sets.newHashSet(new StatusEffectInstance(StatusEffects.STRENGTH, Integer.MAX_VALUE, 1), new StatusEffectInstance(StatusEffects.RESISTANCE, Integer.MAX_VALUE, 1), new StatusEffectInstance(BWStatusEffects.HARDENING, Integer.MAX_VALUE, 1));
+		return Sets.newHashSet(new StatusEffectInstance(StatusEffects.STRENGTH, Integer.MAX_VALUE, 1), new StatusEffectInstance(StatusEffects.RESISTANCE, Integer.MAX_VALUE, 1), new StatusEffectInstance(RegistryEntry.of(BWStatusEffects.HARDENING), Integer.MAX_VALUE, 1));
 	}
 
 	@Override
@@ -144,11 +146,6 @@ public class LilithEntity extends BWHostileEntity implements Pledgeable {
 	@Override
 	public int getVariants() {
 		return 1;
-	}
-
-	@Override
-	public EntityGroup getGroup() {
-		return BewitchmentAPI.DEMON;
 	}
 
 	@Nullable
@@ -194,7 +191,6 @@ public class LilithEntity extends BWHostileEntity implements Pledgeable {
 		return super.interactMob(player, hand);
 	}
 
-	@Override
 	public boolean canBeLeashedBy(PlayerEntity player) {
 		return false;
 	}
@@ -206,7 +202,7 @@ public class LilithEntity extends BWHostileEntity implements Pledgeable {
 
 	@Override
 	public boolean canHaveStatusEffect(StatusEffectInstance effect) {
-		return effect.getEffectType().getCategory() == StatusEffectCategory.BENEFICIAL;
+		return effect.getEffectType().value().getCategory() == StatusEffectCategory.BENEFICIAL;
 	}
 
 	@Override
@@ -223,7 +219,7 @@ public class LilithEntity extends BWHostileEntity implements Pledgeable {
 	public boolean tryAttack(Entity target) {
 		boolean flag = super.tryAttack(target);
 		if (flag && target instanceof LivingEntity) {
-			((LivingEntity) target).addStatusEffect(new StatusEffectInstance(BWStatusEffects.MORTAL_COIL, 1200));
+			((LivingEntity) target).addStatusEffect(new StatusEffectInstance(RegistryEntry.of(BWStatusEffects.MORTAL_COIL), 1200));
 			target.setOnFireFor(16);
 			target.addVelocity(0, 0.2, 0);
 			swingHand(Hand.MAIN_HAND);

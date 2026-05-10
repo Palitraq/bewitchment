@@ -16,7 +16,7 @@ import moriyashiine.bewitchment.common.registry.*;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityGroup;
+
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.*;
@@ -29,6 +29,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -116,7 +117,7 @@ public class HerneEntity extends BWHostileEntity implements Pledgeable {
 
 	@Override
 	public Collection<StatusEffectInstance> getMinionBuffs() {
-		return Sets.newHashSet(new StatusEffectInstance(StatusEffects.STRENGTH, Integer.MAX_VALUE, 1), new StatusEffectInstance(StatusEffects.RESISTANCE, Integer.MAX_VALUE, 1), new StatusEffectInstance(BWStatusEffects.HARDENING, Integer.MAX_VALUE, 1));
+		return Sets.newHashSet(new StatusEffectInstance(StatusEffects.STRENGTH, Integer.MAX_VALUE, 1), new StatusEffectInstance(StatusEffects.RESISTANCE, Integer.MAX_VALUE, 1), new StatusEffectInstance(RegistryEntry.of(BWStatusEffects.HARDENING), Integer.MAX_VALUE, 1));
 	}
 
 	@Override
@@ -139,10 +140,7 @@ public class HerneEntity extends BWHostileEntity implements Pledgeable {
 		return 1;
 	}
 
-	@Override
-	public EntityGroup getGroup() {
-		return BewitchmentAPI.DEMON;
-	}
+
 
 	@Nullable
 	@Override
@@ -187,7 +185,6 @@ public class HerneEntity extends BWHostileEntity implements Pledgeable {
 		return super.interactMob(player, hand);
 	}
 
-	@Override
 	public boolean canBeLeashedBy(PlayerEntity player) {
 		return false;
 	}
@@ -199,7 +196,7 @@ public class HerneEntity extends BWHostileEntity implements Pledgeable {
 
 	@Override
 	public boolean canHaveStatusEffect(StatusEffectInstance effect) {
-		return effect.getEffectType().getCategory() == StatusEffectCategory.BENEFICIAL;
+		return effect.getEffectType().value().getCategory() == StatusEffectCategory.BENEFICIAL;
 	}
 
 	@Override
@@ -216,7 +213,7 @@ public class HerneEntity extends BWHostileEntity implements Pledgeable {
 	public boolean tryAttack(Entity target) {
 		boolean flag = super.tryAttack(target);
 		if (flag && target instanceof LivingEntity livingEntity) {
-			livingEntity.addStatusEffect(new StatusEffectInstance(BWStatusEffects.MORTAL_COIL, 1200));
+			livingEntity.addStatusEffect(new StatusEffectInstance(RegistryEntry.of(BWStatusEffects.MORTAL_COIL), 1200));
 			target.setOnFireFor(16);
 			target.addVelocity(0, 0.2, 0);
 			swingHand(Hand.MAIN_HAND);

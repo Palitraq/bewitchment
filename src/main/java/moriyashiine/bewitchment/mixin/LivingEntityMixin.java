@@ -12,7 +12,6 @@ import moriyashiine.bewitchment.common.entity.living.LeonardEntity;
 import moriyashiine.bewitchment.common.entity.living.LilithEntity;
 import moriyashiine.bewitchment.common.misc.BWUtil;
 import moriyashiine.bewitchment.common.registry.*;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -28,6 +27,8 @@ import net.minecraft.entity.projectile.WitherSkullEntity;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -42,7 +43,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
 	@Shadow
-	public abstract boolean removeStatusEffect(StatusEffect type);
+	public abstract boolean removeStatusEffect(RegistryEntry<StatusEffect> type);
 
 	@Shadow
 	public abstract Iterable<ItemStack> getArmorItems();
@@ -79,10 +80,11 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@ModifyVariable(method = "addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z", at = @At("HEAD"), argsOnly = true)
 	private StatusEffectInstance modifyStatusEffect(StatusEffectInstance effect) {
-		if (!getWorld().isClient && !effect.isAmbient() && !effect.getEffectType().isInstant() && effect.getEffectType().getCategory() == StatusEffectCategory.HARMFUL) {
+		if (!getWorld().isClient && !effect.isAmbient() && !effect.getEffectType().value().isInstant() && effect.getEffectType().value().getCategory() == StatusEffectCategory.HARMFUL) {
 			float durationMultiplier = 1;
+			var enchantmentRegistry = getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT);
 			for (ItemStack stack : getArmorItems()) {
-				durationMultiplier -= EnchantmentHelper.getLevel(BWEnchantments.MAGIC_PROTECTION, stack) / 32f;
+				durationMultiplier -= stack.getEnchantments().getLevel(enchantmentRegistry.entryOf(BWEnchantments.MAGIC_PROTECTION)) / 32f;
 			}
 			if (durationMultiplier < 1) {
 				return new StatusEffectInstance(effect.getEffectType(), (int) (effect.getDuration() * durationMultiplier), effect.getAmplifier(), false, effect.shouldShowParticles(), effect.shouldShowIcon());
@@ -118,7 +120,7 @@ public abstract class LivingEntityMixin extends Entity {
 			if (source.isIn(DamageTypeTags.WITCH_RESISTANT_TO) && (Object) this instanceof LivingEntity living) {
 				int armorPieces = BWUtil.getArmorPieces(living, stack -> {
 					if (stack.getItem() instanceof ArmorItem armorItem) {
-						ArmorMaterial material = armorItem.getMaterial();
+						ArmorMaterial material = armorItem.getMaterial().value();
 						return material == BWMaterials.HEDGEWITCH_ARMOR || material == BWMaterials.ALCHEMIST_ARMOR || material == BWMaterials.BESMIRCHED_ARMOR || material == BWMaterials.HARBINGER_ARMOR;
 					}
 					return false;
@@ -139,7 +141,7 @@ public abstract class LivingEntityMixin extends Entity {
 		if (!getWorld().isClient) {
 			Entity attacker = source.getAttacker();
 			if (attacker instanceof LeonardEntity) {
-				removeStatusEffect(BWStatusEffects.MAGIC_SPONGE);
+				removeStatusEffect(RegistryEntry.of(BWStatusEffects.MAGIC_SPONGE));
 			}
 			if (attacker instanceof BaphometEntity) {
 				removeStatusEffect(StatusEffects.FIRE_RESISTANCE);

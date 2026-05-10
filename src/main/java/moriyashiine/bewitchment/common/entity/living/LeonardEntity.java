@@ -14,7 +14,7 @@ import moriyashiine.bewitchment.common.registry.BWSoundEvents;
 import moriyashiine.bewitchment.common.registry.BWStatusEffects;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityGroup;
+
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.*;
@@ -35,9 +35,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
+
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -89,7 +91,7 @@ public class LeonardEntity extends BWHostileEntity implements Pledgeable {
 				}
 				lookAtEntity(target, 360, 360);
 				if (timer % 40 == 0) {
-					spawnPotion(target.getBlockPos(), target.isUndead() ? Potions.STRONG_HEALING : Potions.STRONG_HARMING);
+					spawnPotion(target.getBlockPos(), target.getType().isIn(EntityTypeTags.UNDEAD) ? Potions.STRONG_HEALING : Potions.STRONG_HARMING);
 				}
 				if (timer % 600 == 0) {
 					summonMinions(this);
@@ -120,7 +122,7 @@ public class LeonardEntity extends BWHostileEntity implements Pledgeable {
 
 	@Override
 	public Collection<StatusEffectInstance> getMinionBuffs() {
-		return Sets.newHashSet(new StatusEffectInstance(StatusEffects.RESISTANCE, Integer.MAX_VALUE), new StatusEffectInstance(BWStatusEffects.HARDENING, Integer.MAX_VALUE, 1));
+		return Sets.newHashSet(new StatusEffectInstance(StatusEffects.RESISTANCE, Integer.MAX_VALUE), new StatusEffectInstance(RegistryEntry.of(BWStatusEffects.HARDENING), Integer.MAX_VALUE, 1));
 	}
 
 	@Override
@@ -143,10 +145,7 @@ public class LeonardEntity extends BWHostileEntity implements Pledgeable {
 		return 1;
 	}
 
-	@Override
-	public EntityGroup getGroup() {
-		return BewitchmentAPI.DEMON;
-	}
+
 
 	@Nullable
 	@Override
@@ -164,7 +163,6 @@ public class LeonardEntity extends BWHostileEntity implements Pledgeable {
 		return BWSoundEvents.ENTITY_LEONARD_DEATH;
 	}
 
-	@Override
 	public boolean canBeLeashedBy(PlayerEntity player) {
 		return false;
 	}
@@ -176,7 +174,7 @@ public class LeonardEntity extends BWHostileEntity implements Pledgeable {
 
 	@Override
 	public boolean canHaveStatusEffect(StatusEffectInstance effect) {
-		return effect.getEffectType().getCategory() == StatusEffectCategory.BENEFICIAL;
+		return effect.getEffectType().value().getCategory() == StatusEffectCategory.BENEFICIAL;
 	}
 
 	@Override
@@ -253,9 +251,11 @@ public class LeonardEntity extends BWHostileEntity implements Pledgeable {
 		targetSelector.add(1, BWUtil.createGenericPledgeableTargetGoal(this));
 	}
 
-	private void spawnPotion(BlockPos target, Potion potionType) {
+	private void spawnPotion(BlockPos target, RegistryEntry<Potion> potionType) {
 		PotionEntity potion = new PotionEntity(getWorld(), this);
-		potion.setItem(PotionUtil.setPotion(new ItemStack(Items.SPLASH_POTION), potionType));
+		ItemStack potionStack = new ItemStack(Items.SPLASH_POTION);
+		potionStack.set(net.minecraft.component.DataComponentTypes.POTION_CONTENTS, new net.minecraft.component.type.PotionContentsComponent(java.util.Optional.of(potionType), java.util.Optional.empty(), java.util.List.of()));
+		potion.setItem(potionStack);
 		potion.updatePosition(potion.getX(), getBodyY(0.5), potion.getZ());
 		double targetX = target.getX() - getX();
 		double targetY = target.getY() - 1 - getY();

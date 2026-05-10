@@ -1,0 +1,6 @@
+{
+  "textures": {
+    "sign": "bewitchment:entity/signs/hanging/dragons_blood",
+    "gui": "bewitchment:gui/hanging_signs/dragons_blood"
+  }
+}

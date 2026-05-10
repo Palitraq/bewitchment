@@ -5,6 +5,9 @@
 package moriyashiine.bewitchment.mixin.brew;
 
 import moriyashiine.bewitchment.common.registry.BWComponents;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -15,14 +18,12 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("ConstantConditions")
 @Mixin(ArrowEntity.class)
@@ -31,24 +32,40 @@ public abstract class ArrowEntityMixin extends Entity {
 		super(type, world);
 	}
 
-	@ModifyVariable(method = "initFromStack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/potion/PotionUtil;getCustomPotionEffects(Lnet/minecraft/item/ItemStack;)Ljava/util/List;"))
-	private Collection<StatusEffectInstance> modifyGetCustomPotionEffects(Collection<StatusEffectInstance> collection, ItemStack stack) {
-		if (stack.getNbt().getBoolean("BewitchmentBrew")) {
-			List<StatusEffectInstance> statusEffects = new ArrayList<>(collection);
-			for (int i = collection.size() - 1; i >= 0; i--) {
-				statusEffects.set(i, new StatusEffectInstance(statusEffects.get(i).getEffectType(), statusEffects.get(i).getDuration() / 8, statusEffects.get(i).getAmplifier(), statusEffects.get(i).isAmbient(), statusEffects.get(i).shouldShowParticles(), statusEffects.get(i).shouldShowIcon()));
+	@Inject(method = "setStack", at = @At("TAIL"))
+	private void onSetStack(ItemStack stack, CallbackInfo callbackInfo) {
+		var nbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+		var nbt = nbtComponent.copyNbt();
+		if (nbt.getBoolean("BewitchmentBrew")) {
+			PotionContentsComponent potionContents = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
+			List<StatusEffectInstance> halved = new ArrayList<>();
+			for (StatusEffectInstance effect : potionContents.getEffects()) {
+				halved.add(new StatusEffectInstance(effect.getEffectType(), effect.getDuration() / 8, effect.getAmplifier(), effect.isAmbient(), effect.shouldShowParticles(), effect.shouldShowIcon()));
 			}
-			return statusEffects;
+			stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.empty(), halved));
 		}
-		return collection;
+		BWComponents.POLYMORPH_COMPONENT.maybeGet(this).ifPresent(polymorphComponent -> {
+			if (stack.contains(DataComponentTypes.CUSTOM_DATA)) {
+				var nbtComponent2 = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+				var nbt2 = nbtComponent2.copyNbt();
+				if (nbt2.contains("PolymorphUUID")) {
+					polymorphComponent.setUuid(nbt2.getUuid("PolymorphUUID"));
+					polymorphComponent.setName(nbt2.getString("PolymorphName"));
+				}
+			}
+		});
 	}
 
-	@Inject(method = "asItemStack", at = @At(value = "RETURN", ordinal = 1), locals = LocalCapture.CAPTURE_FAILSOFT)
-	private void asItemStack(CallbackInfoReturnable<ItemStack> callbackInfo, ItemStack stack) {
+	@Inject(method = "getItemStack", at = @At("RETURN"))
+	private void asItemStack(CallbackInfoReturnable<ItemStack> callbackInfo) {
 		BWComponents.POLYMORPH_COMPONENT.maybeGet(this).ifPresent(polymorphComponent -> {
 			if (polymorphComponent.getUuid() != null) {
-				stack.getOrCreateNbt().putUuid("PolymorphUUID", polymorphComponent.getUuid());
-				stack.getOrCreateNbt().putString("PolymorphName", polymorphComponent.getName());
+				ItemStack stack = callbackInfo.getReturnValue();
+				var nbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+				var nbt = nbtComponent.copyNbt();
+				nbt.putUuid("PolymorphUUID", polymorphComponent.getUuid());
+				nbt.putString("PolymorphName", polymorphComponent.getName());
+				stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 			}
 		});
 	}
@@ -61,17 +78,6 @@ public abstract class ArrowEntityMixin extends Entity {
 					targetPolymorphComponent.setUuid(thisPolymorphComponent.getUuid());
 					targetPolymorphComponent.setName(thisPolymorphComponent.getName());
 				});
-			}
-		});
-	}
-
-	@SuppressWarnings("ConstantConditions")
-	@Inject(method = "initFromStack", at = @At("TAIL"))
-	private void initFromStack(ItemStack stack, CallbackInfo callbackInfo) {
-		BWComponents.POLYMORPH_COMPONENT.maybeGet(this).ifPresent(polymorphComponent -> {
-			if (stack.hasNbt() && stack.getNbt().contains("PolymorphUUID")) {
-				polymorphComponent.setUuid(stack.getNbt().getUuid("PolymorphUUID"));
-				polymorphComponent.setName(stack.getNbt().getString("PolymorphName"));
 			}
 		});
 	}

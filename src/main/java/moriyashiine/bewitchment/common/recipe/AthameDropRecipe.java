@@ -5,22 +5,31 @@
 package moriyashiine.bewitchment.common.recipe;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import moriyashiine.bewitchment.common.registry.BWRecipeTypes;
 import net.minecraft.entity.EntityType;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.input.RecipeInput;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
+
+import java.util.stream.Stream;
 import net.minecraft.world.World;
 
-public class AthameDropRecipe implements Recipe<Inventory> {
+public class AthameDropRecipe implements Recipe<RecipeInput> {
 	private final Identifier identifier;
 	public final EntityType<?> entity_type;
 	private final ItemStack output;
@@ -34,12 +43,12 @@ public class AthameDropRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public boolean matches(Inventory inv, World world) {
+	public boolean matches(RecipeInput input, World world) {
 		return false;
 	}
 
 	@Override
-	public ItemStack craft(Inventory inventory, DynamicRegistryManager registryManager) {
+	public ItemStack craft(RecipeInput input, RegistryWrapper.WrapperLookup lookup) {
 		return output;
 	}
 
@@ -49,11 +58,10 @@ public class AthameDropRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public ItemStack getOutput(DynamicRegistryManager registryManager) {
+	public ItemStack getResult(RegistryWrapper.WrapperLookup lookup) {
 		return output;
 	}
 
-	@Override
 	public Identifier getId() {
 		return identifier;
 	}
@@ -69,21 +77,48 @@ public class AthameDropRecipe implements Recipe<Inventory> {
 	}
 
 	public static class Serializer implements RecipeSerializer<AthameDropRecipe> {
-		@Override
 		public AthameDropRecipe read(Identifier id, JsonObject json) {
-			return new AthameDropRecipe(id, Registries.ENTITY_TYPE.get(new Identifier(JsonHelper.getString(json, "entity_type"))), ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result")), JsonHelper.getFloat(json, "chance"));
+			return new AthameDropRecipe(id, Registries.ENTITY_TYPE.get(Identifier.tryParse(JsonHelper.getString(json, "entity_type"))), ItemStack.CODEC.parse(JsonOps.INSTANCE, JsonHelper.getObject(json, "result")).getOrThrow(), JsonHelper.getFloat(json, "chance"));
 		}
 
-		@Override
 		public AthameDropRecipe read(Identifier id, PacketByteBuf buf) {
-			return new AthameDropRecipe(id, Registries.ENTITY_TYPE.get(new Identifier(buf.readString())), buf.readItemStack(), buf.readFloat());
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			return new AthameDropRecipe(id, Registries.ENTITY_TYPE.get(Identifier.tryParse(regBuf.readString())), ItemStack.OPTIONAL_PACKET_CODEC.decode(regBuf), regBuf.readFloat());
+		}
+
+		public void write(PacketByteBuf buf, AthameDropRecipe recipe) {
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			regBuf.writeString(Registries.ENTITY_TYPE.getId(recipe.entity_type).toString());
+			ItemStack.OPTIONAL_PACKET_CODEC.encode(regBuf, recipe.getResult(null));
+			regBuf.writeFloat(recipe.chance);
 		}
 
 		@Override
-		public void write(PacketByteBuf buf, AthameDropRecipe recipe) {
-			buf.writeString(Registries.ENTITY_TYPE.getId(recipe.entity_type).toString());
-			buf.writeItemStack(recipe.getOutput(null));
-			buf.writeFloat(recipe.chance);
+		public MapCodec<AthameDropRecipe> codec() {
+			return new MapCodec<>() {
+				@Override
+				public <T> Stream<T> keys(DynamicOps<T> ops) {
+					return Stream.of();
+				}
+
+				@Override
+				public <T> DataResult<AthameDropRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
+					return DataResult.error(() -> "Codec not implemented");
+				}
+
+				@Override
+				public <T> RecordBuilder<T> encode(AthameDropRecipe recipe, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+					return prefix;
+				}
+			};
+		}
+
+		@Override
+		public PacketCodec<RegistryByteBuf, AthameDropRecipe> packetCodec() {
+			return PacketCodec.ofStatic(
+				(RegistryByteBuf buf, AthameDropRecipe recipe) -> write(buf, recipe),
+				(RegistryByteBuf buf) -> read(null, buf)
+			);
 		}
 	}
 }

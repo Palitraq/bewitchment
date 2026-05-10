@@ -4,14 +4,14 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class FullInvisibilityComponent implements AutoSyncedComponent, ServerTickingComponent {
+public class FullInvisibilityComponent implements Component {
 	private final PlayerEntity obj;
 	private boolean fullInvisible = false;
 
@@ -19,17 +19,14 @@ public class FullInvisibilityComponent implements AutoSyncedComponent, ServerTic
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		setFullInvisible(tag.getBoolean("FullInvisible"));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putBoolean("FullInvisible", isFullInvisible());
 	}
 
-	@Override
 	public void serverTick() {
 		if (isFullInvisible() && !obj.isSneaking()) {
 			setFullInvisible(false);

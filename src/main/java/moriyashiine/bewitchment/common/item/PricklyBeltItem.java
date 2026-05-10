@@ -6,13 +6,14 @@ package moriyashiine.bewitchment.common.item;
 
 import dev.emi.trinkets.api.TrinketItem;
 import moriyashiine.bewitchment.common.Bewitchment;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.item.Item.TooltipContext;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -23,12 +24,9 @@ public class PricklyBeltItem extends TrinketItem {
 	}
 
 	@Override
-	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		int uses = 0;
-		if (stack.hasNbt()) {
-			uses = stack.getNbt().getInt("PotionUses");
-		}
+	public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+		int uses = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt().getInt("PotionUses");
 		tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.uses_left", uses).formatted(Formatting.GRAY));
-		PotionUtil.buildTooltip(stack, tooltip, 1);
+
 	}
 }

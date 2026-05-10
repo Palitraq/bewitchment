@@ -12,6 +12,7 @@ import moriyashiine.bewitchment.common.registry.BWComponents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class SpecterBangleItem extends TrinketItem {
@@ -32,8 +33,8 @@ public class SpecterBangleItem extends TrinketItem {
 				}
 			});
 			if (entity.getRandom().nextFloat() < 1 / 32f) {
-				PlayerLookup.tracking(player).forEach(trackingPlayer -> SpawnSpecterBangleParticlesPacket.send(trackingPlayer, player));
-				SpawnSpecterBangleParticlesPacket.send(player, player);
+				PlayerLookup.tracking(player).forEach(trackingPlayer -> trackingPlayer.networkHandler.sendPacket(new CustomPayloadS2CPacket(new SpawnSpecterBangleParticlesPacket(player))));
+				player.networkHandler.sendPacket(new CustomPayloadS2CPacket(new SpawnSpecterBangleParticlesPacket(player)));
 			}
 		}
 	}

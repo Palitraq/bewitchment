@@ -73,11 +73,11 @@ public class ToadEntity extends BWTameableEntity {
 	public PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
 		ToadEntity child = BWEntityTypes.TOAD.create(world);
 		if (child != null) {
-			child.initialize(world, world.getLocalDifficulty(getBlockPos()), SpawnReason.BREEDING, null, null);
+			child.initialize(world, world.getLocalDifficulty(getBlockPos()), SpawnReason.BREEDING, null);
 			UUID owner = getOwnerUuid();
 			if (owner != null) {
 				child.setOwnerUuid(owner);
-				child.setTamed(true);
+				child.setTamed(true, true);
 			}
 			if (entity instanceof ToadEntity && random.nextFloat() < 95 / 100f) {
 				child.dataTracker.set(VARIANT, random.nextBoolean() ? dataTracker.get(VARIANT) : entity.getDataTracker().get(VARIANT));
@@ -122,8 +122,8 @@ public class ToadEntity extends BWTameableEntity {
 	}
 
 	@Override
-	public void setTamed(boolean tamed) {
-		super.setTamed(tamed);
+	public void setTamed(boolean tamed, boolean calledByOwner) {
+		super.setTamed(tamed, calledByOwner);
 		EntityAttributeInstance maxHealth = getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
 		if (tamed) {
 			maxHealth.setBaseValue(20);
@@ -149,7 +149,7 @@ public class ToadEntity extends BWTameableEntity {
 	protected void initGoals() {
 		goalSelector.add(0, new SwimGoal(this));
 		goalSelector.add(1, new SitGoal(this));
-		goalSelector.add(2, new FollowOwnerGoal(this, 1, 10, 2, false));
+		goalSelector.add(2, new FollowOwnerGoal(this, 1, 10, 2));
 		goalSelector.add(3, new AnimalMateGoal(this, 1));
 		goalSelector.add(4, new WanderAroundFarGoal(this, 1));
 		goalSelector.add(5, new LookAtEntityGoal(this, PlayerEntity.class, 8));

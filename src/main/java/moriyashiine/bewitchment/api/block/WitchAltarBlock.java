@@ -4,6 +4,7 @@
 
 package moriyashiine.bewitchment.api.block;
 
+import com.mojang.serialization.MapCodec;
 import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.api.block.entity.UsesAltarPower;
 import moriyashiine.bewitchment.api.registry.AltarMapEntry;
@@ -28,7 +29,6 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -36,12 +36,17 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("ConstantConditions")
 public class WitchAltarBlock extends HorizontalFacingBlock implements BlockEntityProvider, Waterloggable {
+	@Override
+	public MapCodec<? extends HorizontalFacingBlock> getCodec() {
+		return createCodec(settings -> new WitchAltarBlock(settings, null, false));
+	}
 	private static final VoxelShape SHAPE = VoxelShapes.union(createCuboidShape(0, 0, 0, 16, 2, 16), createCuboidShape(1, 2, 1, 15, 5, 15), createCuboidShape(2, 5, 2, 14, 10, 14), createCuboidShape(1, 10, 1, 15, 12, 15), createCuboidShape(0, 12, 0, 16, 16, 16));
 
 	private final Block unformed;
@@ -71,9 +76,9 @@ public class WitchAltarBlock extends HorizontalFacingBlock implements BlockEntit
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
 		boolean client = world.isClient;
-		ItemStack stack = player.getStackInHand(hand);
+		ItemStack stack = player.getStackInHand(player.getActiveHand());
 		if (!formed) {
 			AltarMapEntry entry = BewitchmentAPI.ALTAR_MAP_ENTRIES.stream().filter(e -> e.unformed() == this && e.carpet() == stack.getItem()).findFirst().orElse(null);
 			if (entry != null) {
@@ -83,7 +88,7 @@ public class WitchAltarBlock extends HorizontalFacingBlock implements BlockEntit
 					}
 					Direction facing = world.getBlockState(pos).get(FACING);
 					world.breakBlock(pos, false);
-					world.setBlockState(pos, entry.formed().getPlacementState(new ItemPlacementContext(player, hand, stack, hit)).with(FACING, facing));
+					world.setBlockState(pos, entry.formed().getPlacementState(new ItemPlacementContext(player, player.getActiveHand(), stack, hit)).with(FACING, facing));
 				}
 				return ActionResult.success(client);
 			}
@@ -119,11 +124,11 @@ public class WitchAltarBlock extends HorizontalFacingBlock implements BlockEntit
 			}
 			return ActionResult.success(client);
 		}
-		return super.onUse(state, world, pos, player, hand, hit);
+		return super.onUse(state, world, pos, player, hit);
 	}
 
 	@Override
-	public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
+	public ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state) {
 		if (unformed != null) {
 			return new ItemStack(unformed);
 		}

@@ -31,8 +31,15 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.potion.Potions;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.input.RecipeInput;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
@@ -44,8 +51,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.component.type.NbtComponent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("ConstantConditions")
 public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, UsesAltarPower {
@@ -70,9 +79,9 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt() {
-		NbtCompound nbt = super.toInitialChunkDataNbt();
-		writeNbt(nbt);
+	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup lookup) {
+		NbtCompound nbt = super.toInitialChunkDataNbt(lookup);
+		writeNbt(nbt, lookup);
 		return nbt;
 	}
 
@@ -83,12 +92,12 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 	}
 
 	@Override
-	public void readNbt(NbtCompound nbt) {
-		super.readNbt(nbt);
+	public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.readNbt(nbt, lookup);
 		if (nbt.contains("AltarPos")) {
 			setAltarPos(BlockPos.fromLong(nbt.getLong("AltarPos")));
 		}
-		Inventories.readNbt(nbt, inventory);
+		Inventories.readNbt(nbt, inventory, lookup);
 		mode = Mode.valueOf(nbt.getString("Mode"));
 		if (nbt.contains("Name")) {
 			name = nbt.getString("Name");
@@ -100,12 +109,12 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 	}
 
 	@Override
-	protected void writeNbt(NbtCompound nbt) {
-		super.writeNbt(nbt);
+	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.writeNbt(nbt, lookup);
 		if (getAltarPos() != null) {
 			nbt.putLong("AltarPos", getAltarPos().asLong());
 		}
-		Inventories.writeNbt(nbt, inventory);
+		Inventories.writeNbt(nbt, inventory, lookup);
 		nbt.putString("Mode", mode.name);
 		if (name != null) {
 			nbt.putString("Name", name);
@@ -135,7 +144,7 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 			if (!blockEntity.loaded) {
 				blockEntity.markDirty();
 				blockEntity.box = new Box(pos).contract(0.75);
-				blockEntity.oilRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.OIL_RECIPE_TYPE).stream().filter(recipe -> recipe.matches(blockEntity, world)).findFirst().orElse(null);
+				blockEntity.oilRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.OIL_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(recipe -> recipe.matches(new InventoryRecipeInput(blockEntity), world)).findFirst().orElse(null);
 				blockEntity.loaded = true;
 			}
 			blockEntity.heatTimer = MathHelper.clamp(blockEntity.heatTimer + (state.get(Properties.LIT) && state.get(BWProperties.LEVEL) > 0 ? 1 : -1), 0, 160);
@@ -164,6 +173,14 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 				}
 			}
 		}
+	}
+
+	private record InventoryRecipeInput(Inventory inventory) implements RecipeInput {
+		@Override
+		public ItemStack getStackInSlot(int slot) { return inventory.getStack(slot); }
+
+		@Override
+		public int getSize() { return inventory.size(); }
 	}
 
 	@Override
@@ -260,16 +277,17 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 						return Mode.BREWING;
 					}
 					if (mode == Mode.BREWING) {
-						CauldronBrewingRecipe cauldronBrewingRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.CAULDRON_BREWING_RECIPE_TYPE).stream().filter(recipe -> recipe.input.test(stack)).findFirst().orElse(null);
+						CauldronBrewingRecipe cauldronBrewingRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.CAULDRON_BREWING_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(recipe -> recipe.input.test(stack)).findFirst().orElse(null);
 						if (isRecipeValid(cauldronBrewingRecipe) || stack.getItem() == Items.REDSTONE || stack.getItem() == Items.GLOWSTONE_DUST) {
 							BlockPos altarPos = getAltarPos();
 							if (altarPos != null && ((WitchAltarBlockEntity) world.getBlockEntity(altarPos)).drain(getBrewCost(), true)) {
-								setColor(PotionUtil.getColor(getPotion(null)));
+								PotionContentsComponent potContents = getPotion(null).get(DataComponentTypes.POTION_CONTENTS);
+							setColor(PotionContentsComponent.getColor(potContents != null ? potContents.getEffects() : List.of()));
 								return Mode.BREWING;
 							}
 						}
 					} else {
-						oilRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.OIL_RECIPE_TYPE).stream().filter(recipe -> recipe.matches(this, world)).findFirst().orElse(null);
+						oilRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.OIL_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(recipe -> recipe.matches(new InventoryRecipeInput(this), world)).findFirst().orElse(null);
 						if (oilRecipe != null) {
 							setColor(oilRecipe.color);
 							return Mode.OIL_CRAFTING;
@@ -291,18 +309,21 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 		ItemStack stack = new ItemStack(Items.POTION);
 		if (world != null) {
 			List<StatusEffectInstance> effects = new ArrayList<>();
-			int durationBoost = creator != null && BWUtil.getArmorPieces(creator, armorStack -> armorStack.getItem() instanceof ArmorItem armorItem && armorItem.getMaterial() == BWMaterials.ALCHEMIST_ARMOR) >= 3 ? 1 : 0;
+			int durationBoost = creator != null && BWUtil.getArmorPieces(creator, armorStack -> armorStack.getItem() instanceof ArmorItem armorItem && armorItem.getMaterial().value() == BWMaterials.ALCHEMIST_ARMOR) >= 3 ? 1 : 0;
 			int amplifierBoost = 0;
 			boolean leonard = creator instanceof PlayerEntity player && BewitchmentAPI.isPledged(player, BWPledges.LEONARD);
 			for (int i = 0; i < size(); i++) {
 				ItemStack stackInSlot = getStack(i);
 				if (stackInSlot.getItem() instanceof TaglockItem && TaglockItem.isTaglockFromPlayer(stackInSlot)) {
-					stack.getOrCreateNbt().putUuid("PolymorphUUID", TaglockItem.getTaglockUUID(stackInSlot));
-					stack.getOrCreateNbt().putString("PolymorphName", TaglockItem.getTaglockName(stackInSlot));
+					NbtComponent customData = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+					NbtCompound nbt = customData.copyNbt();
+					nbt.putUuid("PolymorphUUID", TaglockItem.getTaglockUUID(stackInSlot));
+					nbt.putString("PolymorphName", TaglockItem.getTaglockName(stackInSlot));
+					stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 				}
-				CauldronBrewingRecipe cauldronBrewingRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.CAULDRON_BREWING_RECIPE_TYPE).stream().filter(recipe -> recipe.input.test(stackInSlot)).findFirst().orElse(null);
-				if (cauldronBrewingRecipe != null && effects.stream().noneMatch(effect -> effect.getEffectType() == cauldronBrewingRecipe.output)) {
-					effects.add(new StatusEffectInstance(cauldronBrewingRecipe.output, cauldronBrewingRecipe.time));
+				CauldronBrewingRecipe cauldronBrewingRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.CAULDRON_BREWING_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(recipe -> recipe.input.test(stackInSlot)).findFirst().orElse(null);
+				if (cauldronBrewingRecipe != null && effects.stream().noneMatch(effect -> effect.getEffectType().value() == cauldronBrewingRecipe.output)) {
+					effects.add(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(cauldronBrewingRecipe.output), cauldronBrewingRecipe.time));
 				} else if (stackInSlot.getItem() == Items.REDSTONE) {
 					durationBoost++;
 				} else if (stackInSlot.getItem() == Items.GLOWSTONE_DUST) {
@@ -311,32 +332,38 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 			}
 			for (int i = 0; i < effects.size(); i++) {
 				for (int j = 0; j < durationBoost; j++) {
-					StatusEffect type = effects.get(i).getEffectType();
+					RegistryEntry<StatusEffect> type = effects.get(i).getEffectType();
 					int duration = effects.get(i).getDuration();
-					effects.set(i, new StatusEffectInstance(type, type.isInstant() ? duration : duration * 2));
+					effects.set(i, new StatusEffectInstance(type, type.value().isInstant() ? duration : duration * 2));
 				}
 				for (int j = 0; j < amplifierBoost && j < 2; j++) {
 					if (j == 1 && !leonard) {
 						break;
 					}
-					StatusEffect type = effects.get(i).getEffectType();
+					RegistryEntry<StatusEffect> type = effects.get(i).getEffectType();
 					int duration = effects.get(i).getDuration();
-					effects.set(i, new StatusEffectInstance(type, type.isInstant() ? duration : duration / 2, effects.get(i).getAmplifier() + 1));
+					effects.set(i, new StatusEffectInstance(type, type.value().isInstant() ? duration : duration / 2, effects.get(i).getAmplifier() + 1));
 				}
 			}
 			List<StatusEffectInstance> finalEffects = new ArrayList<>();
 			for (int i = effects.size() - 1; i >= 0; i--) {
-				if (effects.get(i).getEffectType() == BWStatusEffects.CORRUPTION) {
+				if (effects.get(i).getEffectType().value() == BWStatusEffects.CORRUPTION) {
 					finalEffects.add(effects.remove(i));
-				} else if (effects.get(i).getEffectType() == BWStatusEffects.POLYMORPH) {
+				} else if (effects.get(i).getEffectType().value() == BWStatusEffects.POLYMORPH) {
 					StatusEffectInstance removed = effects.remove(i);
 					finalEffects.add(new StatusEffectInstance(removed.getEffectType(), removed.getDuration(), removed.getAmplifier(), removed.isAmbient(), false, removed.shouldShowIcon()));
 				}
 			}
 			finalEffects.addAll(effects);
-			PotionUtil.setCustomPotionEffects(stack, finalEffects);
-			stack.getOrCreateNbt().putInt("CustomPotionColor", PotionUtil.getColor(finalEffects));
-			stack.getOrCreateNbt().putBoolean("BewitchmentBrew", true);
+			PotionContentsComponent potionContents = new PotionContentsComponent(Optional.empty(), Optional.empty(), finalEffects);
+			stack.set(DataComponentTypes.POTION_CONTENTS, potionContents);
+			{
+				NbtComponent brewData = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+				NbtCompound brewNbt = brewData.copyNbt();
+				brewNbt.putInt("CustomPotionColor", PotionContentsComponent.getColor(potionContents.getEffects()));
+				brewNbt.putBoolean("BewitchmentBrew", true);
+				stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(brewNbt));
+			}
 		}
 		return stack;
 	}
@@ -361,8 +388,11 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 				return 3;
 			} else if (item == Items.GLASS_BOTTLE) {
 				return level - 1;
-			} else if (item == Items.POTION && level < 3 && PotionUtil.getPotion(stack) == Potions.WATER) {
-				return level + 1;
+			} else if (item == Items.POTION && level < 3) {
+				PotionContentsComponent contents = stack.get(DataComponentTypes.POTION_CONTENTS);
+				if (contents != null && contents.potion().orElse(null) == Potions.WATER) {
+					return level + 1;
+				}
 			}
 		} else if (mode == Mode.OIL_CRAFTING) {
 			if (oilRecipe != null && item == Items.GLASS_BOTTLE) {

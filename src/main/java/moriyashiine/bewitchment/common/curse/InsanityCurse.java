@@ -42,7 +42,7 @@ public class InsanityCurse extends Curse {
 			}
 			if (entity instanceof MobEntity mob) {
 				BWUtil.attemptTeleport(entity, target.getBlockPos(), 24, false);
-				mob.initialize((ServerWorldAccess) target.getWorld(), target.getWorld().getLocalDifficulty(target.getBlockPos()), SpawnReason.EVENT, null, null);
+				mob.initialize((ServerWorldAccess) target.getWorld(), target.getWorld().getLocalDifficulty(target.getBlockPos()), SpawnReason.EVENT, null);
 				BWComponents.FAKE_MOB_COMPONENT.get(mob).setTarget(target.getUuid());
 				entity.setSilent(true);
 				mob.setCanPickUpLoot(false);

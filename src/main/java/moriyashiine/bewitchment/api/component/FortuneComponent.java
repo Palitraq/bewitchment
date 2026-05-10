@@ -4,15 +4,16 @@
 
 package moriyashiine.bewitchment.api.component;
 
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.api.registry.Fortune;
 import moriyashiine.bewitchment.common.registry.BWRegistries;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class FortuneComponent implements ServerTickingComponent {
+public class FortuneComponent implements Component {
 	private final PlayerEntity obj;
 	private Fortune.Instance fortune = null;
 
@@ -20,23 +21,20 @@ public class FortuneComponent implements ServerTickingComponent {
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		if (tag.contains("Fortune")) {
-			setFortune(new Fortune.Instance(BWRegistries.FORTUNE.get(new Identifier(tag.getString("Fortune"))), tag.getInt("FortuneDuration")));
+			setFortune(new Fortune.Instance(BWRegistries.FORTUNE.get(Identifier.tryParse(tag.getString("Fortune"))), tag.getInt("FortuneDuration")));
 		}
 	}
 
 	@SuppressWarnings({"ConstantConditions", "NullableProblems"})
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		if (getFortune() != null) {
 			tag.putString("Fortune", BWRegistries.FORTUNE.getId(getFortune().fortune).toString());
 			tag.putInt("FortuneDuration", getFortune().duration);
 		}
 	}
 
-	@Override
 	public void serverTick() {
 		if (getFortune() != null) {
 			if (getFortune().fortune.tick((ServerWorld) obj.getWorld(), obj)) {

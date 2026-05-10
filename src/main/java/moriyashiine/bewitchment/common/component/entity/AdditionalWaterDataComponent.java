@@ -4,13 +4,13 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class AdditionalWaterDataComponent implements AutoSyncedComponent, ServerTickingComponent {
+public class AdditionalWaterDataComponent implements Component {
 	private final Entity obj;
 	private boolean submerged = false;
 	private int wetTimer = 0;
@@ -19,19 +19,16 @@ public class AdditionalWaterDataComponent implements AutoSyncedComponent, Server
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		setSubmerged(tag.getBoolean("Submerged"));
 		setWetTimer(tag.getInt("WetTimer"));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putBoolean("Submerged", isSubmerged());
 		tag.putInt("WetTimer", getWetTimer());
 	}
 
-	@Override
 	public void serverTick() {
 		if (isSubmerged()) {
 			setSubmerged(false);

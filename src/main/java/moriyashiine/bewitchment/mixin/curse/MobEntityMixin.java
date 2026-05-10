@@ -64,7 +64,7 @@ public abstract class MobEntityMixin extends LivingEntity {
 				}
 				if (spider != null) {
 					spider.updatePositionAndAngles(getX(), getY(), getZ(), random.nextFloat() * 360, 0);
-					spider.initialize((ServerWorldAccess) getWorld(), getWorld().getLocalDifficulty(getBlockPos()), SpawnReason.EVENT, null, null);
+					spider.initialize((ServerWorldAccess) getWorld(), getWorld().getLocalDifficulty(getBlockPos()), SpawnReason.EVENT, null);
 					spider.setTarget(livingAttacker);
 					getWorld().spawnEntity(spider);
 				}

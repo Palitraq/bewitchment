@@ -4,19 +4,20 @@
 
 package moriyashiine.bewitchment.api.component;
 
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.api.registry.Curse;
 import moriyashiine.bewitchment.common.registry.BWRegistries;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class CursesComponent implements ServerTickingComponent {
+public class CursesComponent implements Component {
 	private final LivingEntity obj;
 	private final List<Curse.Instance> curses = new ArrayList<>();
 
@@ -24,21 +25,18 @@ public class CursesComponent implements ServerTickingComponent {
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		NbtList cursesList = tag.getList("Curses", NbtElement.COMPOUND_TYPE);
 		for (int i = 0; i < cursesList.size(); i++) {
 			NbtCompound curseCompound = cursesList.getCompound(i);
-			addCurse(new Curse.Instance(BWRegistries.CURSE.get(new Identifier(curseCompound.getString("Curse"))), curseCompound.getInt("Duration")));
+			addCurse(new Curse.Instance(BWRegistries.CURSE.get(Identifier.tryParse(curseCompound.getString("Curse"))), curseCompound.getInt("Duration")));
 		}
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.put("Curses", toNbtCurse());
 	}
 
-	@Override
 	public void serverTick() {
 		for (int i = curses.size() - 1; i >= 0; i--) {
 			Curse.Instance instance = curses.get(i);

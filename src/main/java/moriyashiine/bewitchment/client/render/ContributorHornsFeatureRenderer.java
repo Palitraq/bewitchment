@@ -11,7 +11,7 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.PlayerModelPart;
+import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.EntityModelLoader;
@@ -50,7 +50,7 @@ public final class ContributorHornsFeatureRenderer extends FeatureRenderer<Abstr
 		} else if (!player.isInvisible() && player.isPartVisible(PlayerModelPart.HAT) && CONTRIBUTORS.contains(player.getUuid())) {
 			matrices.push();
 			getContextModel().head.rotate(matrices);
-			MODEL.render(matrices, vertexConsumers.getBuffer(RenderLayer.getEntitySolid(TEXTURE)), light, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
+			MODEL.render(matrices, vertexConsumers.getBuffer(RenderLayer.getEntitySolid(TEXTURE)), light, OverlayTexture.DEFAULT_UV, 0xFFFFFFFF);
 			matrices.pop();
 		}
 	}

@@ -11,6 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
@@ -21,8 +22,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
 import java.util.List;
 
 @Mixin(PotionEntity.class)
@@ -31,8 +30,9 @@ public abstract class PotionEntityMixin extends ThrownItemEntity {
 		super(entityType, world);
 	}
 
-	@Inject(method = "applySplashPotion", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILSOFT)
-	private void applySplashPotion(List<StatusEffectInstance> statusEffects, @Nullable Entity entity, CallbackInfo callbackInfo, Box box) {
+	@Inject(method = "applySplashPotion", at = @At("TAIL"))
+	private void applySplashPotion(Iterable<StatusEffectInstance> statusEffects, @Nullable Entity entity, CallbackInfo callbackInfo) {
+		Box box = getBoundingBox().expand(4, 2, 4);
 		if (BWConfig.disabledPoppets.contains("bewitchment:voodoo_poppet")) {
 			return;
 		}
@@ -42,12 +42,15 @@ public abstract class PotionEntityMixin extends ThrownItemEntity {
 				LivingEntity owner = BewitchmentAPI.getTaglockOwner(getWorld(), itemEntity.getStack());
 				if (owner != null && owner.isAffectedBySplashPotions()) {
 					for (StatusEffectInstance effect : statusEffects) {
-						if (itemEntity.getStack().damage(8, random, null) && itemEntity.getStack().getDamage() >= itemEntity.getStack().getMaxDamage()) {
-							itemEntity.getStack().decrement(1);
+						if (getWorld() instanceof ServerWorld serverWorld) {
+							itemEntity.getStack().damage(8, serverWorld, null, item -> {});
+							if (itemEntity.getStack().getDamage() >= itemEntity.getStack().getMaxDamage()) {
+								itemEntity.getStack().decrement(1);
+							}
 						}
 						if (!BewitchmentAPI.hasVoodooProtection(owner, 8)) {
-							if (effect.getEffectType().isInstant()) {
-								effect.getEffectType().applyInstantEffect(null, null, owner, effect.getAmplifier(), 0.5);
+							if (effect.getEffectType().value().isInstant()) {
+								effect.getEffectType().value().applyInstantEffect(null, null, owner, effect.getAmplifier(), 0.5);
 							} else {
 								owner.addStatusEffect(new StatusEffectInstance(effect.getEffectType(), effect.getDuration() / 2, effect.getAmplifier(), effect.isAmbient(), effect.shouldShowParticles()));
 							}

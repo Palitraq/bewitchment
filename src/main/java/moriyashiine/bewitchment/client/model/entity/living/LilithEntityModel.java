@@ -149,13 +149,13 @@ public class LilithEntityModel<T extends LilithEntity> extends BipedEntityModel<
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-		realHead.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		realBody.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		bipedLeftArm.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		bipedRightArm.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		bipedLeftLeg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		bipedRightLeg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+		realHead.render(matrices, vertices, light, overlay, color);
+		realBody.render(matrices, vertices, light, overlay, color);
+		bipedLeftArm.render(matrices, vertices, light, overlay, color);
+		bipedRightArm.render(matrices, vertices, light, overlay, color);
+		bipedLeftLeg.render(matrices, vertices, light, overlay, color);
+		bipedRightLeg.render(matrices, vertices, light, overlay, color);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import moriyashiine.bewitchment.common.block.entity.interfaces.SigilHolder;
 import moriyashiine.bewitchment.common.registry.BWObjects;
 import moriyashiine.bewitchment.common.registry.BWProperties;
 import moriyashiine.bewitchment.common.world.BWWorldState;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -20,6 +21,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.state.StateManager;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -32,6 +34,11 @@ public class SigilBlock extends HorizontalFacingBlock implements BlockEntityProv
 
 	public SigilBlock(Settings settings) {
 		super(settings);
+	}
+
+	@Override
+	public MapCodec<SigilBlock> getCodec() {
+		return createCodec(SigilBlock::new);
 	}
 
 	@Nullable
@@ -57,7 +64,6 @@ public class SigilBlock extends HorizontalFacingBlock implements BlockEntityProv
 		return super.getPlacementState(ctx).with(FACING, ctx.getHorizontalPlayerFacing()).with(BWProperties.TYPE, ctx.getWorld().random.nextInt(10));
 	}
 
-	@Override
 	public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
 		if (world.getBlockEntity(pos) instanceof SigilHolder sigilHolder) {
 			for (Item sigil : Registries.ITEM) {
@@ -73,7 +79,8 @@ public class SigilBlock extends HorizontalFacingBlock implements BlockEntityProv
 
 	@Override
 	public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-		return BWObjects.SALT_LINE.canPlaceAt(state, world, pos);
+		BlockPos blockPos = pos.down();
+		return world.getBlockState(blockPos).isSideSolidFullSquare(world, blockPos, Direction.UP);
 	}
 
 	@Override
@@ -82,8 +89,11 @@ public class SigilBlock extends HorizontalFacingBlock implements BlockEntityProv
 	}
 
 	@Override
-	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
-		BWObjects.SALT_LINE.neighborUpdate(state, world, pos, block, fromPos, notify);
+	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos fromPos, boolean notify) {
+		if (!world.isClient && !state.canPlaceAt(world, pos)) {
+			dropStacks(state, world, pos);
+			world.removeBlock(pos, false);
+		}
 	}
 
 	@Override

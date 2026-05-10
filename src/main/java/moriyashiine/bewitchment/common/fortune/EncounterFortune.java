@@ -32,7 +32,7 @@ public class EncounterFortune extends Fortune {
 			BlockPos pos = target.getBlockPos().add(MathHelper.nextInt(world.random, -3, 3), 0, MathHelper.nextInt(world.random, -3, 3));
 			if (!world.getBlockState(pos).blocksMovement()) {
 				if (entity instanceof MobEntity mob) {
-					mob.initialize(world, world.getLocalDifficulty(pos), SpawnReason.EVENT, null, null);
+					mob.initialize(world, world.getLocalDifficulty(pos), SpawnReason.EVENT, null);
 					mob.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, Integer.MAX_VALUE, 1));
 					mob.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, Integer.MAX_VALUE, 1));
 					mob.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, Integer.MAX_VALUE, 1));

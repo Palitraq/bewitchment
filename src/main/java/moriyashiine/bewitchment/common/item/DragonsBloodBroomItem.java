@@ -6,13 +6,14 @@ package moriyashiine.bewitchment.common.item;
 
 import moriyashiine.bewitchment.api.item.BroomItem;
 import moriyashiine.bewitchment.common.Bewitchment;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Item.TooltipContext;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -23,10 +24,11 @@ public class DragonsBloodBroomItem extends BroomItem {
 	}
 
 	@Override
-	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		if (stack.hasNbt() && stack.getNbt().contains("Sigil")) {
-			tooltip.add(Text.translatable("sigil." + stack.getNbt().getString("Sigil").replace(":", ".")).formatted(Formatting.GRAY));
-			tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.uses_left", stack.getNbt().getInt("Uses")).formatted(Formatting.GRAY));
+	public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+		var nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+		if (nbt.contains("Sigil")) {
+			tooltip.add(Text.translatable("sigil." + nbt.getString("Sigil").replace(":", ".")).formatted(Formatting.GRAY));
+			tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.uses_left", nbt.getInt("Uses")).formatted(Formatting.GRAY));
 		}
 	}
 }

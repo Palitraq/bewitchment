@@ -1,3 +1,5 @@
 accessWidener v2 named
 accessible class net/minecraft/entity/mob/PhantomEntity$SwoopMovementGoal
 mutable field net/minecraft/entity/LivingEntity limbAnimator Lnet/minecraft/entity/LimbAnimator;
+accessible method net/minecraft/util/Identifier <init> (Ljava/lang/String;Ljava/lang/String;)V
+accessible method net/minecraft/block/WoodType register (Lnet/minecraft/block/WoodType;)Lnet/minecraft/block/WoodType;

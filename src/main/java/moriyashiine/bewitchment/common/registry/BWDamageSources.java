@@ -58,7 +58,7 @@ public class BWDamageSources {
 		if (attacker != null) {
 			if (attacker.getType().isIn(BWTags.TAGLOCK_BLACKLIST) || BewitchmentAPI.isVampire(attacker, true) || BewitchmentAPI.isWerewolf(attacker, true)) {
 				return true;
-			} else if (attacker instanceof LivingEntity && EnchantmentHelper.getEquipmentLevel(Enchantments.SMITE, (LivingEntity) attacker) > 0) {
+			} else if (attacker instanceof LivingEntity livingAttacker && EnchantmentHelper.getEquipmentLevel(livingAttacker.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT).entryOf(Enchantments.SMITE), livingAttacker) > 0) {
 				return true;
 			}
 		}

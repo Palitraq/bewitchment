@@ -36,7 +36,7 @@ public class BaphometEntityRenderer extends MobEntityRenderer<BaphometEntity, Ba
 					}
 				}
 				VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(TEXTURES[entity.flameIndex]));
-				getContextModel().render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
+				getContextModel().render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, 0xFFFFFFFF);
 			}
 		});
 	}

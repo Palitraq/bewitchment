@@ -14,6 +14,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -79,9 +81,9 @@ public class SigilBlockEntity extends BlockEntity implements SigilHolder {
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt() {
-		NbtCompound nbt = super.toInitialChunkDataNbt();
-		writeNbt(nbt);
+	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup lookup) {
+		NbtCompound nbt = super.toInitialChunkDataNbt(lookup);
+		writeNbt(nbt, lookup);
 		return nbt;
 	}
 
@@ -92,14 +94,14 @@ public class SigilBlockEntity extends BlockEntity implements SigilHolder {
 	}
 
 	@Override
-	public void readNbt(NbtCompound nbt) {
-		super.readNbt(nbt);
+	public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.readNbt(nbt, lookup);
 		fromNbtSigil(nbt);
 	}
 
 	@Override
-	protected void writeNbt(NbtCompound nbt) {
-		super.writeNbt(nbt);
+	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.writeNbt(nbt, lookup);
 		toNbtSigil(nbt);
 	}
 

@@ -10,8 +10,10 @@ import moriyashiine.bewitchment.common.registry.BWObjects;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
@@ -37,9 +39,10 @@ public abstract class BlockMixin {
 	@Inject(method = "getDroppedStacks(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/item/ItemStack;)Ljava/util/List;", at = @At("RETURN"))
 	private static void getDroppedStacks(BlockState state, ServerWorld world, BlockPos pos, @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack stack, CallbackInfoReturnable<List<ItemStack>> callbackInfo) {
 		if (entity instanceof PlayerEntity player) {
+			RegistryEntry<Enchantment> silkTouch = world.getRegistryManager().get(RegistryKeys.ENCHANTMENT).entryOf(Enchantments.SILK_TOUCH);
 			BWComponents.FORTUNE_COMPONENT.maybeGet(player).ifPresent(fortuneComponent -> {
 				List<ItemStack> drops = callbackInfo.getReturnValue();
-				if (!drops.isEmpty() && !EnchantmentHelper.get(stack).containsKey(Enchantments.SILK_TOUCH)) {
+				if (!drops.isEmpty() && stack.getEnchantments().getLevel(silkTouch) == 0) {
 					if (fortuneComponent.getFortune() != null) {
 						if (fortuneComponent.getFortune().fortune == BWFortunes.TREASURE && world.random.nextFloat() < 1 / 25f) {
 							Set<ItemStack> treasure = new HashSet<>();
@@ -61,7 +64,7 @@ public abstract class BlockMixin {
 						} else if (fortuneComponent.getFortune().fortune == BWFortunes.INFESTED && world.random.nextFloat() < 1 / 25f) {
 							SilverfishEntity silverfish = EntityType.SILVERFISH.create(world);
 							if (silverfish != null) {
-								silverfish.initialize(world, world.getLocalDifficulty(pos), SpawnReason.EVENT, null, null);
+								silverfish.initialize(world, world.getLocalDifficulty(pos), SpawnReason.EVENT, null);
 								silverfish.updatePositionAndAngles(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, world.random.nextFloat() * 360, 0);
 								world.spawnEntity(silverfish);
 								fortuneComponent.getFortune().duration = 0;

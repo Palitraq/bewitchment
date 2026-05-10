@@ -4,35 +4,40 @@
 
 package moriyashiine.bewitchment.client.packet;
 
-import io.netty.buffer.Unpooled;
 import moriyashiine.bewitchment.common.Bewitchment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 
-public class SpawnSpecterBangleParticlesPacket {
-	public static final Identifier ID = Bewitchment.id("spawn_specter_bangle_particles");
+public class SpawnSpecterBangleParticlesPacket implements CustomPayload {
+	public static final Id<SpawnSpecterBangleParticlesPacket> ID = new Id<>(Bewitchment.id("spawn_specter_bangle_particles"));
+	public static final PacketCodec<PacketByteBuf, SpawnSpecterBangleParticlesPacket> CODEC = CustomPayload.codecOf(SpawnSpecterBangleParticlesPacket::write, SpawnSpecterBangleParticlesPacket::new);
 
-	public static void send(ServerPlayerEntity player, Entity entity) {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		buf.writeInt(entity.getId());
-		ServerPlayNetworking.send(player, ID, buf);
+	private final int entityId;
+
+	public SpawnSpecterBangleParticlesPacket(Entity entity) {
+		this.entityId = entity.getId();
 	}
 
-	public static class Receiver implements ClientPlayNetworking.PlayChannelHandler {
-		@Override
-		public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-			int id = buf.readInt();
-			client.execute(() -> {
-				ClientWorld world = client.world;
+	public SpawnSpecterBangleParticlesPacket(PacketByteBuf buf) {
+		this.entityId = buf.readInt();
+	}
+
+	public static void send(net.minecraft.server.network.ServerPlayerEntity player, Entity entity) {
+		player.networkHandler.sendPacket(new net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket(new SpawnSpecterBangleParticlesPacket(entity)));
+	}
+
+	public static void register() {
+		PayloadTypeRegistry.playS2C().register(ID, CODEC);
+		ClientPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
+			int id = payload.entityId;
+			context.client().execute(() -> {
+				var world = context.client().world;
 				if (world != null) {
 					Entity entity = world.getEntityById(id);
 					if (entity != null) {
@@ -40,6 +45,15 @@ public class SpawnSpecterBangleParticlesPacket {
 					}
 				}
 			});
-		}
+		});
+	}
+
+	private void write(PacketByteBuf buf) {
+		buf.writeInt(entityId);
+	}
+
+	@Override
+	public Id<? extends CustomPayload> getId() {
+		return ID;
 	}
 }

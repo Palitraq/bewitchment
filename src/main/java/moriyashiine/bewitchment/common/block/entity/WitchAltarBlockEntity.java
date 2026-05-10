@@ -18,6 +18,8 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.collection.DefaultedList;
@@ -47,9 +49,9 @@ public class WitchAltarBlockEntity extends BlockEntity implements Inventory {
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt() {
-		NbtCompound nbt = super.toInitialChunkDataNbt();
-		writeNbt(nbt);
+	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup lookup) {
+		NbtCompound nbt = super.toInitialChunkDataNbt(lookup);
+		writeNbt(nbt, lookup);
 		return nbt;
 	}
 
@@ -60,19 +62,19 @@ public class WitchAltarBlockEntity extends BlockEntity implements Inventory {
 	}
 
 	@Override
-	public void readNbt(NbtCompound nbt) {
-		super.readNbt(nbt);
+	public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.readNbt(nbt, lookup);
 		inventory.clear();
-		Inventories.readNbt(nbt, inventory);
+		Inventories.readNbt(nbt, inventory, lookup);
 		power = nbt.getInt("Power");
 		maxPower = nbt.getInt("MaxPower");
 		gain = nbt.getInt("Gain");
 	}
 
 	@Override
-	protected void writeNbt(NbtCompound nbt) {
-		super.writeNbt(nbt);
-		Inventories.writeNbt(nbt, inventory);
+	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.writeNbt(nbt, lookup);
+		Inventories.writeNbt(nbt, inventory, lookup);
 		nbt.putInt("Power", power);
 		nbt.putInt("MaxPower", maxPower);
 		nbt.putInt("Gain", gain);

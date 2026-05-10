@@ -4,23 +4,21 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class RespawnTimerComponent implements ServerTickingComponent {
+public class RespawnTimerComponent implements Component {
 	private int respawnTimer = 400;
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		setRespawnTimer(tag.getInt("RespawnTimer"));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putInt("RespawnTimer", getRespawnTimer());
 	}
 
-	@Override
 	public void serverTick() {
 		if (getRespawnTimer() > 0) {
 			setRespawnTimer(getRespawnTimer() - 1);

@@ -11,6 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
@@ -18,6 +19,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -45,24 +47,24 @@ public class BroomEntity extends Entity {
 	}
 
 	@Override
-	protected void initDataTracker() {
+	protected void initDataTracker(DataTracker.Builder builder) {
 	}
 
 	@Override
 	protected void readCustomDataFromNbt(NbtCompound nbt) {
-		stack = ItemStack.fromNbt(nbt.getCompound("Stack"));
+		stack = ItemStack.fromNbt(getWorld().getRegistryManager(), nbt.getCompound("Stack")).orElse(ItemStack.EMPTY);
 		damage = nbt.getFloat("Damage");
 	}
 
 	@Override
 	protected void writeCustomDataToNbt(NbtCompound nbt) {
-		nbt.put("Stack", stack.writeNbt(new NbtCompound()));
+		nbt.put("Stack", stack.encode(getWorld().getRegistryManager()));
 		nbt.putFloat("Damage", damage);
 	}
 
 	@Override
-	public Packet<ClientPlayPacketListener> createSpawnPacket() {
-		return new EntitySpawnS2CPacket(this, 0);
+	public Packet<ClientPlayPacketListener> createSpawnPacket(EntityTrackerEntry entityTrackerEntry) {
+		return super.createSpawnPacket(entityTrackerEntry);
 	}
 
 	@Override
@@ -154,7 +156,7 @@ public class BroomEntity extends Entity {
 	}
 
 	@Override
-	public void updateTrackedPositionAndAngles(double x, double y, double z, float yaw, float pitch, int interpolationSteps, boolean interpolate) {
+	public void updateTrackedPositionAndAngles(double x, double y, double z, float yaw, float pitch, int interpolationSteps) {
 		lerpX = x;
 		lerpY = y;
 		lerpZ = z;

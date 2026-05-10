@@ -16,6 +16,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -25,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("ConstantConditions")
 public class JuniperFenceGateBlock extends FenceGateBlock implements BlockEntityProvider {
 	public JuniperFenceGateBlock(Settings settings) {
-		super(settings, WoodType.OAK);
+		super(WoodType.OAK, settings);
 	}
 
 	@Nullable
@@ -35,9 +36,15 @@ public class JuniperFenceGateBlock extends FenceGateBlock implements BlockEntity
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		TaglockHolder.onUse(world, pos, player);
-		return super.onUse(state, world, pos, player, hand, hit);
+		return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
+	}
+
+	@Override
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+		TaglockHolder.onUse(world, pos, player);
+		return super.onUse(state, world, pos, player, hit);
 	}
 
 	@Override

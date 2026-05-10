@@ -9,6 +9,7 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 
 @SuppressWarnings("ConstantConditions")
 public class PurityStatusEffect extends StatusEffect {
@@ -22,24 +23,25 @@ public class PurityStatusEffect extends StatusEffect {
 	}
 
 	@Override
-	public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
 		if (!entity.getWorld().isClient && entity.age % 20 == 0) {
 			Registries.STATUS_EFFECT.stream().forEach(effect -> {
-				if (effect.getCategory() == StatusEffectCategory.HARMFUL && entity.hasStatusEffect(effect)) {
-					StatusEffectInstance currentPurity = entity.getStatusEffect(this);
+				if (effect.getCategory() == StatusEffectCategory.HARMFUL && entity.hasStatusEffect(RegistryEntry.of(effect))) {
+					StatusEffectInstance currentPurity = entity.getStatusEffect(RegistryEntry.of(this));
 					if (currentPurity != null) {
-						entity.removeStatusEffect(this);
+						entity.removeStatusEffect(RegistryEntry.of(this));
 						if (currentPurity.getAmplifier() > 0) {
-							entity.addStatusEffect(new StatusEffectInstance(this, currentPurity.getDuration(), currentPurity.getAmplifier() - 1, currentPurity.isAmbient(), currentPurity.shouldShowParticles(), currentPurity.shouldShowIcon()));
+							entity.addStatusEffect(new StatusEffectInstance(RegistryEntry.of(this), currentPurity.getDuration(), currentPurity.getAmplifier() - 1, currentPurity.isAmbient(), currentPurity.shouldShowParticles(), currentPurity.shouldShowIcon()));
 						}
-						StatusEffectInstance currentNegative = entity.getStatusEffect(effect);
-						entity.removeStatusEffect(effect);
+						StatusEffectInstance currentNegative = entity.getStatusEffect(RegistryEntry.of(effect));
+						entity.removeStatusEffect(RegistryEntry.of(effect));
 						if (currentNegative.getAmplifier() > 0) {
-							entity.addStatusEffect(new StatusEffectInstance(effect, currentNegative.getDuration(), currentNegative.getAmplifier() - 1, currentNegative.isAmbient(), currentNegative.shouldShowParticles(), currentNegative.shouldShowIcon()));
+							entity.addStatusEffect(new StatusEffectInstance(RegistryEntry.of(effect), currentNegative.getDuration(), currentNegative.getAmplifier() - 1, currentNegative.isAmbient(), currentNegative.shouldShowParticles(), currentNegative.shouldShowIcon()));
 						}
 					}
 				}
 			});
 		}
+		return true;
 	}
 }

@@ -4,18 +4,20 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
-import io.github.ladysnake.impersonate.Impersonator;
+import org.ladysnake.impersonate.Impersonator;
+import org.ladysnake.cca.api.v3.component.Component;
 import moriyashiine.bewitchment.common.registry.BWStatusEffects;
 import moriyashiine.bewitchment.common.statuseffect.PolymorphStatusEffect;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.entry.RegistryEntry;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class PolymorphComponent implements ServerTickingComponent {
+public class PolymorphComponent implements Component {
 	private final Entity obj;
 	private UUID uuid;
 	private String name;
@@ -24,25 +26,22 @@ public class PolymorphComponent implements ServerTickingComponent {
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		if (tag.contains("UUID")) {
 			uuid = tag.getUuid("UUID");
 			name = tag.getString("Name");
 		}
 	}
 
-	@Override
-	public void writeToNbt(@NotNull NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		if (getUuid() != null) {
 			tag.putUuid("UUID", uuid);
 			tag.putString("Name", name);
 		}
 	}
 
-	@Override
 	public void serverTick() {
-		if (obj instanceof PlayerEntity player && getUuid() != null && !player.hasStatusEffect(BWStatusEffects.POLYMORPH)) {
+		if (obj instanceof PlayerEntity player && getUuid() != null && !player.hasStatusEffect(RegistryEntry.of(BWStatusEffects.POLYMORPH))) {
 			setUuid(null);
 			setName(null);
 			Impersonator.get(player).stopImpersonation(PolymorphStatusEffect.IMPERSONATE_IDENTIFIER);

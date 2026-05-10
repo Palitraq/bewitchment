@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class DragonsBloodPressurePlateBlock extends PressurePlateBlock implements BlockEntityProvider {
 	public DragonsBloodPressurePlateBlock(Settings settings) {
-		super(ActivationRule.EVERYTHING, settings, BlockSetType.OAK);
+		super(BlockSetType.OAK, settings);
 	}
 
 	@Nullable

@@ -39,7 +39,7 @@ public class GrowRitualFunction extends RitualFunction {
 				for (BlockPos foundPos : BWUtil.getBlockPoses(effectivePos, radius)) {
 					if (world.getWorldBorder().contains(foundPos)) {
 						BlockState state = world.getBlockState(foundPos);
-						if (!(state.getBlock() instanceof GrassBlock) && state.getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, foundPos, state, false) && fertilizable.canGrow(world, world.random, foundPos, state)) {
+						if (!(state.getBlock() instanceof GrassBlock) && state.getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, foundPos, state) && fertilizable.canGrow(world, world.random, foundPos, state)) {
 							fertilizable.grow(serverWorld, world.random, foundPos, state);
 						}
 					}

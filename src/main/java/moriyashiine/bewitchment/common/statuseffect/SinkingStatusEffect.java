@@ -20,7 +20,7 @@ public class SinkingStatusEffect extends StatusEffect {
 	}
 
 	@Override
-	public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
 		Vec3d velocity = entity.getVelocity();
 		float amount = 0.05f * (amplifier + 1);
 		if (!entity.isOnGround() && velocity.getY() < 0) {
@@ -29,5 +29,6 @@ public class SinkingStatusEffect extends StatusEffect {
 		if (entity.isTouchingWater() || entity.isFallFlying()) {
 			entity.setVelocity(velocity.add(0, -amount / 2, 0));
 		}
+		return true;
 	}
 }

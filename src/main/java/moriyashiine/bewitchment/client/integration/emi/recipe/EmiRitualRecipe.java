@@ -13,7 +13,10 @@ import moriyashiine.bewitchment.client.integration.emi.BWEmiIntegration;
 import moriyashiine.bewitchment.common.Bewitchment;
 import moriyashiine.bewitchment.common.recipe.RitualRecipe;
 import moriyashiine.bewitchment.common.registry.BWObjects;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.text.Text;
 
@@ -27,15 +30,18 @@ public class EmiRitualRecipe extends BasicEmiRecipe {
 			}
 		}
 		width += 58;
-		ItemStack chalk = new ItemStack(BWObjects.GOLDEN_CHALK).setCustomName(Text.translatable("ritual." + recipe.getId().toString().replaceAll(":", ".").replaceAll("/", ".")));
-		chalk.getOrCreateNbt().putString("InnerCircle", "chalk." + Bewitchment.MOD_ID + "." + recipe.inner);
+		ItemStack chalk = new ItemStack(BWObjects.GOLDEN_CHALK);
+		chalk.set(DataComponentTypes.CUSTOM_NAME, Text.translatable("ritual." + recipe.getId().toString().replaceAll(":", ".").replaceAll("/", ".")));
+		NbtCompound nbt = new NbtCompound();
+		nbt.putString("InnerCircle", "chalk." + Bewitchment.MOD_ID + "." + recipe.inner);
 		if (!recipe.outer.isEmpty()) {
-			chalk.getNbt().putString("OuterCircle", "chalk." + Bewitchment.MOD_ID + "." + recipe.outer);
+			nbt.putString("OuterCircle", "chalk." + Bewitchment.MOD_ID + "." + recipe.outer);
 		}
-		chalk.getNbt().putInt("Cost", recipe.cost);
+		nbt.putInt("Cost", recipe.cost);
 		if (recipe.runningTime > 0) {
-			chalk.getNbt().putInt("RunningTime", recipe.runningTime);
+			nbt.putInt("RunningTime", recipe.runningTime);
 		}
+		chalk.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 		outputs.add(EmiStack.of(chalk));
 	}
 

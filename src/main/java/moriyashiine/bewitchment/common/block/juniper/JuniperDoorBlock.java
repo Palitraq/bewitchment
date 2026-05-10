@@ -18,6 +18,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -27,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("ConstantConditions")
 public class JuniperDoorBlock extends DoorBlock implements BlockEntityProvider, SpecialDoor {
 	public JuniperDoorBlock(Settings settings) {
-		super(settings, BlockSetType.OAK);
+		super(BlockSetType.OAK, settings);
 	}
 
 	@Nullable
@@ -37,9 +38,15 @@ public class JuniperDoorBlock extends DoorBlock implements BlockEntityProvider, 
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		TaglockHolder.onUse(world, state.get(HALF) == DoubleBlockHalf.UPPER ? pos.down() : pos, player);
-		return super.onUse(state, world, pos, player, hand, hit);
+		return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
+	}
+
+	@Override
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+		TaglockHolder.onUse(world, state.get(HALF) == DoubleBlockHalf.UPPER ? pos.down() : pos, player);
+		return super.onUse(state, world, pos, player, hit);
 	}
 
 	@Override

@@ -4,9 +4,7 @@
 
 package moriyashiine.bewitchment.common.item;
 
-import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
 import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.common.Bewitchment;
 import moriyashiine.bewitchment.common.block.dragonsblood.DragonsBloodLogBlock;
@@ -19,57 +17,41 @@ import moriyashiine.bewitchment.common.registry.BWProperties;
 import moriyashiine.bewitchment.common.registry.BWRecipeTypes;
 import moriyashiine.bewitchment.common.registry.BWSoundEvents;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.DispenserBlock;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.PillarBlock;
-import net.minecraft.block.dispenser.DispenserBehavior;
-import net.minecraft.block.dispenser.FallibleItemDispenserBehavior;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.SwordItem;
 import net.minecraft.item.ToolMaterial;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPointer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import java.util.UUID;
-
 public class AthameItem extends SwordItem {
-	private static final EntityAttributeModifier REACH_MODIFIER = new EntityAttributeModifier(UUID.fromString("1f362972-c5c5-4e9d-b69f-1fd13bd269e3"), "Weapon modifier", -0.5, EntityAttributeModifier.Operation.ADDITION);
-
-	private static final DispenserBehavior DISPENSER_BEHAVIOR = new FallibleItemDispenserBehavior() {
-		@Override
-		protected ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
-			World world = pointer.getWorld();
-			BlockPos pos = pointer.getPos().offset(pointer.getBlockState().get(Properties.FACING));
-			if (cutLog(world, pos, stack)) {
-				setSuccess(true);
-			} else if (world.getBlockState(pos).getBlock() == BWObjects.GOLDEN_GLYPH) {
-				BWObjects.GOLDEN_GLYPH.onUse(world.getBlockState(pos), world, pos, BewitchmentAPI.getFakePlayer(world), Hand.MAIN_HAND, BlockHitResult.createMissed(new Vec3d(pos.getX(), pos.getY(), pos.getZ()), Direction.DOWN, pos));
-				setSuccess(true);
-			}
-			return stack;
-		}
-	};
+	private static final EntityAttributeModifier REACH_MODIFIER = new EntityAttributeModifier(Identifier.of("bewitchment", "weapon_reach"), -0.5, EntityAttributeModifier.Operation.ADD_VALUE);
 
 	public AthameItem(ToolMaterial toolMaterial, int attackDamage, float attackSpeed, Settings settings) {
-		super(toolMaterial, attackDamage, attackSpeed, settings);
-		DispenserBlock.registerBehavior(this, DISPENSER_BEHAVIOR);
+		super(toolMaterial, settings);
 	}
 
 	@Override
@@ -79,15 +61,18 @@ public class AthameItem extends SwordItem {
 		BlockState state = world.getBlockState(pos);
 		PlayerEntity player = context.getPlayer();
 		boolean client = world.isClient;
-		AthameStrippingRecipe entry = world.getRecipeManager().listAllOfType(BWRecipeTypes.ATHAME_STRIPPING_RECIPE_TYPE).stream().filter(recipe -> recipe.log == state.getBlock()).findFirst().orElse(null);
+		AthameStrippingRecipe entry = world.getRecipeManager().listAllOfType(BWRecipeTypes.ATHAME_STRIPPING_RECIPE_TYPE).stream().filter(recipe -> recipe.value().log == state.getBlock()).findFirst().map(RecipeEntry::value).orElse(null);
 		if (entry != null) {
 			world.playSound(player, pos, BWSoundEvents.ITEM_ATHAME_STRIP, SoundCategory.BLOCKS, 1, 1);
 			if (!client) {
 				world.setBlockState(pos, entry.strippedLog.getDefaultState().with(PillarBlock.AXIS, state.get(PillarBlock.AXIS)), 11);
 				if (player != null) {
-					context.getStack().damage(1, player, stackUser -> stackUser.sendToolBreakStatus(context.getHand()));
+					if (player instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
+						EquipmentSlot slot = context.getHand() == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+						context.getStack().damage(1, serverPlayer.getServerWorld(), serverPlayer, item -> {});
+					}
 					if (world.random.nextFloat() < 2 / 3f) {
-						ItemStack bark = entry.getOutput(world.getRegistryManager()).copy();
+						ItemStack bark = entry.getResult(world.getRegistryManager()).copy();
 						if (!player.getInventory().insertStack(bark)) {
 							player.dropStack(bark);
 						}
@@ -132,21 +117,12 @@ public class AthameItem extends SwordItem {
 		return super.useOnBlock(context);
 	}
 
-	@Override
-	public Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(EquipmentSlot slot) {
-		Multimap<EntityAttribute, EntityAttributeModifier> map = LinkedHashMultimap.create(super.getAttributeModifiers(slot));
-		if (slot == EquipmentSlot.MAINHAND) {
-			map.put(ReachEntityAttributes.ATTACK_RANGE, REACH_MODIFIER);
-		}
-		return map;
-	}
-
 	private static boolean cutLog(World world, BlockPos pos, ItemStack stack) {
 		BlockState state = world.getBlockState(pos);
 		if (state.getBlock() instanceof DragonsBloodLogBlock && state.get(BWProperties.NATURAL) && !state.get(BWProperties.CUT)) {
 			world.playSound(null, pos, BWSoundEvents.ITEM_ATHAME_STRIP, SoundCategory.BLOCKS, 1, 1);
 			world.setBlockState(pos, state.with(BWProperties.CUT, true));
-			if (stack.damage(1, world.random, null) && stack.getDamage() >= stack.getMaxDamage()) {
+			if (!stack.isDamageable() || (stack.getDamage() + 1 >= stack.getMaxDamage())) {
 				stack.decrement(1);
 			}
 			return true;

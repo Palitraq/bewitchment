@@ -12,7 +12,9 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentState.Type;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -28,7 +30,13 @@ public class BWWorldState extends PersistentState {
 	public final List<Long> potentialSigils = new ArrayList<>();
 	public final List<Long> glowingBrambles = new ArrayList<>();
 
-	public static BWWorldState readNbt(NbtCompound nbt) {
+	private static final Type<BWWorldState> TYPE = new Type<>(
+		BWWorldState::new,
+		BWWorldState::readNbt,
+		null
+	);
+
+	public static BWWorldState readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
 		BWWorldState worldState = new BWWorldState();
 		NbtList poppetShelvesList = nbt.getList("PoppetShelves", NbtElement.COMPOUND_TYPE);
 		for (int i = 0; i < poppetShelvesList.size(); i++) {
@@ -36,7 +44,7 @@ public class BWWorldState extends PersistentState {
 			DefaultedList<ItemStack> inventory = null;
 			if (poppetShelfCompound.contains("Inventory")) {
 				inventory = DefaultedList.ofSize(9, ItemStack.EMPTY);
-				Inventories.readNbt(poppetShelfCompound.getCompound("Inventory"), inventory);
+				Inventories.readNbt(poppetShelfCompound.getCompound("Inventory"), inventory, lookup);
 			}
 			worldState.poppetShelves.put(poppetShelfCompound.getLong("Pos"), inventory);
 		}
@@ -66,13 +74,13 @@ public class BWWorldState extends PersistentState {
 	}
 
 	@Override
-	public NbtCompound writeNbt(NbtCompound nbt) {
+	public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
 		NbtList poppetShelvesList = new NbtList();
 		this.poppetShelves.forEach((pos, inventory) -> {
 			NbtCompound poppetShelfCompound = new NbtCompound();
 			poppetShelfCompound.putLong("Pos", pos);
 			if (inventory != null) {
-				poppetShelfCompound.put("Inventory", Inventories.writeNbt(new NbtCompound(), inventory));
+				poppetShelfCompound.put("Inventory", Inventories.writeNbt(new NbtCompound(), inventory, lookup));
 			}
 			poppetShelvesList.add(poppetShelfCompound);
 		});
@@ -110,6 +118,6 @@ public class BWWorldState extends PersistentState {
 	}
 
 	public static BWWorldState get(World world) {
-		return ((ServerWorld) world).getPersistentStateManager().getOrCreate(BWWorldState::readNbt, BWWorldState::new, Bewitchment.MOD_ID + "_universal");
+		return ((ServerWorld) world).getPersistentStateManager().getOrCreate(TYPE, Bewitchment.MOD_ID + "_universal");
 	}
 }

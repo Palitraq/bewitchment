@@ -25,9 +25,10 @@ public class DisjunctionStatusEffect extends StatusEffect {
 	}
 
 	@Override
-	public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
 		if (!entity.getWorld().isClient) {
 			BWUtil.attemptTeleport(entity, entity.getBlockPos(), 8 * (amplifier + 1), true);
 		}
+		return true;
 	}
 }

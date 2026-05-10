@@ -27,6 +27,6 @@ public class DruidBandRenderer implements TrinketRenderer {
 			model = new DruidBandModel(BewitchmentClient.getPart(BewitchmentClient.DRUID_BAND_MODEL_LAYER));
 		}
 		TrinketRenderer.translateToLeftLeg(matrices, (PlayerEntityModel<AbstractClientPlayerEntity>) contextModel, (AbstractClientPlayerEntity) entity);
-		model.render(matrices, vertexConsumers.getBuffer(RenderLayer.getArmorCutoutNoCull(TEXTURE)), light, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
+		model.render(matrices, vertexConsumers.getBuffer(RenderLayer.getArmorCutoutNoCull(TEXTURE)), light, OverlayTexture.DEFAULT_UV, 0xFFFFFFFF);
 	}
 }

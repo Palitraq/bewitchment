@@ -4,7 +4,6 @@
 
 package moriyashiine.bewitchment.common.packet;
 
-import io.netty.buffer.Unpooled;
 import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.api.block.entity.UsesAltarPower;
 import moriyashiine.bewitchment.common.Bewitchment;
@@ -12,38 +11,45 @@ import moriyashiine.bewitchment.common.block.entity.WitchAltarBlockEntity;
 import moriyashiine.bewitchment.common.misc.BWUtil;
 import moriyashiine.bewitchment.common.registry.BWPledges;
 import moriyashiine.bewitchment.common.world.BWWorldState;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Map;
 
-public class CauldronTeleportPacket {
-	public static final Identifier ID = Bewitchment.id("cauldron_teleport");
+public class CauldronTeleportPacket implements CustomPayload {
+	public static final Id<CauldronTeleportPacket> ID = new Id<>(Bewitchment.id("cauldron_teleport"));
+	public static final PacketCodec<PacketByteBuf, CauldronTeleportPacket> CODEC = CustomPayload.codecOf(CauldronTeleportPacket::write, CauldronTeleportPacket::new);
 
-	public static void send(BlockPos cauldronPos, String message) {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		buf.writeBlockPos(cauldronPos);
-		buf.writeString(message);
-		ClientPlayNetworking.send(ID, buf);
+	private final BlockPos cauldronPos;
+	private final String message;
+
+	public CauldronTeleportPacket(BlockPos cauldronPos, String message) {
+		this.cauldronPos = cauldronPos;
+		this.message = message;
 	}
 
-	@SuppressWarnings("ConstantConditions")
-	public static class Receiver implements ServerPlayNetworking.PlayChannelHandler {
-		@Override
-		public void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-			BlockPos cauldronPos = buf.readBlockPos();
-			String message = buf.readString(Short.MAX_VALUE);
-			server.execute(() -> {
+	public CauldronTeleportPacket(PacketByteBuf buf) {
+		this.cauldronPos = buf.readBlockPos();
+		this.message = buf.readString(Short.MAX_VALUE);
+	}
+
+	public static void send(BlockPos cauldronPos, String message) {
+	}
+
+	public static void register() {
+		PayloadTypeRegistry.playC2S().register(ID, CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
+			BlockPos cauldronPos = payload.cauldronPos;
+			String message = payload.message;
+			context.server().execute(() -> {
+				var player = context.player();
 				World world = player.getWorld();
 				BlockPos closest = null;
 				BWWorldState worldState = BWWorldState.get(world);
@@ -75,6 +81,16 @@ public class CauldronTeleportPacket {
 					player.sendMessage(Text.translatable(Bewitchment.MOD_ID + ".message.invalid_cauldron", message), true);
 				}
 			});
-		}
+		});
+	}
+
+	private void write(PacketByteBuf buf) {
+		buf.writeBlockPos(cauldronPos);
+		buf.writeString(message);
+	}
+
+	@Override
+	public Id<? extends CustomPayload> getId() {
+		return ID;
 	}
 }

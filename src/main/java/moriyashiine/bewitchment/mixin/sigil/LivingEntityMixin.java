@@ -51,7 +51,7 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@Inject(method = "canHaveStatusEffect", at = @At("RETURN"), cancellable = true)
 	private void canHaveStatusEffect(StatusEffectInstance effect, CallbackInfoReturnable<Boolean> callbackInfo) {
-		if (callbackInfo.getReturnValueZ() && !getWorld().isClient && !effect.isAmbient() && effect.getEffectType().getCategory() != StatusEffectCategory.HARMFUL) {
+		if (callbackInfo.getReturnValueZ() && !getWorld().isClient && !effect.isAmbient() && effect.getEffectType().value().getCategory() != StatusEffectCategory.HARMFUL) {
 			BWWorldState worldState = BWWorldState.get(getWorld());
 			BlockPos sigilPos = BWUtil.getClosestBlockPos(getBlockPos(), 16, currentPos -> worldState.potentialSigils.contains(currentPos.asLong()) && getWorld().getBlockEntity(currentPos) instanceof SigilHolder sigilHolder && sigilHolder.getSigil() == BWSigils.RUIN);
 			if (sigilPos != null) {

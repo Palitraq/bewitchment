@@ -752,5 +752,7 @@
   "bewitchment.midnightconfig.werewolfMaxGroupCount": "Werewolf Max Group Count",
   "bewitchment.midnightconfig.hellhoundWeight": "Hellhound Weight",
   "bewitchment.midnightconfig.hellhoundMinGroupCount": "Hellhound Min Group Count",
-  "bewitchment.midnightconfig.hellhoundMaxGroupCount": "Hellhound Max Group Count"
+  "bewitchment.midnightconfig.hellhoundMaxGroupCount": "Hellhound Max Group Count",
+  "attribute.name.generic.bewitchment.attack_range": "Attack Range",
+  "attribute.name.generic.bewitchment.reach": "Reach"
 }

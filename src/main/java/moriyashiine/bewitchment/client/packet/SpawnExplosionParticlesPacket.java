@@ -4,35 +4,36 @@
 
 package moriyashiine.bewitchment.client.packet;
 
-import io.netty.buffer.Unpooled;
 import moriyashiine.bewitchment.common.Bewitchment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 
-public class SpawnExplosionParticlesPacket {
-	public static final Identifier ID = Bewitchment.id("spawn_explosion_particles");
+public class SpawnExplosionParticlesPacket implements CustomPayload {
+	public static final Id<SpawnExplosionParticlesPacket> ID = new Id<>(Bewitchment.id("spawn_explosion_particles"));
+	public static final PacketCodec<PacketByteBuf, SpawnExplosionParticlesPacket> CODEC = CustomPayload.codecOf(SpawnExplosionParticlesPacket::write, SpawnExplosionParticlesPacket::new);
 
-	public static void send(ServerPlayerEntity player, Entity entity) {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		buf.writeInt(entity.getId());
-		ServerPlayNetworking.send(player, ID, buf);
+	private final int entityId;
+
+	public SpawnExplosionParticlesPacket(Entity entity) {
+		this.entityId = entity.getId();
 	}
 
-	public static class Receiver implements ClientPlayNetworking.PlayChannelHandler {
-		@Override
-		public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-			int id = buf.readInt();
-			client.execute(() -> {
-				ClientWorld world = client.world;
+	public SpawnExplosionParticlesPacket(PacketByteBuf buf) {
+		this.entityId = buf.readInt();
+	}
+
+	public static void register() {
+		PayloadTypeRegistry.playS2C().register(ID, CODEC);
+		ClientPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
+			int id = payload.entityId;
+			context.client().execute(() -> {
+				var world = context.client().world;
 				if (world != null) {
 					Entity entity = world.getEntityById(id);
 					if (entity != null) {
@@ -42,6 +43,15 @@ public class SpawnExplosionParticlesPacket {
 					}
 				}
 			});
-		}
+		});
+	}
+
+	private void write(PacketByteBuf buf) {
+		buf.writeInt(entityId);
+	}
+
+	@Override
+	public Id<? extends CustomPayload> getId() {
+		return ID;
 	}
 }

@@ -7,26 +7,36 @@ package moriyashiine.bewitchment.common.recipe;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import moriyashiine.bewitchment.api.registry.RitualFunction;
 import moriyashiine.bewitchment.common.registry.BWRecipeTypes;
 import moriyashiine.bewitchment.common.registry.BWRegistries;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.input.RecipeInput;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
+
+import java.util.stream.Stream;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RitualRecipe implements Recipe<Inventory> {
+public class RitualRecipe implements Recipe<RecipeInput> {
 	private final Identifier identifier;
 	public final DefaultedList<Ingredient> input;
 	public final String inner, outer;
@@ -44,12 +54,12 @@ public class RitualRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public boolean matches(Inventory inv, World world) {
-		return matches(inv, input);
+	public boolean matches(RecipeInput input, World world) {
+		return matches(input, this.input);
 	}
 
 	@Override
-	public ItemStack craft(Inventory inventory, DynamicRegistryManager registryManager) {
+	public ItemStack craft(RecipeInput input, RegistryWrapper.WrapperLookup lookup) {
 		return ItemStack.EMPTY;
 	}
 
@@ -59,11 +69,10 @@ public class RitualRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public ItemStack getOutput(DynamicRegistryManager registryManager) {
+	public ItemStack getResult(RegistryWrapper.WrapperLookup lookup) {
 		return ItemStack.EMPTY;
 	}
 
-	@Override
 	public Identifier getId() {
 		return identifier;
 	}
@@ -78,10 +87,10 @@ public class RitualRecipe implements Recipe<Inventory> {
 		return BWRecipeTypes.RITUAL_RECIPE_TYPE;
 	}
 
-	public static boolean matches(Inventory inv, DefaultedList<Ingredient> input) {
+	public static boolean matches(RecipeInput inv, DefaultedList<Ingredient> input) {
 		List<ItemStack> checklist = new ArrayList<>();
-		for (int i = 0; i < inv.size(); i++) {
-			ItemStack stack = inv.getStack(i);
+		for (int i = 0; i < inv.getSize(); i++) {
+			ItemStack stack = inv.getStackInSlot(i);
 			if (!stack.isEmpty()) {
 				checklist.add(stack);
 			}
@@ -107,7 +116,6 @@ public class RitualRecipe implements Recipe<Inventory> {
 
 	@SuppressWarnings("ConstantConditions")
 	public static class Serializer implements RecipeSerializer<RitualRecipe> {
-		@Override
 		public RitualRecipe read(Identifier id, JsonObject json) {
 			DefaultedList<Ingredient> ingredients = getIngredients(JsonHelper.getArray(json, "ingredients"));
 			if (ingredients.isEmpty()) {
@@ -119,33 +127,61 @@ public class RitualRecipe implements Recipe<Inventory> {
 			if (inner.isEmpty()) {
 				throw new JsonParseException("Inner circle is empty");
 			}
-			return new RitualRecipe(id, ingredients, inner, JsonHelper.getString(json, "outer", ""), BWRegistries.RITUAL_FUNCTION.get(new Identifier(JsonHelper.getString(json, "ritual_function"))), JsonHelper.getInt(json, "cost"), JsonHelper.getInt(json, "running_time", 0));
+			return new RitualRecipe(id, ingredients, inner, JsonHelper.getString(json, "outer", ""), BWRegistries.RITUAL_FUNCTION.get(Identifier.tryParse(JsonHelper.getString(json, "ritual_function"))), JsonHelper.getInt(json, "cost"), JsonHelper.getInt(json, "running_time", 0));
 		}
 
-		@Override
 		public RitualRecipe read(Identifier id, PacketByteBuf buf) {
-			DefaultedList<Ingredient> defaultedList = DefaultedList.ofSize(buf.readVarInt(), Ingredient.EMPTY);
-			defaultedList.replaceAll(ignored -> Ingredient.fromPacket(buf));
-			return new RitualRecipe(id, defaultedList, buf.readString(), buf.readString(), BWRegistries.RITUAL_FUNCTION.get(new Identifier(buf.readString())), buf.readInt(), buf.readInt());
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			DefaultedList<Ingredient> defaultedList = DefaultedList.ofSize(regBuf.readVarInt(), Ingredient.EMPTY);
+			defaultedList.replaceAll(ignored -> Ingredient.PACKET_CODEC.decode(regBuf));
+			return new RitualRecipe(id, defaultedList, regBuf.readString(), regBuf.readString(), BWRegistries.RITUAL_FUNCTION.get(Identifier.tryParse(regBuf.readString())), regBuf.readInt(), regBuf.readInt());
+		}
+
+		public void write(PacketByteBuf buf, RitualRecipe recipe) {
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			regBuf.writeVarInt(recipe.input.size());
+			for (Ingredient ingredient : recipe.input) {
+				Ingredient.PACKET_CODEC.encode(regBuf, ingredient);
+			}
+			regBuf.writeString(recipe.inner);
+			regBuf.writeString(recipe.outer);
+			regBuf.writeString(BWRegistries.RITUAL_FUNCTION.getId(recipe.ritualFunction).toString());
+			regBuf.writeInt(recipe.cost);
+			regBuf.writeInt(recipe.runningTime);
 		}
 
 		@Override
-		public void write(PacketByteBuf buf, RitualRecipe recipe) {
-			buf.writeVarInt(recipe.input.size());
-			for (Ingredient ingredient : recipe.input) {
-				ingredient.write(buf);
-			}
-			buf.writeString(recipe.inner);
-			buf.writeString(recipe.outer);
-			buf.writeString(BWRegistries.RITUAL_FUNCTION.getId(recipe.ritualFunction).toString());
-			buf.writeInt(recipe.cost);
-			buf.writeInt(recipe.runningTime);
+		public MapCodec<RitualRecipe> codec() {
+			return new MapCodec<>() {
+				@Override
+				public <T> Stream<T> keys(DynamicOps<T> ops) {
+					return Stream.of();
+				}
+
+				@Override
+				public <T> DataResult<RitualRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
+					return DataResult.error(() -> "Codec not implemented");
+				}
+
+				@Override
+				public <T> RecordBuilder<T> encode(RitualRecipe recipe, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+					return prefix;
+				}
+			};
+		}
+
+		@Override
+		public PacketCodec<RegistryByteBuf, RitualRecipe> packetCodec() {
+			return PacketCodec.ofStatic(
+				(RegistryByteBuf buf, RitualRecipe recipe) -> write(buf, recipe),
+				(RegistryByteBuf buf) -> read(null, buf)
+			);
 		}
 
 		public static DefaultedList<Ingredient> getIngredients(JsonArray json) {
 			DefaultedList<Ingredient> ingredients = DefaultedList.of();
 			for (int i = 0; i < json.size(); i++) {
-				Ingredient ingredient = Ingredient.fromJson(json.get(i));
+				Ingredient ingredient = Ingredient.DISALLOW_EMPTY_CODEC.parse(JsonOps.INSTANCE, json.get(i)).getOrThrow();
 				if (!ingredient.isEmpty()) {
 					ingredients.add(ingredient);
 				}

@@ -67,11 +67,11 @@ public class GhostEntityModel<T extends GhostEntity> extends BipedEntityModel<T>
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-		realHead.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		realBody.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		leftArm.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		rightArm.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+		realHead.render(matrices, vertices, light, overlay, color);
+		realBody.render(matrices, vertices, light, overlay, color);
+		leftArm.render(matrices, vertices, light, overlay, color);
+		rightArm.render(matrices, vertices, light, overlay, color);
 	}
 
 	@Override

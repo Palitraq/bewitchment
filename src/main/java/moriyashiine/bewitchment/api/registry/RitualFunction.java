@@ -4,6 +4,7 @@
 
 package moriyashiine.bewitchment.api.registry;
 
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
@@ -36,7 +37,8 @@ public class RitualFunction {
 		for (int i = 0; i < inventory.size(); i++) {
 			ItemStack stack = inventory.getStack(i);
 			if (stack.isDamageable()) {
-				if (stack.damage(1, world.random, null) && stack.getDamage() == stack.getMaxDamage()) {
+				stack.damage(1, world.getPlayers().isEmpty() ? null : world.getPlayers().get(0), EquipmentSlot.MAINHAND);
+				if (stack.getDamage() >= stack.getMaxDamage() - 1) {
 					stack.decrement(1);
 				}
 			} else {

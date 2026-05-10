@@ -9,7 +9,8 @@ import moriyashiine.bewitchment.common.registry.BWTags;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.FoodComponent;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,11 +25,10 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 	}
 
 	@Inject(method = "eatFood", at = @At("HEAD"))
-	private void eat(World world, ItemStack stack, CallbackInfoReturnable<ItemStack> callbackInfo) {
+	private void eat(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> callbackInfo) {
 		if (!world.isClient) {
-			FoodComponent foodComponent = stack.getItem().getFoodComponent();
 			if (foodComponent != null && stack.isIn(BWTags.WITCHBERRY_FOODS)) {
-				BewitchmentAPI.fillMagic((PlayerEntity) (Object) this, foodComponent.getHunger(), false);
+				BewitchmentAPI.fillMagic((PlayerEntity) (Object) this, foodComponent.nutrition(), false);
 			}
 		}
 	}

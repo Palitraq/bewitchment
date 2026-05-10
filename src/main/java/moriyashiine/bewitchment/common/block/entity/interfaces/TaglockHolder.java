@@ -13,6 +13,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -27,15 +28,15 @@ public interface TaglockHolder {
 
 	void setOwner(UUID owner);
 
-	default void fromNbtTaglock(NbtCompound nbt) {
-		Inventories.readNbt(nbt.getCompound("TaglockInventory"), getTaglockInventory());
+	default void fromNbtTaglock(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		Inventories.readNbt(nbt.getCompound("TaglockInventory"), getTaglockInventory(), lookup);
 		if (nbt.contains("Owner")) {
 			setOwner(nbt.getUuid("Owner"));
 		}
 	}
 
-	default void toNbtTaglock(NbtCompound nbt) {
-		nbt.put("TaglockInventory", Inventories.writeNbt(new NbtCompound(), getTaglockInventory()));
+	default void toNbtTaglock(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		nbt.put("TaglockInventory", Inventories.writeNbt(new NbtCompound(), getTaglockInventory(), lookup));
 		if (getOwner() != null) {
 			nbt.putUuid("Owner", getOwner());
 		}

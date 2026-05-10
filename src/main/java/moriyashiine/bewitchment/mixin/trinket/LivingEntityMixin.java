@@ -19,7 +19,10 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Pair;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,7 +37,7 @@ import java.util.List;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
 	@Shadow
-	public abstract boolean hasStatusEffect(StatusEffect effect);
+	public abstract boolean hasStatusEffect(RegistryEntry<StatusEffect> effect);
 
 	@Shadow
 	public abstract boolean addStatusEffect(StatusEffectInstance effect);
@@ -54,33 +57,37 @@ public abstract class LivingEntityMixin extends Entity {
 					List<Pair<SlotReference, ItemStack>> component = TrinketsApi.getTrinketComponent(player).get().getEquipped(BWObjects.PRICKLY_BELT);
 					if (!component.isEmpty()) {
 						ItemStack belt = component.get(0).getRight();
-						if (belt.hasNbt() && belt.getNbt().getInt("PotionUses") > 0) {
+						var beltNbtComponent = belt.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+						var beltNbt = beltNbtComponent.copyNbt();
+						if (!beltNbtComponent.equals(NbtComponent.DEFAULT) && beltNbt.getInt("PotionUses") > 0) {
 							boolean used = false;
-							List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(belt);
+							PotionContentsComponent potionContents = belt.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
+							List<StatusEffectInstance> effects = (List<StatusEffectInstance>) potionContents.getEffects();
 							for (StatusEffectInstance effect : effects) {
-								if (effect.getEffectType().getCategory() == StatusEffectCategory.HARMFUL) {
+								if (effect.getEffectType().value().getCategory() == StatusEffectCategory.HARMFUL) {
 									if (!livingSource.hasStatusEffect(effect.getEffectType()) && BewitchmentAPI.drainMagic(player, 2, true) && livingSource.addStatusEffect(effect)) {
 										used = true;
 									}
 								} else if (!hasStatusEffect(effect.getEffectType()) && BewitchmentAPI.drainMagic(player, 2, true) && addStatusEffect(effect)) {
-									if (belt.getNbt().contains("PolymorphUUID")) {
+									if (beltNbt.contains("PolymorphUUID")) {
 										BWComponents.POLYMORPH_COMPONENT.maybeGet(this).ifPresent(polymorphComponent -> {
-											polymorphComponent.setUuid(belt.getNbt().getUuid("PolymorphUUID"));
-											polymorphComponent.setName(belt.getNbt().getString("PolymorphName"));
+											polymorphComponent.setUuid(beltNbt.getUuid("PolymorphUUID"));
+											polymorphComponent.setName(beltNbt.getString("PolymorphName"));
 										});
 									}
 									used = true;
 								}
 							}
 							if (used) {
-								belt.getNbt().putInt("PotionUses", belt.getNbt().getInt("PotionUses") - 1);
-								if (belt.getNbt().getInt("PotionUses") <= 0) {
-									belt.getOrCreateNbt().put("CustomPotionEffects", new NbtList());
-									if (belt.getNbt().contains("PolymorphUUID")) {
-										belt.getNbt().remove("PolymorphUUID");
-										belt.getNbt().remove("PolymorphName");
+								beltNbt.putInt("PotionUses", beltNbt.getInt("PotionUses") - 1);
+								if (beltNbt.getInt("PotionUses") <= 0) {
+									beltNbt.put("CustomPotionEffects", new NbtList());
+									if (beltNbt.contains("PolymorphUUID")) {
+										beltNbt.remove("PolymorphUUID");
+										beltNbt.remove("PolymorphName");
 									}
 								}
+								belt.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(beltNbt));
 							}
 						}
 					}

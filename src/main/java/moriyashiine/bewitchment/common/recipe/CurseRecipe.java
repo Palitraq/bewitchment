@@ -6,24 +6,33 @@ package moriyashiine.bewitchment.common.recipe;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import moriyashiine.bewitchment.api.registry.Curse;
 import moriyashiine.bewitchment.common.registry.BWObjects;
 import moriyashiine.bewitchment.common.registry.BWRecipeTypes;
 import moriyashiine.bewitchment.common.registry.BWRegistries;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.recipe.input.RecipeInput;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
+
+import java.util.stream.Stream;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 
-public class CurseRecipe implements Recipe<Inventory> {
+public class CurseRecipe implements Recipe<RecipeInput> {
 	private final Identifier identifier;
 	public final DefaultedList<Ingredient> input;
 	public final Curse curse;
@@ -37,12 +46,12 @@ public class CurseRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public boolean matches(Inventory inv, World world) {
+	public boolean matches(RecipeInput inv, World world) {
 		return RitualRecipe.matches(inv, input);
 	}
 
 	@Override
-	public ItemStack craft(Inventory inventory, DynamicRegistryManager registryManager) {
+	public ItemStack craft(RecipeInput inventory, RegistryWrapper.WrapperLookup lookup) {
 		return ItemStack.EMPTY;
 	}
 
@@ -52,11 +61,10 @@ public class CurseRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public ItemStack getOutput(DynamicRegistryManager registryManager) {
+	public ItemStack getResult(RegistryWrapper.WrapperLookup lookup) {
 		return ItemStack.EMPTY;
 	}
 
-	@Override
 	public Identifier getId() {
 		return identifier;
 	}
@@ -75,7 +83,6 @@ public class CurseRecipe implements Recipe<Inventory> {
 	public static class Serializer implements RecipeSerializer<CurseRecipe> {
 		private static final ItemStack TAGLOCK = new ItemStack(BWObjects.TAGLOCK);
 
-		@Override
 		public CurseRecipe read(Identifier id, JsonObject json) {
 			DefaultedList<Ingredient> ingredients = RitualRecipe.Serializer.getIngredients(JsonHelper.getArray(json, "ingredients"));
 			if (ingredients.isEmpty()) {
@@ -93,24 +100,52 @@ public class CurseRecipe implements Recipe<Inventory> {
 			if (!foundTaglock) {
 				throw new JsonParseException("Taglock not found in curse recipe");
 			}
-			return new CurseRecipe(id, ingredients, BWRegistries.CURSE.get(new Identifier(JsonHelper.getString(json, "curse"))), JsonHelper.getInt(json, "cost"));
+			return new CurseRecipe(id, ingredients, BWRegistries.CURSE.get(Identifier.tryParse(JsonHelper.getString(json, "curse"))), JsonHelper.getInt(json, "cost"));
 		}
 
-		@Override
 		public CurseRecipe read(Identifier id, PacketByteBuf buf) {
-			DefaultedList<Ingredient> defaultedList = DefaultedList.ofSize(buf.readVarInt(), Ingredient.EMPTY);
-			defaultedList.replaceAll(ignored -> Ingredient.fromPacket(buf));
-			return new CurseRecipe(id, defaultedList, BWRegistries.CURSE.get(new Identifier(buf.readString())), buf.readInt());
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			DefaultedList<Ingredient> defaultedList = DefaultedList.ofSize(regBuf.readVarInt(), Ingredient.EMPTY);
+			defaultedList.replaceAll(ignored -> Ingredient.PACKET_CODEC.decode(regBuf));
+			return new CurseRecipe(id, defaultedList, BWRegistries.CURSE.get(Identifier.tryParse(regBuf.readString())), regBuf.readInt());
+		}
+
+		public void write(PacketByteBuf buf, CurseRecipe recipe) {
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			regBuf.writeVarInt(recipe.input.size());
+			for (Ingredient ingredient : recipe.input) {
+				Ingredient.PACKET_CODEC.encode(regBuf, ingredient);
+			}
+			regBuf.writeString(BWRegistries.CURSE.getId(recipe.curse).toString());
+			regBuf.writeInt(recipe.cost);
 		}
 
 		@Override
-		public void write(PacketByteBuf buf, CurseRecipe recipe) {
-			buf.writeVarInt(recipe.input.size());
-			for (Ingredient ingredient : recipe.input) {
-				ingredient.write(buf);
-			}
-			buf.writeString(BWRegistries.CURSE.getId(recipe.curse).toString());
-			buf.writeInt(recipe.cost);
+		public MapCodec<CurseRecipe> codec() {
+			return new MapCodec<>() {
+				@Override
+				public <T> Stream<T> keys(DynamicOps<T> ops) {
+					return Stream.of();
+				}
+
+				@Override
+				public <T> DataResult<CurseRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
+					return DataResult.error(() -> "Codec not implemented");
+				}
+
+				@Override
+				public <T> RecordBuilder<T> encode(CurseRecipe recipe, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+					return prefix;
+				}
+			};
+		}
+
+		@Override
+		public PacketCodec<RegistryByteBuf, CurseRecipe> packetCodec() {
+			return PacketCodec.ofStatic(
+				(RegistryByteBuf buf, CurseRecipe recipe) -> write(buf, recipe),
+				(RegistryByteBuf buf) -> read(null, buf)
+			);
 		}
 	}
 }

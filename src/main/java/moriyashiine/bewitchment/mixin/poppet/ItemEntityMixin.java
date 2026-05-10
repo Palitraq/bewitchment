@@ -12,6 +12,7 @@ import moriyashiine.bewitchment.common.registry.BWObjects;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
@@ -42,8 +43,11 @@ public abstract class ItemEntityMixin extends Entity {
 			if (owner != null) {
 				if (getVelocity().length() > 1 / 8f) {
 					int damage = random.nextFloat() < 1 / 4f ? 1 : 0;
-					if (getStack().damage(damage, random, null) && getStack().getDamage() >= getStack().getMaxDamage()) {
-						getStack().decrement(1);
+					if (getWorld() instanceof ServerWorld serverWorld) {
+						getStack().damage(damage, serverWorld, null, item -> {});
+						if (getStack().getDamage() >= getStack().getMaxDamage()) {
+							getStack().decrement(1);
+						}
 					}
 					if (!BewitchmentAPI.hasVoodooProtection(owner, damage)) {
 						owner.addVelocity(getVelocity().x / 2, getVelocity().y / 2, getVelocity().z / 2);
@@ -52,8 +56,11 @@ public abstract class ItemEntityMixin extends Entity {
 				}
 				if (isSubmergedInWater()) {
 					int damage = age % 20 == 0 ? 1 : 0;
-					if (getStack().damage(damage, random, null) && getStack().getDamage() >= getStack().getMaxDamage()) {
-						getStack().decrement(1);
+					if (getWorld() instanceof ServerWorld serverWorld) {
+						getStack().damage(damage, serverWorld, null, item -> {});
+						if (getStack().getDamage() >= getStack().getMaxDamage()) {
+							getStack().decrement(1);
+						}
 					}
 					if (!BewitchmentAPI.hasVoodooProtection(owner, damage)) {
 						BWComponents.ADDITIONAL_WATER_DATA_COMPONENT.get(owner).setSubmerged(true);
@@ -76,8 +83,11 @@ public abstract class ItemEntityMixin extends Entity {
 						}
 					}
 					if (source.isOf(DamageTypes.CACTUS) && owner.hurtTime == 0) {
-						if (getStack().damage(1, random, null) && getStack().getDamage() >= getStack().getMaxDamage()) {
-							getStack().decrement(1);
+						if (getWorld() instanceof ServerWorld serverWorld) {
+							getStack().damage(1, serverWorld, null, item -> {});
+							if (getStack().getDamage() >= getStack().getMaxDamage()) {
+								getStack().decrement(1);
+							}
 						}
 						if (!BewitchmentAPI.hasVoodooProtection(owner, 1)) {
 							owner.damage(getWorld().getDamageSources().cactus(), 1);

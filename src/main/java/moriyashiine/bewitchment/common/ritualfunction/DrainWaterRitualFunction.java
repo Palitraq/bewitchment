@@ -28,7 +28,7 @@ public class DrainWaterRitualFunction extends RitualFunction {
 			if (world.getWorldBorder().contains(foundPos) && world.getFluidState(foundPos).isIn(FluidTags.WATER)) {
 				BlockState state = world.getBlockState(foundPos);
 				if (state.getBlock() instanceof FluidDrainable fluidDrainable) {
-					fluidDrainable.tryDrainFluid(world, foundPos, state);
+					fluidDrainable.tryDrainFluid(null, world, foundPos, state);
 				}
 			}
 		}

@@ -17,8 +17,10 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -26,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class DragonsBloodDoorBlock extends DoorBlock implements BlockEntityProvider, SpecialDoor {
 	public DragonsBloodDoorBlock(Settings settings) {
-		super(settings, BlockSetType.OAK);
+		super(BlockSetType.OAK, settings);
 	}
 
 	@Nullable
@@ -42,9 +44,15 @@ public class DragonsBloodDoorBlock extends DoorBlock implements BlockEntityProvi
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		SigilHolder.onUse(world, state.get(HALF) == DoubleBlockHalf.UPPER ? pos.down() : pos, player, hand);
-		return super.onUse(state, world, pos, player, hand, hit);
+		return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
+	}
+
+	@Override
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+		SigilHolder.onUse(world, state.get(HALF) == DoubleBlockHalf.UPPER ? pos.down() : pos, player, Hand.MAIN_HAND);
+		return super.onUse(state, world, pos, player, hit);
 	}
 
 	@Override

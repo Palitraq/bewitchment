@@ -4,13 +4,13 @@
 
 package moriyashiine.bewitchment.api.component;
 
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class MagicComponent implements AutoSyncedComponent, ServerTickingComponent {
+public class MagicComponent implements Component {
 	public static final int MAX_MAGIC = 100;
 
 	private final PlayerEntity obj;
@@ -20,19 +20,16 @@ public class MagicComponent implements AutoSyncedComponent, ServerTickingCompone
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		setMagic(tag.getInt("Magic"));
 		setMagicTimer(tag.getInt("MagicTimer"));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putInt("Magic", getMagic());
 		tag.putInt("MagicTimer", getMagicTimer());
 	}
 
-	@Override
 	public void serverTick() {
 		if (getMagicTimer() > 0) {
 			setMagicTimer(getMagicTimer() - 1);

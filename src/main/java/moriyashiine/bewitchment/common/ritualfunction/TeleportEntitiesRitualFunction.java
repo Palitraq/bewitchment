@@ -9,10 +9,13 @@ import moriyashiine.bewitchment.api.registry.RitualFunction;
 import moriyashiine.bewitchment.common.item.TaglockItem;
 import moriyashiine.bewitchment.common.item.WaystoneItem;
 import moriyashiine.bewitchment.common.misc.BWUtil;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ItemScatterer;
@@ -37,9 +40,13 @@ public class TeleportEntitiesRitualFunction extends RitualFunction {
 					location = livingEntity.getBlockPos();
 					break;
 				}
-			} else if (stack.getItem() instanceof WaystoneItem && stack.hasNbt() && stack.getOrCreateNbt().contains("LocationPos") && world.getRegistryKey().getValue().toString().equals(stack.getOrCreateNbt().getString("LocationWorld"))) {
-				location = BlockPos.fromLong(stack.getOrCreateNbt().getLong("LocationPos"));
-				break;
+			} else if (stack.getItem() instanceof WaystoneItem) {
+				NbtComponent nbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+				NbtCompound nbt = nbtComponent.copyNbt();
+				if (nbt.contains("LocationPos") && world.getRegistryKey().getValue().toString().equals(nbt.getString("LocationWorld"))) {
+					location = BlockPos.fromLong(nbt.getLong("LocationPos"));
+					break;
+				}
 			}
 		}
 		if (location != null && world.getWorldBorder().contains(location)) {

@@ -10,7 +10,10 @@ import moriyashiine.bewitchment.common.registry.BWObjects;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,17 +33,19 @@ public abstract class ItemStackMixin {
 	@Shadow
 	public abstract int getMaxDamage();
 
-	@Inject(method = "damage(ILnet/minecraft/entity/LivingEntity;Ljava/util/function/Consumer;)V", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V"), cancellable = true)
-	private <T extends LivingEntity> void damage(int amount, T entity, Consumer<T> breakCallback, CallbackInfo callbackInfo) {
+	@Inject(method = "damage(ILnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/network/ServerPlayerEntity;Ljava/util/function/Consumer;)V", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V"), cancellable = true)
+	private void damage(int amount, ServerWorld world, ServerPlayerEntity player, Consumer<Item> breakCallback, CallbackInfo callbackInfo) {
 		if (getDamage() == getMaxDamage()) {
-			PoppetData poppetData = BewitchmentAPI.getPoppet(entity.getWorld(), BWObjects.MENDING_POPPET, entity);
+			if (player == null) return;
+			PoppetData poppetData = BewitchmentAPI.getPoppet(world, BWObjects.MENDING_POPPET, player);
 			if (!poppetData.stack().isEmpty()) {
 				boolean sync = false;
-				if (poppetData.stack().damage(entity instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.WOLF && entity.getRandom().nextBoolean() ? 0 : 1, entity.getRandom(), null) && poppetData.stack().getDamage() == poppetData.stack().getMaxDamage()) {
+				poppetData.stack().damage(player instanceof PlayerEntity p && BewitchmentAPI.getFamiliar(p) == EntityType.WOLF && player.getRandom().nextBoolean() ? 0 : 1, world, player, item -> {});
+				if (poppetData.stack().getDamage() == poppetData.stack().getMaxDamage()) {
 					poppetData.stack().decrement(1);
 					sync = true;
 				}
-				poppetData.update(entity.getWorld(), sync);
+				poppetData.update(world, sync);
 				setDamage(0);
 				callbackInfo.cancel();
 			}

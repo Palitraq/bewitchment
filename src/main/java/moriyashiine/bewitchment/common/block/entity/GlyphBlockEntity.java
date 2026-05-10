@@ -21,9 +21,16 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.recipe.input.RecipeInput;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.listener.ClientPlayPacketListener;
@@ -31,6 +38,8 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
@@ -70,9 +79,9 @@ public class GlyphBlockEntity extends BlockEntity implements SidedInventory, Use
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt() {
-		NbtCompound nbt = super.toInitialChunkDataNbt();
-		writeNbt(nbt);
+	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup lookup) {
+		NbtCompound nbt = super.toInitialChunkDataNbt(lookup);
+		writeNbt(nbt, lookup);
 		return nbt;
 	}
 
@@ -83,8 +92,8 @@ public class GlyphBlockEntity extends BlockEntity implements SidedInventory, Use
 	}
 
 	@Override
-	public void readNbt(NbtCompound nbt) {
-		super.readNbt(nbt);
+	public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.readNbt(nbt, lookup);
 		if (nbt.contains("AltarPos")) {
 			setAltarPos(BlockPos.fromLong(nbt.getLong("AltarPos")));
 		}
@@ -92,23 +101,23 @@ public class GlyphBlockEntity extends BlockEntity implements SidedInventory, Use
 			effectivePos = BlockPos.fromLong(nbt.getLong("EffectivePos"));
 		}
 		inventory.clear();
-		Inventories.readNbt(nbt, inventory);
-		ritualFunction = BWRegistries.RITUAL_FUNCTION.get(new Identifier(nbt.getString("RitualFunction")));
+		Inventories.readNbt(nbt, inventory, lookup);
+		ritualFunction = BWRegistries.RITUAL_FUNCTION.get(Identifier.tryParse(nbt.getString("RitualFunction")));
 		timer = nbt.getInt("Timer");
 		endTime = nbt.getInt("EndTime");
 		catFamiliar = nbt.getBoolean("CatFamiliar");
 	}
 
 	@Override
-	protected void writeNbt(NbtCompound nbt) {
-		super.writeNbt(nbt);
+	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.writeNbt(nbt, lookup);
 		if (getAltarPos() != null) {
 			nbt.putLong("AltarPos", getAltarPos().asLong());
 		}
 		if (effectivePos != null) {
 			nbt.putLong("EffectivePos", effectivePos.asLong());
 		}
-		Inventories.writeNbt(nbt, inventory);
+		Inventories.writeNbt(nbt, inventory, lookup);
 		if (ritualFunction != null) {
 			nbt.putString("RitualFunction", BWRegistries.RITUAL_FUNCTION.getId(ritualFunction).toString());
 		}
@@ -242,9 +251,15 @@ public class GlyphBlockEntity extends BlockEntity implements SidedInventory, Use
 
 	public void onUse(World world, BlockPos pos, LivingEntity user, Hand hand, LivingEntity sacrifice) {
 		ItemStack stack = user.getStackInHand(hand);
-		if (ritualFunction != null && pos.equals(effectivePos) && stack.getItem() instanceof WaystoneItem && stack.hasNbt() && stack.getOrCreateNbt().contains("LocationPos") && world.getRegistryKey().getValue().toString().equals(stack.getOrCreateNbt().getString("LocationWorld"))) {
-			effectivePos = BlockPos.fromLong(stack.getOrCreateNbt().getLong("LocationPos"));
-			stack.damage(1, user, stackUser -> stackUser.sendToolBreakStatus(hand));
+		NbtComponent nbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+		NbtCompound nbt = nbtComponent.copyNbt();
+		if (ritualFunction != null && pos.equals(effectivePos) && stack.getItem() instanceof WaystoneItem && nbt.contains("LocationPos") && world.getRegistryKey().getValue().toString().equals(nbt.getString("LocationWorld"))) {
+			effectivePos = BlockPos.fromLong(nbt.getLong("LocationPos"));
+			if (user instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
+			stack.damage(1, serverPlayer.getServerWorld(), serverPlayer, item -> {});
+		} else {
+			stack.decrement(1);
+		}
 			syncGlyph();
 		} else {
 			if (ritualFunction == null) {
@@ -253,7 +268,14 @@ public class GlyphBlockEntity extends BlockEntity implements SidedInventory, Use
 				for (ItemEntity entity : items) {
 					test.addStack(entity.getStack().copy().split(1));
 				}
-				RitualRecipe recipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.RITUAL_RECIPE_TYPE).stream().filter(ritualRecipe -> ritualRecipe.matches(test, world)).findFirst().orElse(null);
+				record GlyphRecipeInput(SimpleInventory inventory) implements RecipeInput {
+					@Override
+					public ItemStack getStackInSlot(int slot) { return inventory.getStack(slot); }
+					@Override
+					public int getSize() { return inventory.size(); }
+				}
+				RecipeInput recipeInput = new GlyphRecipeInput(test);
+				RitualRecipe recipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.RITUAL_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(ritualRecipe -> ritualRecipe.matches(recipeInput, world)).findFirst().orElse(null);
 				if (recipe != null && recipe.input.size() == items.size() && hasValidChalk(recipe)) {
 					if (recipe.ritualFunction.isValid((ServerWorld) world, pos, test) || (recipe.ritualFunction.sacrifice != null && sacrifice != null && recipe.ritualFunction.sacrifice.test(sacrifice))) {
 						boolean cat = user instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.CAT;

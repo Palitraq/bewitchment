@@ -27,6 +27,6 @@ public class ZephyrHarnessRenderer implements TrinketRenderer {
 			model = new ZephyrHarnessModel(BewitchmentClient.getPart(BewitchmentClient.ZEPHYR_HARNESS_MODEL_LAYER));
 		}
 		TrinketRenderer.translateToChest(matrices, (PlayerEntityModel<AbstractClientPlayerEntity>) contextModel, (AbstractClientPlayerEntity) entity);
-		model.render(matrices, vertexConsumers.getBuffer(RenderLayer.getArmorCutoutNoCull(TEXTURE)), light, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
+		model.render(matrices, vertexConsumers.getBuffer(RenderLayer.getArmorCutoutNoCull(TEXTURE)), light, OverlayTexture.DEFAULT_UV, 0xFFFFFFFF);
 	}
 }

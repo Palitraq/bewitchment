@@ -5,10 +5,11 @@
 package moriyashiine.bewitchment.mixin.brew;
 
 import moriyashiine.bewitchment.common.registry.BWComponents;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.PotionItem;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,11 +22,12 @@ public abstract class PotionItemMixin {
 	private void finishUsing(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> callbackInfo) {
 		if (!world.isClient) {
 			BWComponents.POLYMORPH_COMPONENT.maybeGet(user).ifPresent(polymorphComponent -> {
-				NbtCompound compound = stack.getNbt();
-				if (compound != null) {
-					String name = compound.getString("PolymorphName");
+				var nbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+				var nbt = nbtComponent.copyNbt();
+				if (!nbt.isEmpty()) {
+					String name = nbt.getString("PolymorphName");
 					if (!name.isEmpty()) {
-						polymorphComponent.setUuid(compound.getUuid("PolymorphUUID"));
+						polymorphComponent.setUuid(nbt.getUuid("PolymorphUUID"));
 						polymorphComponent.setName(name);
 					}
 				}

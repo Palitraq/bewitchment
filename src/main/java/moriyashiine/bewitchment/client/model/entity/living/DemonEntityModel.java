@@ -173,13 +173,13 @@ public class DemonEntityModel<T extends DemonEntity> extends BipedEntityModel<T>
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-		realHead.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		realBody.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		BipedLeftArm.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		BipedRightArm.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		BipedLeftLeg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		BipedRightLeg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+		realHead.render(matrices, vertices, light, overlay, color);
+		realBody.render(matrices, vertices, light, overlay, color);
+		BipedLeftArm.render(matrices, vertices, light, overlay, color);
+		BipedRightArm.render(matrices, vertices, light, overlay, color);
+		BipedLeftLeg.render(matrices, vertices, light, overlay, color);
+		BipedRightLeg.render(matrices, vertices, light, overlay, color);
 	}
 
 	@Override

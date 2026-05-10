@@ -7,10 +7,12 @@ package moriyashiine.bewitchment.common.entity.projectile;
 import moriyashiine.bewitchment.common.entity.living.HerneEntity;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.common.registry.BWEntityTypes;
+import moriyashiine.bewitchment.common.registry.BWObjects;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -18,6 +20,7 @@ import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -33,12 +36,14 @@ public class HornedSpearEntity extends PersistentProjectileEntity {
 	}
 
 	public HornedSpearEntity(World world, double x, double y, double z) {
-		super(BWEntityTypes.HORNED_SPEAR, x, y, z, world);
+		super(BWEntityTypes.HORNED_SPEAR, world);
+		setPosition(x, y, z);
 	}
 
 	public HornedSpearEntity(EntityType<? extends PersistentProjectileEntity> type, LivingEntity owner, World world, ItemStack stack) {
-		super(type, owner, world);
+		super(type, world);
 		spear = stack;
+		setOwner(owner);
 	}
 
 	@Override
@@ -47,25 +52,27 @@ public class HornedSpearEntity extends PersistentProjectileEntity {
 	}
 
 	@Override
+	protected ItemStack getDefaultItemStack() {
+		return new ItemStack(BWObjects.HORNED_SPEAR);
+	}
+
+	@Override
 	protected void onEntityHit(EntityHitResult result) {
 		Entity owner = getOwner();
 		Entity entity = result.getEntity();
 		float damage = 7;
-		if (entity instanceof LivingEntity livingEntity) {
-			damage += EnchantmentHelper.getAttackDamage(spear, livingEntity.getGroup());
-		}
 		if (owner instanceof HerneEntity) {
 			damage *= 3;
 		}
 		dealtDamage = true;
-		if (entity.damage(entity.getWorld().getDamageSources().trident(owner == null ? this : owner, owner == null ? this : owner), damage)) {
+		DamageSource damageSource = entity.getWorld().getDamageSources().trident(owner == null ? this : owner, owner == null ? this : owner);
+		if (entity.damage(damageSource, damage)) {
 			if (entity.getType() == EntityType.ENDERMAN) {
 				return;
 			}
 			if (entity instanceof LivingEntity livingEntity) {
 				if (owner instanceof LivingEntity livingOwner) {
-					EnchantmentHelper.onUserDamaged(livingEntity, owner);
-					EnchantmentHelper.onTargetDamaged(livingOwner, livingEntity);
+					EnchantmentHelper.onTargetDamaged((ServerWorld) entity.getWorld(), livingEntity, damageSource);
 				}
 				onHit(livingEntity);
 			}
@@ -133,14 +140,14 @@ public class HornedSpearEntity extends PersistentProjectileEntity {
 	@Override
 	public void readCustomDataFromNbt(NbtCompound nbt) {
 		super.readCustomDataFromNbt(nbt);
-		spear = ItemStack.fromNbt(nbt.getCompound("Spear"));
+		spear = ItemStack.fromNbt(getWorld().getRegistryManager(), nbt.getCompound("Spear")).orElse(ItemStack.EMPTY);
 		dealtDamage = nbt.getBoolean("DealtDamage");
 	}
 
 	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
-		nbt.put("Spear", spear.writeNbt(new NbtCompound()));
+		nbt.put("Spear", spear.encode(getWorld().getRegistryManager()));
 		nbt.putBoolean("DealtDamage", dealtDamage);
 	}
 

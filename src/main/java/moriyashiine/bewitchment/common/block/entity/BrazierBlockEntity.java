@@ -19,6 +19,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
@@ -27,11 +28,18 @@ import net.minecraft.item.FlintAndSteelItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.input.RecipeInput;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
@@ -61,9 +69,9 @@ public class BrazierBlockEntity extends BlockEntity implements Inventory, UsesAl
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt() {
-		NbtCompound nbt = super.toInitialChunkDataNbt();
-		writeNbt(nbt);
+	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup lookup) {
+		NbtCompound nbt = super.toInitialChunkDataNbt(lookup);
+		writeNbt(nbt, lookup);
 		return nbt;
 	}
 
@@ -74,24 +82,24 @@ public class BrazierBlockEntity extends BlockEntity implements Inventory, UsesAl
 	}
 
 	@Override
-	public void readNbt(NbtCompound nbt) {
-		super.readNbt(nbt);
+	public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.readNbt(nbt, lookup);
 		if (nbt.contains("AltarPos")) {
 			setAltarPos(BlockPos.fromLong(nbt.getLong("AltarPos")));
 		}
 		inventory.clear();
-		Inventories.readNbt(nbt, inventory);
+		Inventories.readNbt(nbt, inventory, lookup);
 		timer = nbt.getInt("Timer");
 		hasIncense = nbt.getBoolean("HasIncense");
 	}
 
 	@Override
-	protected void writeNbt(NbtCompound nbt) {
-		super.writeNbt(nbt);
+	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+		super.writeNbt(nbt, lookup);
 		if (getAltarPos() != null) {
 			nbt.putLong("AltarPos", getAltarPos().asLong());
 		}
-		Inventories.writeNbt(nbt, inventory);
+		Inventories.writeNbt(nbt, inventory, lookup);
 		nbt.putInt("Timer", timer);
 		nbt.putBoolean("HasIncense", hasIncense);
 	}
@@ -116,9 +124,9 @@ public class BrazierBlockEntity extends BlockEntity implements Inventory, UsesAl
 		if (world != null) {
 			if (!blockEntity.loaded) {
 				if (!world.isClient && state.get(Properties.LIT)) {
-					blockEntity.incenseRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.INCENSE_RECIPE_TYPE).stream().filter(recipe -> recipe.matches(blockEntity, world)).findFirst().orElse(null);
+					blockEntity.incenseRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.INCENSE_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(recipe -> recipe.matches(new InventoryRecipeInput(blockEntity), world)).findFirst().orElse(null);
 					if (BWConfig.enableCurses) {
-						blockEntity.curseRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.CURSE_RECIPE_TYPE).stream().filter(recipe -> recipe.matches(blockEntity, world)).findFirst().orElse(null);
+						blockEntity.curseRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.CURSE_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(recipe -> recipe.matches(new InventoryRecipeInput(blockEntity), world)).findFirst().orElse(null);
 					}
 					blockEntity.hasIncense = blockEntity.incenseRecipe != null;
 					blockEntity.markDirty();
@@ -144,9 +152,12 @@ public class BrazierBlockEntity extends BlockEntity implements Inventory, UsesAl
 								}
 								if (target instanceof LivingEntity livingEntity) {
 									PoppetData poppetData = BewitchmentAPI.getPoppet(world, BWObjects.CURSE_POPPET, target);
-									if (!poppetData.stack().isEmpty() && poppetData.stack().hasNbt() && !poppetData.stack().getNbt().getBoolean("Cursed")) {
-										poppetData.stack().getNbt().putString("Curse", BWRegistries.CURSE.getId(blockEntity.curseRecipe.curse).toString());
-										poppetData.stack().getNbt().putBoolean("Cursed", true);
+									if (!poppetData.stack().isEmpty() && (!poppetData.stack().contains(DataComponentTypes.CUSTOM_DATA) || !poppetData.stack().get(DataComponentTypes.CUSTOM_DATA).copyNbt().getBoolean("Cursed"))) {
+										NbtComponent curseNbt = poppetData.stack().getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+										NbtCompound curseCompound = curseNbt.copyNbt();
+										curseCompound.putString("Curse", BWRegistries.CURSE.getId(blockEntity.curseRecipe.curse).toString());
+										curseCompound.putBoolean("Cursed", true);
+										poppetData.stack().set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(curseCompound));
 										TaglockItem.removeTaglock(poppetData.stack());
 										poppetData.update(world, true);
 									} else {
@@ -188,6 +199,14 @@ public class BrazierBlockEntity extends BlockEntity implements Inventory, UsesAl
 				}
 			}
 		}
+	}
+
+	private record InventoryRecipeInput(Inventory inventory) implements RecipeInput {
+		@Override
+		public ItemStack getStackInSlot(int slot) { return inventory.getStack(slot); }
+
+		@Override
+		public int getSize() { return inventory.size(); }
 	}
 
 	@Override
@@ -260,15 +279,15 @@ public class BrazierBlockEntity extends BlockEntity implements Inventory, UsesAl
 				if (stack.getItem() instanceof FlintAndSteelItem) {
 					world.setBlockState(pos, getCachedState().with(Properties.LIT, true));
 					world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1, 1);
-					stack.damage(1, player, stackUser -> stackUser.sendToolBreakStatus(hand));
-					IncenseRecipe foundIncenseRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.INCENSE_RECIPE_TYPE).stream().filter(recipe -> recipe.matches(this, world)).findFirst().orElse(null);
+					stack.damage(1, player, hand == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+					IncenseRecipe foundIncenseRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.INCENSE_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(recipe -> recipe.matches(new InventoryRecipeInput(this), world)).findFirst().orElse(null);
 					if (foundIncenseRecipe != null) {
 						incenseRecipe = foundIncenseRecipe;
 						timer = -6000;
 						hasIncense = true;
 						syncBrazier();
 					} else if (BWConfig.enableCurses) {
-						CurseRecipe foundCurseRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.CURSE_RECIPE_TYPE).stream().filter(recipe -> recipe.matches(this, world)).findFirst().orElse(null);
+						CurseRecipe foundCurseRecipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.CURSE_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(recipe -> recipe.matches(new InventoryRecipeInput(this), world)).findFirst().orElse(null);
 						if (foundCurseRecipe != null && getTarget() != null) {
 							curseRecipe = foundCurseRecipe;
 							timer = -100;
@@ -319,7 +338,8 @@ public class BrazierBlockEntity extends BlockEntity implements Inventory, UsesAl
 		for (int i = 0; i < inventory.size(); i++) {
 			ItemStack stack = getStack(i);
 			if (stack.isDamageable()) {
-				if (stack.damage(1, world.random, null) && stack.getDamage() == stack.getMaxDamage()) {
+				stack.setDamage(stack.getDamage() + 1);
+				if (stack.getDamage() >= stack.getMaxDamage()) {
 					stack.decrement(1);
 				}
 			} else {

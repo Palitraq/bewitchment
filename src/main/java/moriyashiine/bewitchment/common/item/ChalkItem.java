@@ -7,21 +7,25 @@ package moriyashiine.bewitchment.common.item;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.Item.TooltipContext;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -55,7 +59,8 @@ public class ChalkItem extends Item {
 				world.setBlockState(pos, state);
 				if (player instanceof ServerPlayerEntity serverPlayer) {
 					Criteria.PLACED_BLOCK.trigger(serverPlayer, pos, stack);
-					stack.damage(1, player, stackUser -> stackUser.sendToolBreakStatus(context.getHand()));
+					EquipmentSlot slot = context.getHand() == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+					stack.damage(1, serverPlayer.getServerWorld(), serverPlayer, item -> {});
 				}
 			}
 			return ActionResult.success(client);
@@ -74,15 +79,16 @@ public class ChalkItem extends Item {
 	}
 
 	@Override
-	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		if (stack.hasNbt() && stack.getOrCreateNbt().contains("InnerCircle")) {
-			tooltip.add(Text.translatable("bewitchment.tooltip.inner_circle", Text.translatable(stack.getOrCreateNbt().getString("InnerCircle"))).formatted(Formatting.GRAY));
-			if (stack.getOrCreateNbt().contains("OuterCircle")) {
-				tooltip.add(Text.translatable("bewitchment.tooltip.outer_circle", Text.translatable(stack.getOrCreateNbt().getString("OuterCircle"))).formatted(Formatting.GRAY));
+	public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+		var nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+		if (nbt.contains("InnerCircle")) {
+			tooltip.add(Text.translatable("bewitchment.tooltip.inner_circle", Text.translatable(nbt.getString("InnerCircle"))).formatted(Formatting.GRAY));
+			if (nbt.contains("OuterCircle")) {
+				tooltip.add(Text.translatable("bewitchment.tooltip.outer_circle", Text.translatable(nbt.getString("OuterCircle"))).formatted(Formatting.GRAY));
 			}
-			tooltip.add(Text.translatable("bewitchment.tooltip.cost", stack.getOrCreateNbt().getInt("Cost")).formatted(Formatting.GRAY));
-			if (stack.getOrCreateNbt().contains("RunningTime")) {
-				tooltip.add(Text.translatable("bewitchment.tooltip.running_time", stack.getOrCreateNbt().getInt("RunningTime") / 20f).formatted(Formatting.GRAY));
+			tooltip.add(Text.translatable("bewitchment.tooltip.cost", nbt.getInt("Cost")).formatted(Formatting.GRAY));
+			if (nbt.contains("RunningTime")) {
+				tooltip.add(Text.translatable("bewitchment.tooltip.running_time", nbt.getInt("RunningTime") / 20f).formatted(Formatting.GRAY));
 			}
 		}
 	}

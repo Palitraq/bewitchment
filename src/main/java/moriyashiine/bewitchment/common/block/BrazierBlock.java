@@ -11,11 +11,17 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.ItemActionResult;
+import net.minecraft.item.Item.TooltipContext;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.potion.PotionUtil;
+
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
@@ -31,13 +37,12 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
+import java.util.List;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 @SuppressWarnings("ConstantConditions")
 public class BrazierBlock extends LanternBlock implements BlockEntityProvider {
@@ -67,12 +72,12 @@ public class BrazierBlock extends LanternBlock implements BlockEntityProvider {
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		boolean client = world.isClient;
 		if (!client) {
 			((BrazierBlockEntity) world.getBlockEntity(pos)).onUse(world, pos, player, hand);
 		}
-		return ActionResult.success(client);
+		return ItemActionResult.success(client);
 	}
 
 	@Override
@@ -115,12 +120,18 @@ public class BrazierBlock extends LanternBlock implements BlockEntityProvider {
 	}
 
 	@Override
-	public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
-		if (!PotionUtil.getCustomPotionEffects(stack).isEmpty()) {
-			PotionUtil.buildTooltip(stack, tooltip, 1);
+	public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+		PotionContentsComponent potionContents = stack.get(DataComponentTypes.POTION_CONTENTS);
+		if (potionContents != null) {
+			var effects = potionContents.getEffects();
+			PotionContentsComponent.buildTooltip(effects, tooltip::add, 1.0f, 1.0f);
 		}
-		if (stack.hasNbt() && stack.getNbt().contains("Cost")) {
-			tooltip.add(Text.literal("Cost: " + stack.getOrCreateNbt().getInt("Cost")).formatted(Formatting.GRAY));
+		NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+		if (nbtComponent != null) {
+			NbtCompound nbt = nbtComponent.copyNbt();
+			if (nbt.contains("Cost")) {
+				tooltip.add(Text.literal("Cost: " + nbt.getInt("Cost")).formatted(Formatting.GRAY));
+			}
 		}
 	}
 

@@ -22,16 +22,17 @@ public class BWTags {
 	public static final TagKey<EntityType<?>> TAGLOCK_BLACKLIST = TagKey.of(RegistryKeys.ENTITY_TYPE, Bewitchment.id("taglock_blacklist"));
 	public static final TagKey<EntityType<?>> ENCOUNTER_FORTUNE = TagKey.of(RegistryKeys.ENTITY_TYPE, Bewitchment.id("encounter_fortune"));
 	public static final TagKey<EntityType<?>> INSANITY_BLACKLIST = TagKey.of(RegistryKeys.ENTITY_TYPE, Bewitchment.id("insanity_blacklist"));
+	public static final TagKey<EntityType<?>> DEMON = TagKey.of(RegistryKeys.ENTITY_TYPE, Bewitchment.id("demon"));
 
-	public static final TagKey<Block> ORES = TagKey.of(RegistryKeys.BLOCK, new Identifier("c", "ores"));
-	public static final TagKey<Item> SKULLS = TagKey.of(RegistryKeys.ITEM, new Identifier("c", "skulls"));
+	public static final TagKey<Block> ORES = TagKey.of(RegistryKeys.BLOCK, Identifier.of("c", "ores"));
+	public static final TagKey<Item> SKULLS = TagKey.of(RegistryKeys.ITEM, Identifier.of("c", "skulls"));
 	public static final TagKey<Block> GIVES_ALTAR_POWER = TagKey.of(RegistryKeys.BLOCK, Bewitchment.id("gives_altar_power"));
 	public static final TagKey<Block> HEATS_CAULDRON = TagKey.of(RegistryKeys.BLOCK, Bewitchment.id("heats_cauldron"));
 	public static final TagKey<Block> NATURAL_TERRAIN = TagKey.of(RegistryKeys.BLOCK, Bewitchment.id("natural_terrain"));
 	public static final TagKey<Block> UNDEAD_MASK = TagKey.of(RegistryKeys.BLOCK, Bewitchment.id("undead_mask"));
 
-	public static final TagKey<Item> SILVER_INGOTS = TagKey.of(RegistryKeys.ITEM, new Identifier("c", "silver_ingots"));
-	public static final TagKey<Item> SILVER_NUGGETS = TagKey.of(RegistryKeys.ITEM, new Identifier("c", "silver_nuggets"));
+	public static final TagKey<Item> SILVER_INGOTS = TagKey.of(RegistryKeys.ITEM, Identifier.of("c", "silver_ingots"));
+	public static final TagKey<Item> SILVER_NUGGETS = TagKey.of(RegistryKeys.ITEM, Identifier.of("c", "silver_nuggets"));
 	public static final TagKey<Item> BARKS = TagKey.of(RegistryKeys.ITEM, Bewitchment.id("barks"));
 	public static final TagKey<Item> WITCHBERRY_FOODS = TagKey.of(RegistryKeys.ITEM, Bewitchment.id("witchberry_foods"));
 

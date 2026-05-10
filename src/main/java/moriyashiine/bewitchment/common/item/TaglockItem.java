@@ -13,6 +13,8 @@ import moriyashiine.bewitchment.common.registry.BWObjects;
 import moriyashiine.bewitchment.common.registry.BWSigils;
 import moriyashiine.bewitchment.common.registry.BWSoundEvents;
 import moriyashiine.bewitchment.common.registry.BWTags;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
@@ -20,7 +22,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.BedPart;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -28,6 +29,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.Item.TooltipContext;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -41,7 +44,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -148,18 +150,18 @@ public class TaglockItem extends Item {
 	}
 
 	@Override
-	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+	public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
 		if (hasTaglock(stack)) {
 			tooltip.add(Text.literal(getTaglockName(stack)).formatted(Formatting.GRAY));
-			NbtCompound nbt = stack.getNbt();
-			if (nbt.contains("UsedForScrying")) {
+		NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+		if (nbt.contains("UsedForScrying")) {
 				if (nbt.contains("Failed")) {
 					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.failed").formatted(Formatting.DARK_GRAY));
 				} else {
 					boolean shifting = Screen.hasShiftDown();
-					BlockPos pos = BlockPos.fromLong(stack.getNbt().getLong("LocationPos"));
-					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.location", pos.getX(), pos.getY(), pos.getZ(), stack.getNbt().getString("LocationWorld")).formatted(Formatting.DARK_GRAY));
-					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.level", stack.getNbt().getInt("Level")).formatted(Formatting.DARK_GRAY));
+					BlockPos pos = BlockPos.fromLong(nbt.getLong("LocationPos"));
+					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.location", pos.getX(), pos.getY(), pos.getZ(), nbt.getString("LocationWorld")).formatted(Formatting.DARK_GRAY));
+					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.level", nbt.getInt("Level")).formatted(Formatting.DARK_GRAY));
 					MutableText curseTooltip = Text.translatable(Bewitchment.MOD_ID + ".tooltip.curse");
 					NbtList cursesList = nbt.getList("Curses", 10);
 					if (cursesList.isEmpty()) {
@@ -192,9 +194,9 @@ public class TaglockItem extends Item {
 							tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.curse_expanded", curseText, duration).formatted(Formatting.DARK_GRAY));
 						}
 					}
-					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.transformation", Text.translatable(stack.getNbt().getString("Transformation"))).formatted(Formatting.DARK_GRAY));
+					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.transformation", Text.translatable(nbt.getString("Transformation"))).formatted(Formatting.DARK_GRAY));
 					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.familiar", Text.translatable("entity." + nbt.getString("Familiar").replace(":", "."))).formatted(Formatting.DARK_GRAY));
-					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.pledge", Text.translatable(stack.getNbt().getString("Pledge"))).formatted(Formatting.DARK_GRAY));
+					tooltip.add(Text.translatable(Bewitchment.MOD_ID + ".tooltip.pledge", Text.translatable(nbt.getString("Pledge"))).formatted(Formatting.DARK_GRAY));
 				}
 			}
 		}
@@ -252,48 +254,55 @@ public class TaglockItem extends Item {
 	}
 
 	public static ItemStack putTaglock(ItemStack stack, Entity entity) {
-		stack.getOrCreateNbt().putUuid("OwnerUUID", entity.getUuid());
-		stack.getOrCreateNbt().putString("OwnerName", entity.getName().getString());
-		stack.getOrCreateNbt().putBoolean("FromPlayer", entity instanceof PlayerEntity);
+		stack.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {
+			currentNbt.putUuid("OwnerUUID", entity.getUuid());
+			currentNbt.putString("OwnerName", entity.getName().getString());
+			currentNbt.putBoolean("FromPlayer", entity instanceof PlayerEntity);
+		}));
 		return stack;
 	}
 
 	public static ItemStack copyTo(ItemStack from, ItemStack to) {
 		if (hasTaglock(from)) {
-			to.getOrCreateNbt().putUuid("OwnerUUID", from.getOrCreateNbt().getUuid("OwnerUUID"));
-			to.getOrCreateNbt().putString("OwnerName", from.getOrCreateNbt().getString("OwnerName"));
-			to.getOrCreateNbt().putBoolean("FromPlayer", from.getOrCreateNbt().getBoolean("FromPlayer"));
+			NbtCompound fromNbt = from.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+			to.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {
+				currentNbt.putUuid("OwnerUUID", fromNbt.getUuid("OwnerUUID"));
+				currentNbt.putString("OwnerName", fromNbt.getString("OwnerName"));
+				currentNbt.putBoolean("FromPlayer", fromNbt.getBoolean("FromPlayer"));
+			}));
 		}
 		return to;
 	}
 
 	public static boolean hasTaglock(ItemStack stack) {
-		return stack.hasNbt() && stack.getOrCreateNbt().contains("OwnerUUID");
+		return stack.contains(DataComponentTypes.CUSTOM_DATA) && stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt().contains("OwnerUUID");
 	}
 
 	public static void removeTaglock(ItemStack stack) {
-		if (stack.hasNbt()) {
-			stack.getOrCreateNbt().remove("OwnerUUID");
-			stack.getOrCreateNbt().remove("OwnerName");
-			stack.getOrCreateNbt().remove("FromPlayer");
+		if (stack.contains(DataComponentTypes.CUSTOM_DATA)) {
+			stack.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {
+				currentNbt.remove("OwnerUUID");
+				currentNbt.remove("OwnerName");
+				currentNbt.remove("FromPlayer");
+			}));
 		}
 	}
 
 	public static UUID getTaglockUUID(ItemStack stack) {
 		if (hasTaglock(stack)) {
-			return stack.getOrCreateNbt().getUuid("OwnerUUID");
+			return stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt().getUuid("OwnerUUID");
 		}
 		return null;
 	}
 
 	public static String getTaglockName(ItemStack stack) {
 		if (hasTaglock(stack)) {
-			return stack.getOrCreateNbt().getString("OwnerName");
+			return stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt().getString("OwnerName");
 		}
 		return "";
 	}
 
 	public static boolean isTaglockFromPlayer(ItemStack stack) {
-		return hasTaglock(stack) && stack.getOrCreateNbt().getBoolean("FromPlayer");
+		return hasTaglock(stack) && stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt().getBoolean("FromPlayer");
 	}
 }

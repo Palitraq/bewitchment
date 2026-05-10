@@ -21,7 +21,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 public class GhostEntityRenderer extends MobEntityRenderer<GhostEntity, GhostEntityModel<GhostEntity>> {
-	public static final Identifier EMPTY = new Identifier("textures/block/redstone_dust_overlay.png");
+	public static final Identifier EMPTY = Identifier.ofVanilla("textures/block/redstone_dust_overlay.png");
 	private static Identifier[] TEXTURES;
 
 	public GhostEntityRenderer(EntityRendererFactory.Context context) {
@@ -38,7 +38,7 @@ public class GhostEntityRenderer extends MobEntityRenderer<GhostEntity, GhostEnt
 					}
 				}
 				VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(TEXTURES[entity.getVariant()]));
-				getContextModel().render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
+				getContextModel().render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, 0xFFFFFFFF);
 			}
 		});
 	}

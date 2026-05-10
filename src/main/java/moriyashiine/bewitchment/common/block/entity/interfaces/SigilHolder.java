@@ -54,7 +54,7 @@ public interface SigilHolder {
 		if (nbt.contains("Owner")) {
 			setOwner(nbt.getUuid("Owner"));
 		}
-		setSigil(BWRegistries.SIGIL.get(new Identifier(nbt.getString("Sigil"))));
+		setSigil(BWRegistries.SIGIL.get(Identifier.tryParse(nbt.getString("Sigil"))));
 		setUses(nbt.getInt("Uses"));
 		setModeOnWhitelist(nbt.getBoolean("ModeOnWhitelist"));
 	}

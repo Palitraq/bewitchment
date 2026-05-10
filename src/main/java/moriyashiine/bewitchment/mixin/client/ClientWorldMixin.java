@@ -37,8 +37,8 @@ public abstract class ClientWorldMixin extends World {
 	private float modifySound0(float volume, double x, double y, double z, SoundEvent sound, SoundCategory category) {
 		if (category != SoundCategory.MASTER && category != SoundCategory.VOICE) {
 			ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
-			if (clientPlayer != null && clientPlayer.hasStatusEffect(BWStatusEffects.DEAFENED)) {
-				return Math.max(0, volume * (1 - (0.2f * (clientPlayer.getStatusEffect(BWStatusEffects.DEAFENED).getAmplifier() + 1))));
+			if (clientPlayer != null && clientPlayer.hasStatusEffect(RegistryEntry.of(BWStatusEffects.DEAFENED))) {
+				return Math.max(0, volume * (1 - (0.2f * (clientPlayer.getStatusEffect(RegistryEntry.of(BWStatusEffects.DEAFENED)).getAmplifier() + 1))));
 			}
 		}
 		return volume;
@@ -48,8 +48,8 @@ public abstract class ClientWorldMixin extends World {
 	private float modifySound1(float volume, @Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category) {
 		if (category != SoundCategory.MASTER && category != SoundCategory.VOICE) {
 			ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
-			if (clientPlayer != null && clientPlayer.hasStatusEffect(BWStatusEffects.DEAFENED)) {
-				return Math.max(0, volume * (1 - (0.2f * (clientPlayer.getStatusEffect(BWStatusEffects.DEAFENED).getAmplifier() + 1))));
+			if (clientPlayer != null && clientPlayer.hasStatusEffect(RegistryEntry.of(BWStatusEffects.DEAFENED))) {
+				return Math.max(0, volume * (1 - (0.2f * (clientPlayer.getStatusEffect(RegistryEntry.of(BWStatusEffects.DEAFENED)).getAmplifier() + 1))));
 			}
 		}
 		return volume;

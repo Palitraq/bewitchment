@@ -146,11 +146,11 @@ public class WerewolfEntityModel<T extends WerewolfEntity> extends BipedEntityMo
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-		neck.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		realBody.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		lArm01.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		rArm01.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+		neck.render(matrices, vertices, light, overlay, color);
+		realBody.render(matrices, vertices, light, overlay, color);
+		lArm01.render(matrices, vertices, light, overlay, color);
+		rArm01.render(matrices, vertices, light, overlay, color);
 	}
 
 	@Override

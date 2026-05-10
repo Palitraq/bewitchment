@@ -11,13 +11,17 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import moriyashiine.bewitchment.client.integration.emi.BWEmiIntegration;
 import moriyashiine.bewitchment.common.recipe.AthameDropRecipe;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.text.Text;
 
 public class EmiAthameDropRecipe extends BasicEmiRecipe {
 	public EmiAthameDropRecipe(AthameDropRecipe recipe) {
 		super(BWEmiIntegration.ATHAME_DROPS_CATEGORY, recipe.getId(), 76, 18);
-		inputs.add(EmiStack.of(new ItemStack(Items.SPAWNER).setCustomName(recipe.entity_type.getName())));
+		ItemStack spawnerStack = new ItemStack(Items.SPAWNER);
+		spawnerStack.set(DataComponentTypes.ITEM_NAME, recipe.entity_type.getName());
+		inputs.add(EmiStack.of(spawnerStack));
 		outputs.add(EmiStack.of(EmiPort.getOutput(recipe)));
 	}
 

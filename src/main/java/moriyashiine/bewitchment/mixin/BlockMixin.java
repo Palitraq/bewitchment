@@ -14,11 +14,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CropBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ArmorItem;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -47,7 +49,8 @@ public abstract class BlockMixin {
 				entity.damage(BWDamageSources.create(world, BWDamageSources.MAGIC_COPY), living.getMaxHealth() * 1 / 2f);
 			}
 			List<ItemStack> drops = callbackInfo.getReturnValue();
-			if (!drops.isEmpty() && !EnchantmentHelper.get(stack).containsKey(Enchantments.SILK_TOUCH) && state.getBlock() instanceof CropBlock crop && crop.getAge(state) == crop.getMaxAge() && BWUtil.getArmorPieces(living, armorStack -> armorStack.getItem() instanceof ArmorItem armorItem && armorItem.getMaterial() == BWMaterials.HEDGEWITCH_ARMOR) >= 3) {
+			RegistryEntry<Enchantment> silkTouch = world.getRegistryManager().get(RegistryKeys.ENCHANTMENT).entryOf(Enchantments.SILK_TOUCH);
+			if (!drops.isEmpty() && stack.getEnchantments().getLevel(silkTouch) == 0 && state.getBlock() instanceof CropBlock crop && crop.getAge(state) == crop.getMaxAge() && BWUtil.getArmorPieces(living, armorStack -> armorStack.getItem() instanceof ArmorItem armorItem && armorItem.getMaterial() == RegistryEntry.of(BWMaterials.HEDGEWITCH_ARMOR)) >= 3) {
 				drops.replaceAll(itemStack -> new ItemStack(itemStack.getItem(), itemStack.getCount() + 1));
 			}
 		}

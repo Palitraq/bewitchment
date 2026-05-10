@@ -7,26 +7,25 @@ package moriyashiine.bewitchment.common.recipe;
 import moriyashiine.bewitchment.api.item.PoppetItem;
 import moriyashiine.bewitchment.common.item.TaglockItem;
 import moriyashiine.bewitchment.common.registry.BWRecipeTypes;
-import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.recipe.input.CraftingRecipeInput;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.World;
 
 public class TaglockCraftingRecipe extends SpecialCraftingRecipe {
-	public TaglockCraftingRecipe(Identifier id) {
-		super(id, CraftingRecipeCategory.EQUIPMENT);
+	public TaglockCraftingRecipe(CraftingRecipeCategory category) {
+		super(category);
 	}
 
 	@Override
-	public boolean matches(RecipeInputInventory inventory, World world) {
+	public boolean matches(CraftingRecipeInput inventory, World world) {
 		boolean foundTaglock = false, foundCraftable = false;
 		int foundItems = 0;
-		for (int i = 0; i < inventory.size(); i++) {
-			ItemStack stack = inventory.getStack(i);
+		for (int i = 0; i < inventory.getSize(); i++) {
+			ItemStack stack = inventory.getStackInSlot(i);
 			if (stack.getItem() instanceof TaglockItem && TaglockItem.hasTaglock(stack)) {
 				if (!foundTaglock) {
 					foundTaglock = true;
@@ -43,10 +42,10 @@ public class TaglockCraftingRecipe extends SpecialCraftingRecipe {
 	}
 
 	@Override
-	public ItemStack craft(RecipeInputInventory inventory, DynamicRegistryManager registryManager) {
+	public ItemStack craft(CraftingRecipeInput inventory, RegistryWrapper.WrapperLookup lookup) {
 		ItemStack taglock = null, craftedStack = null;
-		for (int i = 0; i < inventory.size(); i++) {
-			ItemStack stack = inventory.getStack(i);
+		for (int i = 0; i < inventory.getSize(); i++) {
+			ItemStack stack = inventory.getStackInSlot(i);
 			if (stack.getItem() instanceof TaglockItem) {
 				taglock = stack.copy();
 			} else if (isTaglockCraftable(stack)) {

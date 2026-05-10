@@ -9,6 +9,7 @@ import moriyashiine.bewitchment.common.registry.BWRecipeTypes;
 import moriyashiine.bewitchment.common.registry.BWRegistries;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import vazkii.patchouli.api.IComponentProcessor;
@@ -21,18 +22,18 @@ public class CurseProcessor implements IComponentProcessor {
 
 	@Override
 	public void setup(World level, IVariableProvider variables) {
-		recipe = (CurseRecipe) level.getRecipeManager().get(new Identifier(variables.get("recipe").asString())).filter(recipe -> recipe.getType().equals(BWRecipeTypes.CURSE_RECIPE_TYPE)).orElseThrow(IllegalArgumentException::new);
+		recipe = level.getRecipeManager().get(Identifier.tryParse(variables.get("recipe", level.getRegistryManager()).asString())).map(RecipeEntry::value).filter(recipe -> recipe.getType().equals(BWRecipeTypes.CURSE_RECIPE_TYPE)).map(recipe -> (CurseRecipe) recipe).orElseThrow(IllegalArgumentException::new);
 	}
 
 	@Override
 	public IVariable process(World level, String key) {
 		if (key.equals("header")) {
-			return IVariable.from(Text.translatable("curse." + BWRegistries.CURSE.getId(recipe.curse).toString().replace(":", ".")));
+			return IVariable.from(Text.translatable("curse." + BWRegistries.CURSE.getId(recipe.curse).toString().replace(":", ".")), level.getRegistryManager());
 		}
 		for (int i = 0; i < recipe.input.size(); i++) {
 			if (key.equals("ingredient" + i)) {
 				ItemStack[] stack = recipe.input.get(i).getMatchingStacks();
-				return stack.length > 0 ? IVariable.from(stack[0]) : null;
+				return stack.length > 0 ? IVariable.from(stack[0], level.getRegistryManager()) : null;
 			}
 		}
 		return null;

@@ -4,23 +4,21 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class TeleportTimerComponent implements ServerTickingComponent {
+public class TeleportTimerComponent implements Component {
 	private int teleportTimer = 0;
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		setTeleportTimer(tag.getInt("TeleportTimer"));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putInt("TeleportTimer", getTeleportTimer());
 	}
 
-	@Override
 	public void serverTick() {
 		if (getTeleportTimer() > 0) {
 			setTeleportTimer(getTeleportTimer() - 1);

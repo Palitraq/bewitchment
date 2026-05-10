@@ -18,15 +18,21 @@ public class SilverArrowEntity extends PersistentProjectileEntity {
 	}
 
 	public SilverArrowEntity(EntityType<? extends PersistentProjectileEntity> type, LivingEntity owner, World world) {
-		super(type, owner, world);
+		super(type, owner, world, new ItemStack(BWObjects.SILVER_ARROW), new ItemStack(BWObjects.SILVER_ARROW));
 	}
 
 	public SilverArrowEntity(World world, double x, double y, double z) {
-		super(BWEntityTypes.SILVER_ARROW, x, y, z, world);
+		super(BWEntityTypes.SILVER_ARROW, world);
+		setPosition(x, y, z);
 	}
 
 	@Override
 	protected ItemStack asItemStack() {
+		return new ItemStack(BWObjects.SILVER_ARROW);
+	}
+
+	@Override
+	protected ItemStack getDefaultItemStack() {
 		return new ItemStack(BWObjects.SILVER_ARROW);
 	}
 }

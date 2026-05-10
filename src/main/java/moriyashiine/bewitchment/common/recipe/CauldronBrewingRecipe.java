@@ -5,22 +5,32 @@
 package moriyashiine.bewitchment.common.recipe;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import moriyashiine.bewitchment.common.registry.BWRecipeTypes;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.input.RecipeInput;
 import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
+
+import java.util.stream.Stream;
 import net.minecraft.world.World;
 
-public class CauldronBrewingRecipe implements Recipe<Inventory> {
+public class CauldronBrewingRecipe implements Recipe<RecipeInput> {
 	private final Identifier identifier;
 	public final Ingredient input;
 	public final StatusEffect output;
@@ -34,12 +44,12 @@ public class CauldronBrewingRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public boolean matches(Inventory inv, World world) {
+	public boolean matches(RecipeInput inv, World world) {
 		return false;
 	}
 
 	@Override
-	public ItemStack craft(Inventory inventory, DynamicRegistryManager registryManager) {
+	public ItemStack craft(RecipeInput inventory, RegistryWrapper.WrapperLookup lookup) {
 		return ItemStack.EMPTY;
 	}
 
@@ -49,11 +59,10 @@ public class CauldronBrewingRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public ItemStack getOutput(DynamicRegistryManager registryManager) {
+	public ItemStack getResult(RegistryWrapper.WrapperLookup lookup) {
 		return ItemStack.EMPTY;
 	}
 
-	@Override
 	public Identifier getId() {
 		return identifier;
 	}
@@ -70,21 +79,48 @@ public class CauldronBrewingRecipe implements Recipe<Inventory> {
 
 	@SuppressWarnings("ConstantConditions")
 	public static class Serializer implements RecipeSerializer<CauldronBrewingRecipe> {
-		@Override
 		public CauldronBrewingRecipe read(Identifier id, JsonObject json) {
-			return new CauldronBrewingRecipe(id, Ingredient.fromJson(JsonHelper.getObject(json, "ingredient")), Registries.STATUS_EFFECT.get(new Identifier(JsonHelper.getString(json, "effect"))), JsonHelper.getInt(json, "time"));
+			return new CauldronBrewingRecipe(id, Ingredient.DISALLOW_EMPTY_CODEC.parse(JsonOps.INSTANCE, JsonHelper.getObject(json, "ingredient")).getOrThrow(), Registries.STATUS_EFFECT.get(Identifier.tryParse(JsonHelper.getString(json, "effect"))), JsonHelper.getInt(json, "time"));
 		}
 
-		@Override
 		public CauldronBrewingRecipe read(Identifier id, PacketByteBuf buf) {
-			return new CauldronBrewingRecipe(id, Ingredient.fromPacket(buf), Registries.STATUS_EFFECT.get(new Identifier(buf.readString())), buf.readInt());
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			return new CauldronBrewingRecipe(id, Ingredient.PACKET_CODEC.decode(regBuf), Registries.STATUS_EFFECT.get(Identifier.tryParse(regBuf.readString())), regBuf.readInt());
+		}
+
+		public void write(PacketByteBuf buf, CauldronBrewingRecipe recipe) {
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			Ingredient.PACKET_CODEC.encode(regBuf, recipe.input);
+			regBuf.writeString(Registries.STATUS_EFFECT.getId(recipe.output).toString());
+			regBuf.writeInt(recipe.time);
 		}
 
 		@Override
-		public void write(PacketByteBuf buf, CauldronBrewingRecipe recipe) {
-			recipe.input.write(buf);
-			buf.writeString(Registries.STATUS_EFFECT.getId(recipe.output).toString());
-			buf.writeInt(recipe.time);
+		public MapCodec<CauldronBrewingRecipe> codec() {
+			return new MapCodec<>() {
+				@Override
+				public <T> Stream<T> keys(DynamicOps<T> ops) {
+					return Stream.of();
+				}
+
+				@Override
+				public <T> DataResult<CauldronBrewingRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
+					return DataResult.error(() -> "Codec not implemented");
+				}
+
+				@Override
+				public <T> RecordBuilder<T> encode(CauldronBrewingRecipe recipe, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+					return prefix;
+				}
+			};
+		}
+
+		@Override
+		public PacketCodec<RegistryByteBuf, CauldronBrewingRecipe> packetCodec() {
+			return PacketCodec.ofStatic(
+				(RegistryByteBuf buf, CauldronBrewingRecipe recipe) -> write(buf, recipe),
+				(RegistryByteBuf buf) -> read(null, buf)
+			);
 		}
 	}
 }

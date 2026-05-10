@@ -26,14 +26,18 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.NameTagItem;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.potion.Potions;
 import net.minecraft.sound.SoundCategory;
+import java.util.Optional;
+import java.util.List;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -94,14 +98,17 @@ public class WitchCauldronBlock extends Block implements BlockEntityProvider, Wa
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		if (world.getBlockEntity(pos) instanceof WitchCauldronBlockEntity cauldron) {
 			boolean client = world.isClient;
-			ItemStack stack = player.getStackInHand(hand);
-			boolean nameTag = stack.getItem() instanceof NameTagItem, bucket = stack.getItem() == Items.BUCKET, waterBucket = stack.getItem() == Items.WATER_BUCKET, glassBottle = stack.getItem() == Items.GLASS_BOTTLE, waterBottle = stack.getItem() == Items.POTION && PotionUtil.getPotion(stack) == Potions.WATER;
+			boolean nameTag = stack.getItem() instanceof NameTagItem;
+			boolean bucket = stack.getItem() == Items.BUCKET;
+			boolean waterBucket = stack.getItem() == Items.WATER_BUCKET;
+			boolean glassBottle = stack.getItem() == Items.GLASS_BOTTLE;
+			boolean waterBottle = stack.getItem() == Items.POTION && stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT).potion().orElse(null) == Potions.WATER;
 			if (nameTag || bucket || waterBucket || glassBottle || waterBottle) {
 				if (!client) {
-					if (nameTag && stack.hasCustomName()) {
+					if (nameTag && stack.contains(DataComponentTypes.CUSTOM_NAME)) {
 						cauldron.name = stack.getName().getString();
 						cauldron.markDirty();
 						BWWorldState worldState = BWWorldState.get(world);
@@ -120,11 +127,12 @@ public class WitchCauldronBlock extends Block implements BlockEntityProvider, Wa
 							} else if (glassBottle) {
 								ItemStack bottle = null;
 								if (cauldron.mode == WitchCauldronBlockEntity.Mode.NORMAL) {
-									bottle = PotionUtil.setPotion(new ItemStack(Items.POTION), Potions.WATER);
+									bottle = new ItemStack(Items.POTION);
+								bottle.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.of(Potions.WATER), Optional.empty(), List.of()));
 								} else if (cauldron.mode == WitchCauldronBlockEntity.Mode.OIL_CRAFTING) {
 									OilRecipe recipe = cauldron.oilRecipe;
 									if (recipe != null) {
-										bottle = recipe.getOutput(world.getRegistryManager()).copy();
+										bottle = recipe.getResult(world.getRegistryManager()).copy();
 									}
 								} else {
 									bottle = cauldron.getPotion(player);
@@ -137,7 +145,7 @@ public class WitchCauldronBlock extends Block implements BlockEntityProvider, Wa
 										if (failed) {
 											cauldron.mode = cauldron.fail();
 											cauldron.syncCauldron();
-											return ActionResult.FAIL;
+											return ItemActionResult.FAIL;
 										}
 									}
 								}
@@ -157,9 +165,9 @@ public class WitchCauldronBlock extends Block implements BlockEntityProvider, Wa
 					cauldron.syncCauldron();
 				}
 			}
-			return ActionResult.success(client);
+			return ItemActionResult.success(client);
 		}
-		return super.onUse(state, world, pos, player, hand, hit);
+		return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
 	}
 
 	@Override

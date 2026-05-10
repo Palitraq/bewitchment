@@ -21,6 +21,8 @@ import net.minecraft.block.ShapeContext;
 import net.minecraft.block.Waterloggable;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
@@ -34,6 +36,7 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -59,7 +62,7 @@ public class CrystalBallBlock extends Block implements Waterloggable {
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		boolean client = world.isClient;
 		if (client) {
 			for (int i = 0; i < 10; i++) {
@@ -69,9 +72,10 @@ public class CrystalBallBlock extends Block implements Waterloggable {
 			SoundEvent sound = BWSoundEvents.BLOCK_CRYSTAL_BALL_FAIL;
 			BlockPos nearestAltarPos = WitchAltarBlock.getClosestAltarPos(world, pos);
 			if (nearestAltarPos != null && ((WitchAltarBlockEntity) world.getBlockEntity(nearestAltarPos)).drain(500, false)) {
-				ItemStack stack = player.getStackInHand(hand);
-				if (stack.getItem() instanceof TaglockItem && TaglockItem.isTaglockFromPlayer(stack) && !stack.getNbt().contains("UsedForScrying")) {
-					if (BewitchmentAPI.getTaglockOwner(world, stack) instanceof PlayerEntity owner) {
+				if (stack.getItem() instanceof TaglockItem && TaglockItem.isTaglockFromPlayer(stack)) {
+					NbtComponent taglockNbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+					NbtCompound taglockNbt = taglockNbtComponent.copyNbt();
+					if (!taglockNbt.contains("UsedForScrying") && BewitchmentAPI.getTaglockOwner(world, stack) instanceof PlayerEntity owner) {
 						boolean failed = false;
 						BlockPos sigilPos = BWUtil.getClosestBlockPos(owner.getBlockPos(), 16, currentPos -> world.getBlockEntity(currentPos) instanceof SigilHolder sigilHolder && sigilHolder.getSigil() == BWSigils.SHADOWS);
 						if (sigilPos == null) {
@@ -87,7 +91,8 @@ public class CrystalBallBlock extends Block implements Waterloggable {
 							}
 						}
 						ItemStack newTaglock = new ItemStack(BWObjects.TAGLOCK);
-						NbtCompound taglockCompound = newTaglock.getOrCreateNbt().copyFrom(stack.getNbt());
+						NbtCompound taglockCompound = new NbtCompound();
+						taglockCompound.copyFrom(taglockNbt);
 						taglockCompound.putBoolean("UsedForScrying", true);
 						if (!failed) {
 							taglockCompound.putLong("LocationPos", owner.getBlockPos().asLong());
@@ -111,8 +116,9 @@ public class CrystalBallBlock extends Block implements Waterloggable {
 							taglockCompound.putBoolean("Failed", true);
 							player.sendMessage(Text.translatable(Bewitchment.MOD_ID + ".message.blocked_by_shadows"), true);
 						}
+						newTaglock.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(taglockCompound));
 						BWUtil.addItemToInventoryAndConsume(player, hand, newTaglock);
-					} else {
+					} else if (taglockNbt.contains("UsedForScrying")) {
 						player.sendMessage(Text.translatable(Bewitchment.MOD_ID + ".message.invalid_entity"), true);
 					}
 				} else {
@@ -137,7 +143,7 @@ public class CrystalBallBlock extends Block implements Waterloggable {
 			}
 			world.playSound(null, pos, sound, SoundCategory.BLOCKS, 1, 1);
 		}
-		return ActionResult.success(client);
+		return ItemActionResult.success(client);
 	}
 
 	@SuppressWarnings("ConstantConditions")

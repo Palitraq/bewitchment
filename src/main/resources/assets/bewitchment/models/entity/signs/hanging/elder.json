@@ -1,0 +1,6 @@
+{
+  "textures": {
+    "sign": "bewitchment:entity/signs/hanging/elder",
+    "gui": "bewitchment:gui/hanging_signs/elder"
+  }
+}

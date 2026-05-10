@@ -4,18 +4,19 @@
 
 package moriyashiine.bewitchment.common.component.entity;
 
-import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import moriyashiine.bewitchment.client.packet.SpawnSmokeParticlesPacket;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.UUID;
+import org.ladysnake.cca.api.v3.component.Component;
 
-public class MinionComponent implements ServerTickingComponent {
+public class MinionComponent implements Component {
 	private final MobEntity obj;
 	private UUID master = null;
 
@@ -23,17 +24,14 @@ public class MinionComponent implements ServerTickingComponent {
 		this.obj = obj;
 	}
 
-	@Override
-	public void readFromNbt(NbtCompound tag) {
+	public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		setMaster(tag.getString("MasterUUID").isEmpty() ? null : UUID.fromString(tag.getString("MasterUUID")));
 	}
 
-	@Override
-	public void writeToNbt(NbtCompound tag) {
+	public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapperLookup) {
 		tag.putString("MasterUUID", getMaster() == null ? "" : getMaster().toString());
 	}
 
-	@Override
 	public void serverTick() {
 		if (getMaster() != null) {
 			Entity master = ((ServerWorld) obj.getWorld()).getEntity(getMaster());

@@ -6,18 +6,28 @@ package moriyashiine.bewitchment.common.recipe;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import moriyashiine.bewitchment.common.registry.BWRecipeTypes;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.recipe.*;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.recipe.input.RecipeInput;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
+
+import java.util.stream.Stream;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 
-public class OilRecipe implements Recipe<Inventory> {
+public class OilRecipe implements Recipe<RecipeInput> {
 	private final Identifier identifier;
 	public final DefaultedList<Ingredient> input;
 	private final ItemStack output;
@@ -31,12 +41,12 @@ public class OilRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public boolean matches(Inventory inv, World world) {
+	public boolean matches(RecipeInput inv, World world) {
 		return RitualRecipe.matches(inv, input);
 	}
 
 	@Override
-	public ItemStack craft(Inventory inventory, DynamicRegistryManager registryManager) {
+	public ItemStack craft(RecipeInput inventory, RegistryWrapper.WrapperLookup lookup) {
 		return output;
 	}
 
@@ -46,11 +56,10 @@ public class OilRecipe implements Recipe<Inventory> {
 	}
 
 	@Override
-	public ItemStack getOutput(DynamicRegistryManager registryManager) {
+	public ItemStack getResult(RegistryWrapper.WrapperLookup lookup) {
 		return output;
 	}
 
-	@Override
 	public Identifier getId() {
 		return identifier;
 	}
@@ -66,7 +75,6 @@ public class OilRecipe implements Recipe<Inventory> {
 	}
 
 	public static class Serializer implements RecipeSerializer<OilRecipe> {
-		@Override
 		public OilRecipe read(Identifier id, JsonObject json) {
 			DefaultedList<Ingredient> ingredients = RitualRecipe.Serializer.getIngredients(JsonHelper.getArray(json, "ingredients"));
 			if (ingredients.isEmpty()) {
@@ -74,24 +82,52 @@ public class OilRecipe implements Recipe<Inventory> {
 			} else if (ingredients.size() > 4) {
 				throw new JsonParseException("Too many ingredients for oil recipe");
 			}
-			return new OilRecipe(id, ingredients, ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result")), JsonHelper.getInt(json, "color"));
+			return new OilRecipe(id, ingredients, ItemStack.CODEC.parse(JsonOps.INSTANCE, JsonHelper.getObject(json, "result")).getOrThrow(), JsonHelper.getInt(json, "color"));
 		}
 
-		@Override
 		public OilRecipe read(Identifier id, PacketByteBuf buf) {
-			DefaultedList<Ingredient> defaultedList = DefaultedList.ofSize(buf.readVarInt(), Ingredient.EMPTY);
-			defaultedList.replaceAll(ignored -> Ingredient.fromPacket(buf));
-			return new OilRecipe(id, defaultedList, buf.readItemStack(), buf.readInt());
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			DefaultedList<Ingredient> defaultedList = DefaultedList.ofSize(regBuf.readVarInt(), Ingredient.EMPTY);
+			defaultedList.replaceAll(ignored -> Ingredient.PACKET_CODEC.decode(regBuf));
+			return new OilRecipe(id, defaultedList, ItemStack.OPTIONAL_PACKET_CODEC.decode(regBuf), regBuf.readInt());
+		}
+
+		public void write(PacketByteBuf buf, OilRecipe recipe) {
+			RegistryByteBuf regBuf = (RegistryByteBuf) buf;
+			regBuf.writeVarInt(recipe.input.size());
+			for (Ingredient ingredient : recipe.input) {
+				Ingredient.PACKET_CODEC.encode(regBuf, ingredient);
+			}
+			ItemStack.OPTIONAL_PACKET_CODEC.encode(regBuf, recipe.output);
+			regBuf.writeInt(recipe.color);
 		}
 
 		@Override
-		public void write(PacketByteBuf buf, OilRecipe recipe) {
-			buf.writeVarInt(recipe.input.size());
-			for (Ingredient ingredient : recipe.input) {
-				ingredient.write(buf);
-			}
-			buf.writeItemStack(recipe.getOutput(null));
-			buf.writeInt(recipe.color);
+		public MapCodec<OilRecipe> codec() {
+			return new MapCodec<>() {
+				@Override
+				public <T> Stream<T> keys(DynamicOps<T> ops) {
+					return Stream.of();
+				}
+
+				@Override
+				public <T> DataResult<OilRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
+					return DataResult.error(() -> "Codec not implemented");
+				}
+
+				@Override
+				public <T> RecordBuilder<T> encode(OilRecipe recipe, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+					return prefix;
+				}
+			};
+		}
+
+		@Override
+		public PacketCodec<RegistryByteBuf, OilRecipe> packetCodec() {
+			return PacketCodec.ofStatic(
+				(RegistryByteBuf buf, OilRecipe recipe) -> write(buf, recipe),
+				(RegistryByteBuf buf) -> read(null, buf)
+			);
 		}
 	}
 }

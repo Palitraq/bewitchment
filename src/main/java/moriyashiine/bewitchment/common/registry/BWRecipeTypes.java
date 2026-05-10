@@ -42,9 +42,9 @@ public class BWRecipeTypes {
 	public static final RecipeSerializer<CurseRecipe> CURSE_RECIPE_SERIALIZER = create("curse_recipe", new CurseRecipe.Serializer());
 	public static final RecipeType<CurseRecipe> CURSE_RECIPE_TYPE = create("curse_recipe");
 
-	public static final RecipeSerializer<TaglockCraftingRecipe> TAGLOCK_CRAFTING_SERIALIZER = create("taglock_crafting", new SpecialRecipeSerializer<>((id, category) -> new TaglockCraftingRecipe(id)));
-	public static final RecipeSerializer<ScepterCraftingRecipe> SCEPTER_CRAFTING_SERIALIZER = create("scepter_crafting", new SpecialRecipeSerializer<>((id, category) -> new ScepterCraftingRecipe(id)));
-	public static final RecipeSerializer<PricklyBeltCraftingRecipe> PRICKLY_BELT_CRAFTING_SERIALIZER = create("prickly_belt_crafting", new SpecialRecipeSerializer<>((id, category) -> new PricklyBeltCraftingRecipe(id)));
+	public static final RecipeSerializer<TaglockCraftingRecipe> TAGLOCK_CRAFTING_SERIALIZER = create("taglock_crafting", new SpecialRecipeSerializer<>(TaglockCraftingRecipe::new));
+	public static final RecipeSerializer<ScepterCraftingRecipe> SCEPTER_CRAFTING_SERIALIZER = create("scepter_crafting", new SpecialRecipeSerializer<>(category -> new ScepterCraftingRecipe(category)));
+	public static final RecipeSerializer<PricklyBeltCraftingRecipe> PRICKLY_BELT_CRAFTING_SERIALIZER = create("prickly_belt_crafting", new SpecialRecipeSerializer<>(category -> new PricklyBeltCraftingRecipe()));
 
 	private static <T extends Recipe<?>> RecipeSerializer<T> create(String name, RecipeSerializer<T> serializer) {
 		RECIPE_SERIALIZERS.put(serializer, Bewitchment.id(name));

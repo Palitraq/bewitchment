@@ -19,7 +19,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.world.EntityView;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
@@ -30,11 +29,6 @@ public abstract class BWTameableEntity extends TameableEntity {
 
 	protected BWTameableEntity(EntityType<? extends TameableEntity> type, World world) {
 		super(type, world);
-	}
-
-	@Override
-	public EntityView method_48926() {
-		return getWorld();
 	}
 
 	@Override
@@ -52,9 +46,9 @@ public abstract class BWTameableEntity extends TameableEntity {
 	}
 
 	@Override
-	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityTag) {
+	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
 		initializeVariant();
-		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
+		return super.initialize(world, difficulty, spawnReason, entityData);
 	}
 
 	public void initializeVariant() {
@@ -126,10 +120,10 @@ public abstract class BWTameableEntity extends TameableEntity {
 	}
 
 	@Override
-	protected void initDataTracker() {
-		super.initDataTracker();
+	protected void initDataTracker(DataTracker.Builder builder) {
+		super.initDataTracker(builder);
 		if (getVariants() > 1) {
-			dataTracker.startTracking(VARIANT, 1);
+			builder.add(VARIANT, 1);
 		}
 	}
 

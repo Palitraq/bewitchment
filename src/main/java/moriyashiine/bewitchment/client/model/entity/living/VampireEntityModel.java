@@ -76,14 +76,14 @@ public class VampireEntityModel<T extends VampireEntity> extends BipedEntityMode
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-		realHead.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		realBody.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		robe.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		crossedArms.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		downArms.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		lLeg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		rLeg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+		realHead.render(matrices, vertices, light, overlay, color);
+		realBody.render(matrices, vertices, light, overlay, color);
+		robe.render(matrices, vertices, light, overlay, color);
+		crossedArms.render(matrices, vertices, light, overlay, color);
+		downArms.render(matrices, vertices, light, overlay, color);
+		lLeg.render(matrices, vertices, light, overlay, color);
+		rLeg.render(matrices, vertices, light, overlay, color);
 	}
 
 	@Override

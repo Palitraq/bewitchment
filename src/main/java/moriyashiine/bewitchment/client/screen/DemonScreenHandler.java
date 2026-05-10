@@ -19,6 +19,9 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.nbt.NbtCompound;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -68,7 +71,9 @@ public class DemonScreenHandler extends ScreenHandler {
 					demonMerchant.onSell(offer);
 					demonMerchant.trade(offer);
 					if (player instanceof ServerPlayerEntity serverPlayer) {
-						SyncContractsPacket.send(serverPlayer);
+						NbtCompound contractsCompound = new NbtCompound();
+					contractsCompound.put("Contracts", contractsComponent.toNbtContract());
+					SyncContractsPacket.send(serverPlayer, contractsCompound);
 						SyncDemonTradesPacket.send(serverPlayer, demonMerchant, syncId);
 						if (player.getMaxHealth() - offer.getCost(demonMerchant) <= 0) {
 							contractsComponent.getContracts().clear();
@@ -111,8 +116,11 @@ public class DemonScreenHandler extends ScreenHandler {
 			DemonEntity.DemonTradeOffer offer = getOffer();
 			if (offer != null) {
 				ItemStack contract = new ItemStack(BWObjects.DEMONIC_CONTRACT);
-				contract.getOrCreateNbt().putString("Contract", BWRegistries.CONTRACT.getId(getOffer().getContract()).toString());
-				contract.getOrCreateNbt().putInt("Duration", getOffer().getDuration());
+				var nbtComponent = contract.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+				var nbt = nbtComponent.copyNbt();
+				nbt.putString("Contract", BWRegistries.CONTRACT.getId(getOffer().getContract()).toString());
+				nbt.putInt("Duration", getOffer().getDuration());
+				contract.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 				return contract;
 			}
 			return ItemStack.EMPTY;

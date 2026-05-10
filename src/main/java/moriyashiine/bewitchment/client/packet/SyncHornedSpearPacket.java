@@ -4,36 +4,52 @@
 
 package moriyashiine.bewitchment.client.packet;
 
-import io.netty.buffer.Unpooled;
 import moriyashiine.bewitchment.common.Bewitchment;
 import moriyashiine.bewitchment.common.entity.projectile.HornedSpearEntity;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 
-public class SyncHornedSpearPacket {
-	public static final Identifier ID = Bewitchment.id("sync_horned_spear");
+public class SyncHornedSpearPacket implements CustomPayload {
+	public static final Id<SyncHornedSpearPacket> ID = new Id<>(Bewitchment.id("sync_horned_spear"));
+	public static final PacketCodec<RegistryByteBuf, SyncHornedSpearPacket> CODEC = CustomPayload.codecOf(SyncHornedSpearPacket::write, SyncHornedSpearPacket::new);
 
-	public static void send(ServerPlayerEntity player, HornedSpearEntity entity) {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		buf.writeInt(entity.getId());
-		buf.writeItemStack(entity.spear);
-		ServerPlayNetworking.send(player, ID, buf);
+	private final int entityId;
+	private final ItemStack spear;
+
+	public SyncHornedSpearPacket(int entityId, ItemStack spear) {
+		this.entityId = entityId;
+		this.spear = spear;
 	}
 
-	@SuppressWarnings("ConstantConditions")
-	public static class Receiver implements ClientPlayNetworking.PlayChannelHandler {
-		@Override
-		public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-			int entityId = buf.readInt();
-			ItemStack spear = buf.readItemStack();
-			client.execute(() -> ((HornedSpearEntity) client.world.getEntityById(entityId)).spear = spear);
-		}
+	public SyncHornedSpearPacket(RegistryByteBuf buf) {
+		this.entityId = buf.readInt();
+		this.spear = ItemStack.OPTIONAL_PACKET_CODEC.decode(buf);
+	}
+
+	public static void send(net.minecraft.server.network.ServerPlayerEntity player, HornedSpearEntity entity) {
+		player.networkHandler.sendPacket(new net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket(new SyncHornedSpearPacket(entity.getId(), entity.spear)));
+	}
+
+	public static void register() {
+		PayloadTypeRegistry.playS2C().register(ID, CODEC);
+		ClientPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
+			int entityId = payload.entityId;
+			ItemStack spear = payload.spear;
+			context.client().execute(() -> ((HornedSpearEntity) context.client().world.getEntityById(entityId)).spear = spear);
+		});
+	}
+
+	private void write(RegistryByteBuf buf) {
+		buf.writeInt(entityId);
+		ItemStack.OPTIONAL_PACKET_CODEC.encode(buf, spear);
+	}
+
+	@Override
+	public Id<? extends CustomPayload> getId() {
+		return ID;
 	}
 }

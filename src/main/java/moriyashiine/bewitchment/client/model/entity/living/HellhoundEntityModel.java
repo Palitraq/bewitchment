@@ -79,12 +79,12 @@ public class HellhoundEntityModel<T extends HellhoundEntity> extends EntityModel
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-		neck.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		body.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		lForeleg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		rForeleg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		lHindleg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-		rHindleg.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+	public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+		neck.render(matrices, vertices, light, overlay, color);
+		body.render(matrices, vertices, light, overlay, color);
+		lForeleg.render(matrices, vertices, light, overlay, color);
+		rForeleg.render(matrices, vertices, light, overlay, color);
+		lHindleg.render(matrices, vertices, light, overlay, color);
+		rHindleg.render(matrices, vertices, light, overlay, color);
 	}
 }
