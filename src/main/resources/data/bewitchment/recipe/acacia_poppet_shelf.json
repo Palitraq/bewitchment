@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"SSS",
+	" E ",
+	"SSS"
+  ],
+  "key": {
+	"S": {
+	  "item": "acacia_slab"
+	},
+	"E": {
+	  "item": "bewitchment:ectoplasm"
+	}
+  },
+  "result": {
+	"id": "bewitchment:acacia_poppet_shelf"
+  }
+}

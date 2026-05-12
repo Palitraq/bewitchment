@@ -4,6 +4,7 @@
 
 package moriyashiine.bewitchment.common.recipe;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.serialization.DataResult;
@@ -23,6 +24,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 
+import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
@@ -112,7 +114,17 @@ public class OilRecipe implements Recipe<RecipeInput> {
 
 				@Override
 				public <T> DataResult<OilRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
-					return DataResult.error(() -> "Codec not implemented");
+					try {
+						JsonObject json = new JsonObject();
+						input.entries().forEach(pair -> {
+							String key = ops.getStringValue(pair.getFirst()).getOrThrow(IllegalStateException::new);
+							JsonElement value = ops.convertTo(JsonOps.INSTANCE, pair.getSecond());
+							json.add(key, value);
+						});
+						return DataResult.success(read(null, json));
+					} catch (Exception e) {
+						return DataResult.error(() -> "OilRecipe decode failed: " + e.getMessage());
+					}
 				}
 
 				@Override

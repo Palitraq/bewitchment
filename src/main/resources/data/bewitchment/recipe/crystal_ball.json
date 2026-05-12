@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"GGG",
+	"GAG",
+	"S S"
+  ],
+  "key": {
+	"G": {
+	  "item": "glass"
+	},
+	"A": {
+	  "item": "amethyst_shard"
+	},
+	"S": {
+	  "item": "bewitchment:silver_ingot"
+	}
+  },
+  "result": {
+	"id": "bewitchment:crystal_ball"
+  }
+}

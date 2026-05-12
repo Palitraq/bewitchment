@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+	{
+	  "item": "bewitchment:snake_tongue"
+	}
+  ],
+  "result": {
+	"id": "black_dye"
+  }
+}

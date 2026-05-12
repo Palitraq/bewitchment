@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"SSS",
+	" E ",
+	"SSS"
+  ],
+  "key": {
+	"S": {
+	  "item": "bewitchment:elder_slab"
+	},
+	"E": {
+	  "item": "bewitchment:ectoplasm"
+	}
+  },
+  "result": {
+	"id": "bewitchment:elder_poppet_shelf"
+  }
+}

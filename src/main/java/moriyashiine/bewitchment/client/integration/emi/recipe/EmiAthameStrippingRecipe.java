@@ -11,10 +11,11 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import moriyashiine.bewitchment.client.integration.emi.BWEmiIntegration;
 import moriyashiine.bewitchment.common.recipe.AthameStrippingRecipe;
+import net.minecraft.util.Identifier;
 
 public class EmiAthameStrippingRecipe extends BasicEmiRecipe {
-	public EmiAthameStrippingRecipe(AthameStrippingRecipe recipe) {
-		super(BWEmiIntegration.ATHAME_STRIPPING_CATEGORY, recipe.getId(), 94, 18);
+	public EmiAthameStrippingRecipe(Identifier id, AthameStrippingRecipe recipe) {
+		super(BWEmiIntegration.ATHAME_STRIPPING_CATEGORY, id, 94, 18);
 		inputs.add(EmiStack.of(recipe.log));
 		inputs.add(EmiStack.of(recipe.strippedLog));
 		outputs.add(EmiStack.of(EmiPort.getOutput(recipe)));

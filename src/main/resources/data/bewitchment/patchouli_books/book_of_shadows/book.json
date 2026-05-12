@@ -4,7 +4,7 @@
   "landing_text": "item.bewitchment.book_of_shadows.landing_text",
   "book_texture": "bewitchment:textures/gui/patchouli/book.png",
   "filler_texture": "bewitchment:textures/gui/patchouli/filler.png",
-  "dont_generate_book": true,
+  "dont_generate_book": false,
   "link_color": "0000ff",
   "link_hover_color": "0000ff",
   "progress_bar_color": "8500b9"

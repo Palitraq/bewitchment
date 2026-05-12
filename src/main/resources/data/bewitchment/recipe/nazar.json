@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"OS ",
+	"S L",
+	" LI"
+  ],
+  "key": {
+	"O": {
+	  "item": "bewitchment:cleansing_balm"
+	},
+	"S": {
+	  "item": "string"
+	},
+	"L": {
+	  "item": "lapis_lazuli"
+	},
+	"I": {
+	  "item": "bewitchment:silver_ingot"
+	}
+  },
+  "result": {
+	"id": "bewitchment:nazar"
+  }
+}

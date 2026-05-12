@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	" I ",
+	"IEI",
+	"SOS"
+  ],
+  "key": {
+	"I": {
+	  "item": "bewitchment:silver_ingot"
+	},
+	"E": {
+	  "item": "ender_pearl"
+	},
+	"S": {
+	  "item": "string"
+	},
+	"O": {
+	  "item": "bewitchment:heaven_extract"
+	}
+  },
+  "result": {
+	"id": "bewitchment:zephyr_harness"
+  }
+}

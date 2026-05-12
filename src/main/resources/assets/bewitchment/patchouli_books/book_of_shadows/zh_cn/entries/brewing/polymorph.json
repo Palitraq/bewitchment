@@ -1,7 +1,7 @@
 {
   "category": "bewitchment:brewing",
   "name": "多态",
-  "icon": "bewitchment:taglock{OwnerName:Aelpecyem}",
+  "icon": "bewitchment:taglock",
   "advancement": "bewitchment:hidden_unlocks/altars",
   "pages": [
 	{
@@ -11,7 +11,7 @@
 	{
 	  "type": "patchouli:spotlight",
 	  "title": "多态",
-	  "item": "bewitchment:taglock{FromPlayer: 1b, OwnerUUID: [I; 1672005179, -1854323673, -2070260447, 778045631], OwnerName:\"Aelpecyem\"}",
+	  "item": "bewitchment:taglock",
 	  "text": "强度对这种药水没有影响。$(br2)这个药水只有在用另一个玩家的$(l:bewitchment:tools/taglock)巫媒$()创建时才有效。"
 	}
   ]

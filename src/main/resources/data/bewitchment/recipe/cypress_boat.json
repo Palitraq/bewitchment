@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "boat",
+  "pattern": [
+	"# #",
+	"###"
+  ],
+  "key": {
+	"#": {
+	  "item": "bewitchment:cypress_planks"
+	}
+  },
+  "result": {
+	"id": "bewitchment:cypress_boat"
+  }
+}

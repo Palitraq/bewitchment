@@ -5,14 +5,14 @@
 package moriyashiine.bewitchment.common.recipe;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.MapLike;
-import com.mojang.serialization.RecordBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import moriyashiine.bewitchment.api.registry.RitualFunction;
 import moriyashiine.bewitchment.common.registry.BWRecipeTypes;
 import moriyashiine.bewitchment.common.registry.BWRegistries;
@@ -28,11 +28,8 @@ import net.minecraft.recipe.RecipeType;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
-
-import java.util.stream.Stream;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,6 +113,39 @@ public class RitualRecipe implements Recipe<RecipeInput> {
 
 	@SuppressWarnings("ConstantConditions")
 	public static class Serializer implements RecipeSerializer<RitualRecipe> {
+		static {
+			System.out.println("RitualRecipe$Serializer.<clinit> called");
+		}
+		private static final MapCodec<RitualRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+				Ingredient.DISALLOW_EMPTY_CODEC.listOf().fieldOf("ingredients").forGetter(r -> r.input),
+				Codec.STRING.fieldOf("inner").forGetter(r -> r.inner),
+				Codec.STRING.optionalFieldOf("outer", "").forGetter(r -> r.outer),
+				Codec.STRING.fieldOf("ritual_function").forGetter(r -> BWRegistries.RITUAL_FUNCTION.getId(r.ritualFunction).toString()),
+				Codec.INT.fieldOf("cost").forGetter(r -> r.cost),
+				Codec.INT.optionalFieldOf("running_time", 0).forGetter(r -> r.runningTime)
+		).apply(instance, (List<Ingredient> ings, String inner, String outer, String ritualFuncStr, Integer cost, Integer runningTime) -> {
+			DefaultedList<Ingredient> list = DefaultedList.of();
+			for (Ingredient ing : ings) {
+				if (!ing.isEmpty()) {
+					list.add(ing);
+				}
+			}
+			if (list.isEmpty()) {
+				throw new IllegalArgumentException("No ingredients for ritual recipe");
+			}
+			if (list.size() > 6) {
+				throw new IllegalArgumentException("Too many ingredients for ritual recipe");
+			}
+			if (inner.isEmpty()) {
+				throw new IllegalArgumentException("Inner circle is empty");
+			}
+			RitualFunction func = BWRegistries.RITUAL_FUNCTION.get(Identifier.tryParse(ritualFuncStr));
+			if (func == null) {
+				throw new IllegalArgumentException("Unknown ritual function: " + ritualFuncStr);
+			}
+			return new RitualRecipe(null, list, inner, outer, func, cost, runningTime);
+		}));
+
 		public RitualRecipe read(Identifier id, JsonObject json) {
 			DefaultedList<Ingredient> ingredients = getIngredients(JsonHelper.getArray(json, "ingredients"));
 			if (ingredients.isEmpty()) {
@@ -152,22 +182,7 @@ public class RitualRecipe implements Recipe<RecipeInput> {
 
 		@Override
 		public MapCodec<RitualRecipe> codec() {
-			return new MapCodec<>() {
-				@Override
-				public <T> Stream<T> keys(DynamicOps<T> ops) {
-					return Stream.of();
-				}
-
-				@Override
-				public <T> DataResult<RitualRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
-					return DataResult.error(() -> "Codec not implemented");
-				}
-
-				@Override
-				public <T> RecordBuilder<T> encode(RitualRecipe recipe, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-					return prefix;
-				}
-			};
+			return CODEC;
 		}
 
 		@Override

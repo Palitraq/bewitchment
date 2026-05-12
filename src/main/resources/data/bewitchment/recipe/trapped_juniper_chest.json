@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+	{
+	  "item": "bewitchment:juniper_chest"
+	},
+	{
+	  "item": "tripwire_hook"
+	}
+  ],
+  "result": {
+	"id": "bewitchment:trapped_juniper_chest"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	" B ",
+	"BMA",
+	" IO"
+  ],
+  "key": {
+	"B": {
+	  "tag": "bewitchment:barks"
+	},
+	"M": {
+	  "item": "bewitchment:mandrake_root"
+	},
+	"A": {
+	  "item": "golden_apple"
+	},
+	"I": {
+	  "item": "bewitchment:silver_ingot"
+	},
+	"O": {
+	  "item": "bewitchment:earth_ichor"
+	}
+  },
+  "result": {
+	"id": "bewitchment:druid_band"
+  }
+}

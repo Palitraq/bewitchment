@@ -1,7 +1,7 @@
 {
   "category": "bewitchment:brewing",
   "name": "Полиморф",
-  "icon": "bewitchment:taglock{OwnerName:Aelpecyem}",
+  "icon": "bewitchment:taglock",
   "advancement": "bewitchment:hidden_unlocks/altars",
   "pages": [
 	{
@@ -11,7 +11,7 @@
 	{
 	  "type": "patchouli:spotlight",
 	  "title": "Полиморф",
-	  "item": "bewitchment:taglock{FromPlayer: 1b, OwnerUUID: [I; 1672005179, -1854323673, -2070260447, 778045631], OwnerName:\"Aelpecyem\"}",
+	  "item": "bewitchment:taglock",
 	  "text": "Силу эффекта не улучшить.$(br2)Это зелье работает при использовании $(l:bewitchment:tools/taglock)Экстрактора ДНК$() на другом игроке."
 	}
   ]

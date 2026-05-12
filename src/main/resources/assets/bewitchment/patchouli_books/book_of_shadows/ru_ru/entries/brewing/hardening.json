@@ -1,7 +1,7 @@
 {
   "category": "bewitchment:brewing",
   "name": "Упрочнение",
-  "icon": "minecraft:scute",
+  "icon": "minecraft:turtle_scute",
   "advancement": "bewitchment:hidden_unlocks/altars",
   "pages": [
 	{
@@ -11,7 +11,7 @@
 	{
 	  "type": "patchouli:spotlight",
 	  "title": "Упрочнение",
-	  "item": "minecraft:scute",
+	  "item": "minecraft:turtle_scute",
 	  "text": "Бонус к броне пропорционален силе эффекта."
 	}
   ]

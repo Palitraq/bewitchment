@@ -17,14 +17,15 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Identifier;
 
 
 import java.util.Collections;
 import java.util.List;
 
 public class EmiCauldronBrewingRecipe extends BasicEmiRecipe {
-	public EmiCauldronBrewingRecipe(CauldronBrewingRecipe recipe) {
-		super(BWEmiIntegration.CAULDRON_BREWING_CATEGORY, recipe.getId(), 76, 18);
+	public EmiCauldronBrewingRecipe(Identifier id, CauldronBrewingRecipe recipe) {
+		super(BWEmiIntegration.CAULDRON_BREWING_CATEGORY, id, 76, 18);
 		inputs.add(EmiIngredient.of(recipe.input));
 		ItemStack potion = new ItemStack(Items.POTION);
 		NbtCompound nbt = new NbtCompound();

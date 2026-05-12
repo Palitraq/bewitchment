@@ -4,6 +4,7 @@
 
 package moriyashiine.bewitchment.common.recipe;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -100,12 +101,24 @@ public class CauldronBrewingRecipe implements Recipe<RecipeInput> {
 			return new MapCodec<>() {
 				@Override
 				public <T> Stream<T> keys(DynamicOps<T> ops) {
-					return Stream.of();
+					return Stream.of(
+							ops.createString("ingredient"),
+							ops.createString("effect"),
+							ops.createString("time")
+					);
 				}
 
 				@Override
 				public <T> DataResult<CauldronBrewingRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
-					return DataResult.error(() -> "Codec not implemented");
+					try {
+						Ingredient ingredient = Ingredient.DISALLOW_EMPTY_CODEC.parse(ops, input.get("ingredient")).getOrThrow();
+						String effectStr = ops.getStringValue(input.get("effect")).getOrThrow();
+						StatusEffect effect = Registries.STATUS_EFFECT.get(Identifier.tryParse(effectStr));
+						int time = ops.getNumberValue(input.get("time")).getOrThrow().intValue();
+						return DataResult.success(new CauldronBrewingRecipe(null, ingredient, effect, time));
+					} catch (Exception e) {
+						return DataResult.error(() -> "Failed to decode CauldronBrewingRecipe: " + e.getMessage());
+					}
 				}
 
 				@Override

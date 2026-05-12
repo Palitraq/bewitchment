@@ -1,9 +1,0 @@
-{
-  "type": "smelting",
-  "ingredient": {
-	"item": "bewitchment:garlic"
-  },
-  "result": "bewitchment:grilled_garlic",
-  "experience": 0.35,
-  "cookingtime": 200
-}

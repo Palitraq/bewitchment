@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"MBM",
+	" M ",
+	"MSM"
+  ],
+  "key": {
+	"M": {
+	  "item": "obsidian"
+	},
+	"B": {
+	  "tag": "bewitchment:barks"
+	},
+	"S": {
+	  "item": "bewitchment:silver_ingot"
+	}
+  },
+  "result": {
+	"id": "bewitchment:obsidian_witch_altar"
+  }
+}

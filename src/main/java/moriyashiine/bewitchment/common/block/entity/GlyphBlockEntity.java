@@ -275,39 +275,42 @@ public class GlyphBlockEntity extends BlockEntity implements SidedInventory, Use
 					public int getSize() { return inventory.size(); }
 				}
 				RecipeInput recipeInput = new GlyphRecipeInput(test);
-				RitualRecipe recipe = world.getRecipeManager().listAllOfType(BWRecipeTypes.RITUAL_RECIPE_TYPE).stream().map(RecipeEntry::value).filter(ritualRecipe -> ritualRecipe.matches(recipeInput, world)).findFirst().orElse(null);
-				if (recipe != null && recipe.input.size() == items.size() && hasValidChalk(recipe)) {
-					if (recipe.ritualFunction.isValid((ServerWorld) world, pos, test) || (recipe.ritualFunction.sacrifice != null && sacrifice != null && recipe.ritualFunction.sacrifice.test(sacrifice))) {
-						boolean cat = user instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.CAT;
-						if (altarPos != null && ((WitchAltarBlockEntity) world.getBlockEntity(altarPos)).drain((int) (recipe.cost * (cat ? 0.75f : 1)), false)) {
-							world.playSound(null, pos, BWSoundEvents.BLOCK_GLYPH_FIRE, SoundCategory.BLOCKS, 1, 1);
+				RecipeEntry<RitualRecipe> recipeEntry = world.getRecipeManager().listAllOfType(BWRecipeTypes.RITUAL_RECIPE_TYPE).stream().filter(entry -> entry.value().matches(recipeInput, world)).findFirst().orElse(null);
+				if (recipeEntry != null) {
+					RitualRecipe recipe = recipeEntry.value();
+					if (recipe.input.size() == items.size() && hasValidChalk(recipe)) {
+						if (recipe.ritualFunction.isValid((ServerWorld) world, pos, test) || (recipe.ritualFunction.sacrifice != null && sacrifice != null && recipe.ritualFunction.sacrifice.test(sacrifice))) {
+							boolean cat = user instanceof PlayerEntity player && BewitchmentAPI.getFamiliar(player) == EntityType.CAT;
+							if (altarPos != null && ((WitchAltarBlockEntity) world.getBlockEntity(altarPos)).drain((int) (recipe.cost * (cat ? 0.75f : 1)), false)) {
+								world.playSound(null, pos, BWSoundEvents.BLOCK_GLYPH_FIRE, SoundCategory.BLOCKS, 1, 1);
+								if (user instanceof PlayerEntity player) {
+									player.sendMessage(Text.translatable("ritual." + recipeEntry.id().toString().replace(":", ".").replace("/", ".")), true);
+								}
+								for (int i = 0; i < items.size(); i++) {
+									ItemEntity item = items.get(i);
+									PlayerLookup.tracking(item).forEach(foundPlayer -> SpawnSmokeParticlesPacket.send(foundPlayer, item));
+									setStack(i, item.getStack().split(1));
+								}
+								effectivePos = pos;
+								ritualFunction = recipe.ritualFunction;
+								timer = -100;
+								endTime = recipe.runningTime;
+								catFamiliar = cat;
+								syncGlyph();
+								return;
+							}
+							world.playSound(null, pos, BWSoundEvents.BLOCK_GLYPH_FAIL, SoundCategory.BLOCKS, 1, 1);
 							if (user instanceof PlayerEntity player) {
-								player.sendMessage(Text.translatable("ritual." + recipe.getId().toString().replace(":", ".").replace("/", ".")), true);
+								player.sendMessage(Text.translatable(Bewitchment.MOD_ID + ".message.insufficent_altar_power"), true);
 							}
-							for (int i = 0; i < items.size(); i++) {
-								ItemEntity item = items.get(i);
-								PlayerLookup.tracking(item).forEach(foundPlayer -> SpawnSmokeParticlesPacket.send(foundPlayer, item));
-								setStack(i, item.getStack().split(1));
-							}
-							effectivePos = pos;
-							ritualFunction = recipe.ritualFunction;
-							timer = -100;
-							endTime = recipe.runningTime;
-							catFamiliar = cat;
-							syncGlyph();
 							return;
 						}
 						world.playSound(null, pos, BWSoundEvents.BLOCK_GLYPH_FAIL, SoundCategory.BLOCKS, 1, 1);
 						if (user instanceof PlayerEntity player) {
-							player.sendMessage(Text.translatable(Bewitchment.MOD_ID + ".message.insufficent_altar_power"), true);
+							player.sendMessage(Text.translatable(recipe.ritualFunction.getInvalidMessage()), true);
 						}
 						return;
 					}
-					world.playSound(null, pos, BWSoundEvents.BLOCK_GLYPH_FAIL, SoundCategory.BLOCKS, 1, 1);
-					if (user instanceof PlayerEntity player) {
-						player.sendMessage(Text.translatable(recipe.ritualFunction.getInvalidMessage()), true);
-					}
-					return;
 				}
 				world.playSound(null, pos, BWSoundEvents.BLOCK_GLYPH_FAIL, SoundCategory.BLOCKS, 1, 1);
 				if (user instanceof PlayerEntity player) {

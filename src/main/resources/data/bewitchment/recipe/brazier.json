@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"IWI",
+	"BIB",
+	"BIB"
+  ],
+  "key": {
+	"I": {
+	  "item": "bewitchment:silver_ingot"
+	},
+	"W": {
+	  "item": "nether_wart"
+	},
+	"B": {
+	  "item": "iron_bars"
+	}
+  },
+  "result": {
+	"id": "bewitchment:brazier"
+  }
+}

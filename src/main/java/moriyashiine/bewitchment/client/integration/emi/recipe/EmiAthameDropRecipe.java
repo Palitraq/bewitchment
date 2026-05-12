@@ -15,10 +15,11 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 public class EmiAthameDropRecipe extends BasicEmiRecipe {
-	public EmiAthameDropRecipe(AthameDropRecipe recipe) {
-		super(BWEmiIntegration.ATHAME_DROPS_CATEGORY, recipe.getId(), 76, 18);
+	public EmiAthameDropRecipe(Identifier id, AthameDropRecipe recipe) {
+		super(BWEmiIntegration.ATHAME_DROPS_CATEGORY, id, 76, 18);
 		ItemStack spawnerStack = new ItemStack(Items.SPAWNER);
 		spawnerStack.set(DataComponentTypes.ITEM_NAME, recipe.entity_type.getName());
 		inputs.add(EmiStack.of(spawnerStack));

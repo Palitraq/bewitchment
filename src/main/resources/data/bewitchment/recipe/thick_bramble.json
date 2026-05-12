@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+	{
+	  "item": "sugar_cane"
+	},
+	{
+	  "item": "sugar_cane"
+	},
+	{
+	  "item": "sugar_cane"
+	},
+	{
+	  "item": "bewitchment:earth_ichor"
+	},
+	{
+	  "item": "hay_block"
+	}
+  ],
+  "result": {
+	"id": "bewitchment:thick_bramble",
+	"count": 3
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+	{
+	  "item": "bewitchment:dragons_blood_resin"
+	}
+  ],
+  "result": {
+	"id": "red_dye"
+  }
+}

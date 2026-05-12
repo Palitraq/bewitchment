@@ -13,10 +13,11 @@ import dev.emi.emi.api.widget.WidgetHolder;
 import moriyashiine.bewitchment.client.integration.emi.BWEmiIntegration;
 import moriyashiine.bewitchment.common.recipe.OilRecipe;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.util.Identifier;
 
 public class EmiOilRecipe extends BasicEmiRecipe {
-	public EmiOilRecipe(OilRecipe recipe) {
-		super(BWEmiIntegration.OIL_CRAFTING_CATEGORY, recipe.getId(), 0, 18);
+	public EmiOilRecipe(Identifier id, OilRecipe recipe) {
+		super(BWEmiIntegration.OIL_CRAFTING_CATEGORY, id, 0, 18);
 		for (Ingredient ingredient : recipe.input) {
 			if (!ingredient.isEmpty()) {
 				inputs.add(EmiIngredient.of(ingredient));

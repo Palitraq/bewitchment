@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+	{
+	  "item": "bewitchment:raw_silver_block"
+	}
+  ],
+  "result": {
+	"id": "bewitchment:raw_silver",
+	"count": 9
+  }
+}

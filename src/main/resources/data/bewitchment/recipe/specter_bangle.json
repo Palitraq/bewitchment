@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	" O ",
+	"BEB",
+	" P "
+  ],
+  "key": {
+	"O": {
+	  "item": "bewitchment:grim_elixir"
+	},
+	"B": {
+	  "item": "obsidian"
+	},
+	"E": {
+	  "item": "bewitchment:ectoplasm"
+	},
+	"P": {
+	  "item": "ender_eye"
+	}
+  },
+  "result": {
+	"id": "bewitchment:specter_bangle"
+  }
+}

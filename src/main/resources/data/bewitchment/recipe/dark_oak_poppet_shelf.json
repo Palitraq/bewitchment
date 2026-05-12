@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"SSS",
+	" E ",
+	"SSS"
+  ],
+  "key": {
+	"S": {
+	  "item": "dark_oak_slab"
+	},
+	"E": {
+	  "item": "bewitchment:ectoplasm"
+	}
+  },
+  "result": {
+	"id": "bewitchment:dark_oak_poppet_shelf"
+  }
+}

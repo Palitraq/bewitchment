@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"SSS",
+	" E ",
+	"SSS"
+  ],
+  "key": {
+	"S": {
+	  "item": "bewitchment:dragons_blood_slab"
+	},
+	"E": {
+	  "item": "bewitchment:ectoplasm"
+	}
+  },
+  "result": {
+	"id": "bewitchment:dragons_blood_poppet_shelf"
+  }
+}

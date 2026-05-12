@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+	{
+	  "item": "book"
+	},
+	{
+	  "item": "bewitchment:mandrake_root"
+	}
+  ],
+  "result": {
+	"id": "bewitchment:book_of_shadows"
+  }
+}

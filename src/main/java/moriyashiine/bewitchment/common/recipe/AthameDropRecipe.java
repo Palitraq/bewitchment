@@ -5,6 +5,7 @@
 package moriyashiine.bewitchment.common.recipe;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
@@ -98,12 +99,24 @@ public class AthameDropRecipe implements Recipe<RecipeInput> {
 			return new MapCodec<>() {
 				@Override
 				public <T> Stream<T> keys(DynamicOps<T> ops) {
-					return Stream.of();
+					return Stream.of(
+							ops.createString("entity_type"),
+							ops.createString("result"),
+							ops.createString("chance")
+					);
 				}
 
 				@Override
 				public <T> DataResult<AthameDropRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
-					return DataResult.error(() -> "Codec not implemented");
+					try {
+						String entityTypeStr = ops.getStringValue(input.get("entity_type")).getOrThrow();
+						EntityType<?> entityType = Registries.ENTITY_TYPE.get(Identifier.tryParse(entityTypeStr));
+						ItemStack result = ItemStack.CODEC.parse(ops, input.get("result")).getOrThrow();
+						float chance = ops.getNumberValue(input.get("chance")).getOrThrow().floatValue();
+						return DataResult.success(new AthameDropRecipe(null, entityType, result, chance));
+					} catch (Exception e) {
+						return DataResult.error(() -> "Failed to decode AthameDropRecipe: " + e.getMessage());
+					}
 				}
 
 				@Override

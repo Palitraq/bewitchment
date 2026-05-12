@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"SSS",
+	" E ",
+	"SSS"
+  ],
+  "key": {
+	"S": {
+	  "item": "bewitchment:cypress_slab"
+	},
+	"E": {
+	  "item": "bewitchment:ectoplasm"
+	}
+  },
+  "result": {
+	"id": "bewitchment:cypress_poppet_shelf"
+  }
+}

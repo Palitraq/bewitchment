@@ -4,10 +4,12 @@
 
 package moriyashiine.bewitchment.common.recipe;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
@@ -28,6 +30,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 
+import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
@@ -130,7 +133,17 @@ public class CurseRecipe implements Recipe<RecipeInput> {
 
 				@Override
 				public <T> DataResult<CurseRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
-					return DataResult.error(() -> "Codec not implemented");
+					try {
+						JsonObject json = new JsonObject();
+						input.entries().forEach(pair -> {
+							String key = ops.getStringValue(pair.getFirst()).getOrThrow(IllegalStateException::new);
+							JsonElement value = ops.convertTo(JsonOps.INSTANCE, pair.getSecond());
+							json.add(key, value);
+						});
+						return DataResult.success(read(null, json));
+					} catch (Exception e) {
+						return DataResult.error(() -> "CurseRecipe decode failed: " + e.getMessage());
+					}
 				}
 
 				@Override

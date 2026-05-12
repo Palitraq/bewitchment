@@ -1,0 +1,21 @@
+{
+  "type": "bewitchment:ritual_recipe",
+  "ingredients": [
+	{
+	  "item": "bewitchment:taglock"
+	},
+	{
+	  "item": "bewitchment:silver_ingot"
+	},
+	{
+	  "item": "bewitchment:salt"
+	},
+	{
+	  "item": "bewitchment:garlic"
+	}
+  ],
+  "inner": "normal",
+  "outer": "eldritch",
+  "ritual_function": "bewitchment:unbind_familiar",
+  "cost": 850
+}

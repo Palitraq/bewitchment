@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	" X",
+	"# "
+  ],
+  "key": {
+	"#": {
+	  "item": "flint"
+	},
+	"X": {
+	  "item": "bewitchment:silver_ingot"
+	}
+  },
+  "result": {
+	"id": "bewitchment:athame"
+  }
+}

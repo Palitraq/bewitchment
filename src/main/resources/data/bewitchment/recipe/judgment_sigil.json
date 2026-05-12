@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"ARB",
+	"RPR",
+	"BRA"
+  ],
+  "key": {
+	"R": {
+	  "item": "bewitchment:dragons_blood_resin"
+	},
+	"P": {
+	  "item": "paper"
+	},
+	"A": {
+	  "item": "bewitchment:silver_ingot"
+	},
+	"B": {
+	  "item": "bewitchment:salt"
+	}
+  },
+  "result": {
+	"id": "bewitchment:judgment_sigil"
+  }
+}

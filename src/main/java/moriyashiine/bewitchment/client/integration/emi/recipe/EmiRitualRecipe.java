@@ -19,10 +19,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 public class EmiRitualRecipe extends BasicEmiRecipe {
-	public EmiRitualRecipe(RitualRecipe recipe) {
-		super(BWEmiIntegration.RITUALS_CATGORY, recipe.getId(), 0, 18);
+	public EmiRitualRecipe(Identifier id, RitualRecipe recipe) {
+		super(BWEmiIntegration.RITUALS_CATGORY, id, 0, 18);
 		for (Ingredient ingredient : recipe.input) {
 			if (!ingredient.isEmpty()) {
 				inputs.add(EmiIngredient.of(ingredient));
@@ -31,7 +32,7 @@ public class EmiRitualRecipe extends BasicEmiRecipe {
 		}
 		width += 58;
 		ItemStack chalk = new ItemStack(BWObjects.GOLDEN_CHALK);
-		chalk.set(DataComponentTypes.CUSTOM_NAME, Text.translatable("ritual." + recipe.getId().toString().replaceAll(":", ".").replaceAll("/", ".")));
+		chalk.set(DataComponentTypes.CUSTOM_NAME, Text.translatable("ritual." + id.toString().replaceAll(":", ".").replaceAll("/", ".")));
 		NbtCompound nbt = new NbtCompound();
 		nbt.putString("InnerCircle", "chalk." + Bewitchment.MOD_ID + "." + recipe.inner);
 		if (!recipe.outer.isEmpty()) {

@@ -16,10 +16,11 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 public class EmiIncenseRecipe extends BasicEmiRecipe {
-	public EmiIncenseRecipe(IncenseRecipe recipe) {
-		super(BWEmiIntegration.INCENSE_CATEGORY, recipe.getId(), 0, 18);
+	public EmiIncenseRecipe(Identifier id, IncenseRecipe recipe) {
+		super(BWEmiIntegration.INCENSE_CATEGORY, id, 0, 18);
 		for (Ingredient ingredient : recipe.input) {
 			if (!ingredient.isEmpty()) {
 				inputs.add(EmiIngredient.of(ingredient));

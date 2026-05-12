@@ -5,6 +5,7 @@
 package moriyashiine.bewitchment.common.recipe;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
@@ -97,12 +98,25 @@ public class AthameStrippingRecipe implements Recipe<RecipeInput> {
 			return new MapCodec<>() {
 				@Override
 				public <T> Stream<T> keys(DynamicOps<T> ops) {
-					return Stream.of();
+					return Stream.of(
+							ops.createString("log"),
+							ops.createString("stripped_log"),
+							ops.createString("result")
+					);
 				}
 
 				@Override
 				public <T> DataResult<AthameStrippingRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
-					return DataResult.error(() -> "Codec not implemented");
+					try {
+						String logStr = ops.getStringValue(input.get("log")).getOrThrow();
+						Block log = Registries.BLOCK.get(Identifier.tryParse(logStr));
+						String strippedLogStr = ops.getStringValue(input.get("stripped_log")).getOrThrow();
+						Block strippedLog = Registries.BLOCK.get(Identifier.tryParse(strippedLogStr));
+						ItemStack result = ItemStack.CODEC.parse(ops, input.get("result")).getOrThrow();
+						return DataResult.success(new AthameStrippingRecipe(null, log, strippedLog, result));
+					} catch (Exception e) {
+						return DataResult.error(() -> "Failed to decode AthameStrippingRecipe: " + e.getMessage());
+					}
 				}
 
 				@Override

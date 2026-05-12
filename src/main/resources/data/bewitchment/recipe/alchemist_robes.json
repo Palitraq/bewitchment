@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"# #",
+	"###",
+	"###"
+  ],
+  "key": {
+	"#": {
+	  "item": "bewitchment:alchemist_wool"
+	}
+  },
+  "result": {
+	"id": "bewitchment:alchemist_robes"
+  }
+}

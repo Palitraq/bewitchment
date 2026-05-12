@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"###",
+	"#N#",
+	"###"
+  ],
+  "key": {
+	"#": {
+	  "item": "bewitchment:dragons_blood_planks"
+	},
+	"N": {
+	  "item": "bewitchment:silver_nugget"
+	}
+  },
+  "result": {
+	"id": "bewitchment:dragons_blood_chest"
+  }
+}

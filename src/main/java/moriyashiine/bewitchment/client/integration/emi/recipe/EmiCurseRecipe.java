@@ -16,10 +16,11 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 public class EmiCurseRecipe extends BasicEmiRecipe {
-	public EmiCurseRecipe(CurseRecipe recipe) {
-		super(BWEmiIntegration.CURSE_CATEGORY, recipe.getId(), 0, 18);
+	public EmiCurseRecipe(Identifier id, CurseRecipe recipe) {
+		super(BWEmiIntegration.CURSE_CATEGORY, id, 0, 18);
 		for (Ingredient ingredient : recipe.input) {
 			if (!ingredient.isEmpty()) {
 				inputs.add(EmiIngredient.of(ingredient));
@@ -28,7 +29,7 @@ public class EmiCurseRecipe extends BasicEmiRecipe {
 		}
 		width += 58;
 		ItemStack output = BWObjects.BRAZIER.asItem().getDefaultStack();
-		output.set(DataComponentTypes.CUSTOM_NAME, Text.translatable("curse." + recipe.getId().toString().replaceAll("curses.", "").replaceAll(":", ".").replaceAll("/", ".")));
+		output.set(DataComponentTypes.CUSTOM_NAME, Text.translatable("curse." + id.toString().replaceAll("curses.", "").replaceAll(":", ".").replaceAll("/", ".")));
 		outputs.add(EmiStack.of(output));
 	}
 

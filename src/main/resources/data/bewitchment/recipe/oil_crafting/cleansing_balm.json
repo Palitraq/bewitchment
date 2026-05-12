@@ -1,0 +1,18 @@
+{
+  "type": "bewitchment:oil_recipe",
+  "ingredients": [
+	{
+	  "item": "bewitchment:elder_bark"
+	},
+	{
+	  "item": "bewitchment:salt"
+	},
+	{
+	  "item": "bewitchment:garlic"
+	}
+  ],
+  "result": {
+	"id": "bewitchment:cleansing_balm"
+  },
+  "color": 16508020
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+	"###",
+	"#N#",
+	"###"
+  ],
+  "key": {
+	"#": {
+	  "item": "bewitchment:elder_planks"
+	},
+	"N": {
+	  "item": "bewitchment:silver_nugget"
+	}
+  },
+  "result": {
+	"id": "bewitchment:elder_chest"
+  }
+}

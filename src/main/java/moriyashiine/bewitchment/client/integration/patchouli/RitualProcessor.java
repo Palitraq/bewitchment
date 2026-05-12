@@ -18,18 +18,21 @@ import vazkii.patchouli.api.IVariableProvider;
 
 @SuppressWarnings("ConstantConditions")
 public class RitualProcessor implements IComponentProcessor {
-	protected RitualRecipe recipe;
+	private RitualRecipe recipe;
+	private Identifier recipeId;
 
 	@Override
 	public void setup(World level, IVariableProvider variables) {
-		recipe = level.getRecipeManager().get(Identifier.tryParse(variables.get("recipe", level.getRegistryManager()).asString())).map(RecipeEntry::value).filter(recipe -> recipe.getType().equals(BWRecipeTypes.RITUAL_RECIPE_TYPE)).map(recipe -> (RitualRecipe) recipe).orElseThrow(IllegalArgumentException::new);
+		RecipeEntry<RitualRecipe> entry = (RecipeEntry<RitualRecipe>) level.getRecipeManager().get(Identifier.tryParse(variables.get("recipe", level.getRegistryManager()).asString())).filter(e -> e.value().getType().equals(BWRecipeTypes.RITUAL_RECIPE_TYPE)).orElseThrow(IllegalArgumentException::new);
+		recipe = entry.value();
+		recipeId = entry.id();
 	}
 
 	@Override
 	public IVariable process(World level, String key) {
 		switch (key) {
 			case "header" -> {
-				return IVariable.from(Text.translatable("ritual." + recipe.getId().toString().replaceAll(":", ".").replaceAll("/", ".")), level.getRegistryManager());
+				return IVariable.from(Text.translatable("ritual." + recipeId.toString().replaceAll(":", ".").replaceAll("/", ".")), level.getRegistryManager());
 			}
 			case "inner" -> {
 				return IVariable.wrap(recipe.inner, level.getRegistryManager());

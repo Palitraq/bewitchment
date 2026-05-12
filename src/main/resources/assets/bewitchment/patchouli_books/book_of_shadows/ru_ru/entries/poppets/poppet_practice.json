@@ -13,7 +13,7 @@
 	  "type": "bewitchment:multi_showcase",
 	  "header": "Кукольная Практика",
 	  "item2": "bewitchment:voodoo_poppet",
-	  "item3": "bewitchment:taglock{FromPlayer: 1b, OwnerUUID: [I; 1672005179, -1854323673, -2070260447, 778045631], OwnerName: \"MoriyaShiine\"}",
+	  "item3": "bewitchment:taglock",
 	  "text": "Чтобы связать куклу, просто соедините ее с $(l:bewitchment:tools/taglock)Экстрактором ДНК$() в сетке для крафта.$(br2)Способ, которым кукла влияет на объект, в значительной степени зависит от самой куклы, поэтому обязательно ознакомьтесь с соответствующими записями."
 	}
   ]
