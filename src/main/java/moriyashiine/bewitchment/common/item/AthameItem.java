@@ -4,7 +4,6 @@
 
 package moriyashiine.bewitchment.common.item;
 
-import com.google.common.collect.Multimap;
 import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.common.Bewitchment;
 import moriyashiine.bewitchment.common.block.dragonsblood.DragonsBloodLogBlock;
@@ -22,8 +21,9 @@ import net.minecraft.block.PillarBlock;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
@@ -32,14 +32,11 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.SwordItem;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -48,10 +45,13 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class AthameItem extends SwordItem {
-	private static final EntityAttributeModifier REACH_MODIFIER = new EntityAttributeModifier(Identifier.of("bewitchment", "weapon_reach"), -0.5, EntityAttributeModifier.Operation.ADD_VALUE);
+	private static final EntityAttributeModifier REACH_MODIFIER = new EntityAttributeModifier(Bewitchment.id("weapon_reach"), -0.5, EntityAttributeModifier.Operation.ADD_VALUE);
 
 	public AthameItem(ToolMaterial toolMaterial, int attackDamage, float attackSpeed, Settings settings) {
-		super(toolMaterial, settings);
+		super(toolMaterial, settings.component(DataComponentTypes.ATTRIBUTE_MODIFIERS,
+				SwordItem.createAttributeModifiers(toolMaterial, attackDamage, attackSpeed)
+						.with(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE, REACH_MODIFIER, AttributeModifierSlot.MAINHAND)
+		));
 	}
 
 	@Override

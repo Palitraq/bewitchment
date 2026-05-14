@@ -9,10 +9,10 @@ import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.common.registry.BWSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
 import net.minecraft.item.MiningToolItem;
@@ -27,8 +27,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class CaduceusItem extends MiningToolItem {
-	public CaduceusItem(ToolMaterial material, TagKey<Block> effectiveBlocks, Settings settings) {
-		super(material, effectiveBlocks, settings);
+	public CaduceusItem(ToolMaterial material, float attackDamage, float attackSpeed, TagKey<Block> effectiveBlocks, Settings settings) {
+		super(material, effectiveBlocks, settings.component(DataComponentTypes.ATTRIBUTE_MODIFIERS,
+				MiningToolItem.createAttributeModifiers(material, attackDamage, attackSpeed)
+		));
 	}
 
 	@Override

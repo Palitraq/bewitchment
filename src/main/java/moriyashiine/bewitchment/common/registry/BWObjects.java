@@ -283,7 +283,7 @@ public class BWObjects {
 	public static final Item ATHAME = create("athame", new AthameItem(BWMaterials.SILVER_TOOL, 1, -2, gen()));
 	public static final Item SILVER_ARROW = create("silver_arrow", new SilverArrowItem(gen()));
 	public static final Item SCEPTER = create("scepter", new ScepterItem(gen().rarity(Rarity.RARE).maxDamage(64).fireproof()));
-	public static final Item CADUCEUS = create("caduceus", new CaduceusItem(ToolMaterials.NETHERITE, BlockTags.PICKAXE_MINEABLE, gen().rarity(Rarity.RARE).maxDamage(1998).fireproof()));
+	public static final Item CADUCEUS = create("caduceus", new CaduceusItem(ToolMaterials.NETHERITE, 0, -3.0f, BlockTags.PICKAXE_MINEABLE, gen().rarity(Rarity.RARE).maxDamage(1998).fireproof()));
 	public static final Item HORNED_SPEAR = create("horned_spear", new HornedSpearItem(ToolMaterials.NETHERITE, 2, -2.4f, gen().rarity(Rarity.RARE).maxDamage(1008).fireproof()));
 	public static final Item CHALK = create("chalk", new ChalkItem(gen().maxDamage(128), GLYPH));
 	public static final Item GOLDEN_CHALK = create("golden_chalk", new ChalkItem(gen().maxDamage(128), GOLDEN_GLYPH));
