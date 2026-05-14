@@ -598,5 +598,14 @@
   "tag.item.c.silver_blocks": "Блоки серебра",
   "tag.item.c.silver_ingots": "Серебряные слитки",
   "tag.item.c.silver_nuggets": "Кусочки серебра",
-  "tag.item.c.silver_ores": "Серебряная руда"
+  "tag.item.c.silver_ores": "Серебряная руда",
+  "tag.item.c.ingots.silver": "Серебряные слитки",
+  "tag.item.c.nuggets.silver": "Кусочки серебра",
+  "tag.item.c.raw_materials.silver": "Сырое серебро",
+  "tag.item.c.ores.silver": "Серебряная руда",
+  "tag.item.c.ores.salt": "Соляная руда",
+  "tag.item.c.storage_blocks.silver": "Блоки серебра",
+  "tag.item.c.storage_blocks.raw_silver": "Блоки сырого серебра",
+  "tag.item.c.storage_blocks.salt": "Блоки соли",
+  "tag.item.c.dusts.salt": "Соль"
 }

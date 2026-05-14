@@ -16,7 +16,7 @@
 	  "item": "lapis_lazuli"
 	},
 	"I": {
-	  "item": "bewitchment:silver_ingot"
+	  "tag": "c:ingots/silver"
 	}
   },
   "result": {

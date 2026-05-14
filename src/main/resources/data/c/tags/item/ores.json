@@ -11,7 +11,7 @@
 	"#minecraft:emerald_ores",
 	"nether_quartz_ore",
 	"ancient_debris",
-	"#c:silver_ores",
-	"#c:salt_ores"
+	"#c:ores/silver",
+	"#c:ores/salt"
   ]
 }

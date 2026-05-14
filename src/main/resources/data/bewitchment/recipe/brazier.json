@@ -7,7 +7,7 @@
   ],
   "key": {
 	"I": {
-	  "item": "bewitchment:silver_ingot"
+	  "tag": "c:ingots/silver"
 	},
 	"W": {
 	  "item": "nether_wart"

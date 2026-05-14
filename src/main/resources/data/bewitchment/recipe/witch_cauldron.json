@@ -10,7 +10,7 @@
 	  "tag": "bewitchment:barks"
 	},
 	"S": {
-	  "item": "bewitchment:silver_ingot"
+	  "tag": "c:ingots/silver"
 	},
 	"C": {
 	  "item": "cauldron"

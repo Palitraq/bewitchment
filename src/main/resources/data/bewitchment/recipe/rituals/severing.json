@@ -5,10 +5,10 @@
 	  "item": "bewitchment:taglock"
 	},
 	{
-	  "item": "bewitchment:silver_ingot"
+	  "tag": "c:ingots/silver"
 	},
 	{
-	  "item": "bewitchment:salt"
+	  "tag": "c:dusts/salt"
 	},
 	{
 	  "item": "bewitchment:garlic"

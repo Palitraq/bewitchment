@@ -9,7 +9,7 @@
 	  "item": "flint"
 	},
 	"X": {
-	  "item": "bewitchment:silver_ingot"
+	  "tag": "c:ingots/silver"
 	}
   },
   "result": {

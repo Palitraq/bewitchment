@@ -13,10 +13,10 @@
 	  "item": "paper"
 	},
 	"A": {
-	  "item": "bewitchment:silver_ingot"
+	  "tag": "c:ingots/silver"
 	},
 	"B": {
-	  "item": "bewitchment:salt"
+	  "tag": "c:dusts/salt"
 	}
   },
   "result": {

@@ -11,7 +11,7 @@
 	  "conditions": {
 		"items": [
 		  {
-			"tag": "bewitchment:silver_ingot"
+			"tag": "c:ingots/silver"
 		  }
 		]
 	  }

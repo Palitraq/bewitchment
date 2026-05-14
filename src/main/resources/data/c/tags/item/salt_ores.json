@@ -1,7 +1,6 @@
 {
   "replace": false,
   "values": [
-	"bewitchment:salt_ore",
-	"bewitchment:deepslate_salt_ore"
+    "#c:ores/salt"
   ]
 }

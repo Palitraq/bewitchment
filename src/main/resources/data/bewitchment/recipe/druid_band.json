@@ -16,7 +16,7 @@
 	  "item": "golden_apple"
 	},
 	"I": {
-	  "item": "bewitchment:silver_ingot"
+	  "tag": "c:ingots/silver"
 	},
 	"O": {
 	  "item": "bewitchment:earth_ichor"

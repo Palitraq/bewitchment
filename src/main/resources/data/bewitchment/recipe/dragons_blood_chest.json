@@ -10,7 +10,7 @@
 	  "item": "bewitchment:dragons_blood_planks"
 	},
 	"N": {
-	  "item": "bewitchment:silver_nugget"
+	  "tag": "c:nuggets/silver"
 	}
   },
   "result": {

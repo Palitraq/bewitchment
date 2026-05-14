@@ -5,7 +5,7 @@
 	  "item": "bewitchment:heaven_extract"
 	},
 	{
-	  "item": "bewitchment:salt"
+	  "tag": "c:dusts/salt"
 	}
   ],
   "inner": "normal",

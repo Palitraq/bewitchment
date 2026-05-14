@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
 	{
-	  "item": "bewitchment:silver_ingot"
+	  "tag": "c:ingots/silver"
 	}
   ],
   "result": {

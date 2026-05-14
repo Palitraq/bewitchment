@@ -785,5 +785,14 @@
   "tag.item.c.silver_blocks": "Silver Blocks",
   "tag.item.c.silver_ingots": "Silver Ingots",
   "tag.item.c.silver_nuggets": "Silver Nuggets",
-  "tag.item.c.silver_ores": "Silver Ores"
+  "tag.item.c.silver_ores": "Silver Ores",
+  "tag.item.c.ingots.silver": "Silver Ingots",
+  "tag.item.c.nuggets.silver": "Silver Nuggets",
+  "tag.item.c.raw_materials.silver": "Raw Silver",
+  "tag.item.c.ores.silver": "Silver Ores",
+  "tag.item.c.ores.salt": "Salt Ores",
+  "tag.item.c.storage_blocks.silver": "Silver Blocks",
+  "tag.item.c.storage_blocks.raw_silver": "Raw Silver Blocks",
+  "tag.item.c.storage_blocks.salt": "Salt Blocks",
+  "tag.item.c.dusts.salt": "Salt"
 }

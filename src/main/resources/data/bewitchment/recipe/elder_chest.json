@@ -10,7 +10,7 @@
 	  "item": "bewitchment:elder_planks"
 	},
 	"N": {
-	  "item": "bewitchment:silver_nugget"
+	  "tag": "c:nuggets/silver"
 	}
   },
   "result": {
