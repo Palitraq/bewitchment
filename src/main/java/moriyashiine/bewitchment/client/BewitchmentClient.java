@@ -101,7 +101,6 @@ public class BewitchmentClient implements ClientModInitializer {
 		ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> 0x8000a0, BWObjects.ELDRITCH_GLYPH);
 		ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> tintIndex == 1 ? ((BedBlock) state.getBlock()).getColor().getFireworkColor() : 0xffffff, BWObjects.WHITE_COFFIN, BWObjects.ORANGE_COFFIN, BWObjects.MAGENTA_COFFIN, BWObjects.LIGHT_BLUE_COFFIN, BWObjects.YELLOW_COFFIN, BWObjects.LIME_COFFIN, BWObjects.PINK_COFFIN, BWObjects.GRAY_COFFIN, BWObjects.LIGHT_GRAY_COFFIN, BWObjects.CYAN_COFFIN, BWObjects.PURPLE_COFFIN, BWObjects.BLUE_COFFIN, BWObjects.BROWN_COFFIN, BWObjects.GREEN_COFFIN, BWObjects.RED_COFFIN, BWObjects.BLACK_COFFIN);
 		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> tintIndex == 1 ? ((BedBlock) Block.getBlockFromItem(stack.getItem())).getColor().getFireworkColor() : 0xffffff, BWObjects.WHITE_COFFIN, BWObjects.ORANGE_COFFIN, BWObjects.MAGENTA_COFFIN, BWObjects.LIGHT_BLUE_COFFIN, BWObjects.YELLOW_COFFIN, BWObjects.LIME_COFFIN, BWObjects.PINK_COFFIN, BWObjects.GRAY_COFFIN, BWObjects.LIGHT_GRAY_COFFIN, BWObjects.CYAN_COFFIN, BWObjects.PURPLE_COFFIN, BWObjects.BLUE_COFFIN, BWObjects.BROWN_COFFIN, BWObjects.GREEN_COFFIN, BWObjects.RED_COFFIN, BWObjects.BLACK_COFFIN);
-		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> tintIndex == 0 ? 0xFF990000 : -1, BWObjects.BOTTLE_OF_BLOOD);
 		ModelPredicateProviderRegistry.register(BWObjects.HEDGEWITCH_HAT, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.getName().getString().toLowerCase().contains("faith") ? 1 : 0);
 		ModelPredicateProviderRegistry.register(BWObjects.ALCHEMIST_HAT, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.getName().getString().toLowerCase().contains("faith") ? 1 : 0);
 		ModelPredicateProviderRegistry.register(BWObjects.BESMIRCHED_HAT, Bewitchment.id("variant"), (stack, world, entity, seed) -> stack.getName().getString().toLowerCase().contains("faith") ? 1 : 0);
@@ -118,7 +117,6 @@ public class BewitchmentClient implements ClientModInitializer {
 		BlockEntityRendererFactories.register(BWBlockEntityTypes.JUNIPER_CHEST, ChestBlockEntityRenderer::new);
 		BlockEntityRendererFactories.register(BWBlockEntityTypes.ELDER_CHEST, ChestBlockEntityRenderer::new);
 		BlockEntityRendererFactories.register(BWBlockEntityTypes.DRAGONS_BLOOD_CHEST, ChestBlockEntityRenderer::new);
-
 		EntityModelLayerRegistry.registerModelLayer(CONTRIBUTOR_HORNS_MODEL_LAYER, ContributorHornsModel::getTexturedModelData);
 		EntityModelLayerRegistry.registerModelLayer(WITCH_ARMOR_MODEL_LAYER, WitchArmorModel::getTexturedModelData);
 		EntityModelLayerRegistry.registerModelLayer(SPECTER_BANGLE_MODEL_LAYER, SpecterBangleModel::getTexturedModelData);

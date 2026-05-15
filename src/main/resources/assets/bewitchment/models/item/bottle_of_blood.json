@@ -1,7 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "minecraft:item/potion_overlay",
-    "layer1": "minecraft:item/potion"
+    "layer0": "bewitchment:item/bottle_of_blood"
   }
 }
