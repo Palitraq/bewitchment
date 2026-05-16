@@ -12,6 +12,6 @@ import java.util.Optional;
 
 public class JuniperSaplingGenerator {
 	public static SaplingGenerator create() {
-		return new SaplingGenerator("juniper", Optional.of(BWWorldGenerators.JUNIPER), Optional.<RegistryKey<ConfiguredFeature<?, ?>>>empty(), Optional.<RegistryKey<ConfiguredFeature<?, ?>>>empty());
+		return new SaplingGenerator("juniper", Optional.empty(), Optional.of(BWWorldGenerators.JUNIPER), Optional.empty());
 	}
 }

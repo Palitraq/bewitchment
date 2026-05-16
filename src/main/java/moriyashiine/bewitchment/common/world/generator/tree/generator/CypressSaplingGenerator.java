@@ -12,6 +12,6 @@ import java.util.Optional;
 
 public class CypressSaplingGenerator {
 	public static SaplingGenerator create() {
-		return new SaplingGenerator("cypress", Optional.of(BWWorldGenerators.CYPRESS), Optional.<RegistryKey<ConfiguredFeature<?, ?>>>empty(), Optional.<RegistryKey<ConfiguredFeature<?, ?>>>empty());
+		return new SaplingGenerator("cypress", Optional.empty(), Optional.of(BWWorldGenerators.CYPRESS), Optional.empty());
 	}
 }

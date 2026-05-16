@@ -12,6 +12,6 @@ import java.util.Optional;
 
 public class DragonsBloodSaplingGenerator {
 	public static SaplingGenerator create() {
-		return new SaplingGenerator("dragons_blood", Optional.of(BWWorldGenerators.DRAGONS_BLOOD), Optional.<RegistryKey<ConfiguredFeature<?, ?>>>empty(), Optional.<RegistryKey<ConfiguredFeature<?, ?>>>empty());
+		return new SaplingGenerator("dragons_blood", Optional.empty(), Optional.of(BWWorldGenerators.DRAGONS_BLOOD), Optional.empty());
 	}
 }

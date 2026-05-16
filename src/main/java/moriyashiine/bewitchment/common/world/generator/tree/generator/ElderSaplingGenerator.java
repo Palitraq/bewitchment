@@ -12,6 +12,6 @@ import java.util.Optional;
 
 public class ElderSaplingGenerator {
 	public static SaplingGenerator create() {
-		return new SaplingGenerator("elder", Optional.of(BWWorldGenerators.ELDER), Optional.<RegistryKey<ConfiguredFeature<?, ?>>>empty(), Optional.<RegistryKey<ConfiguredFeature<?, ?>>>empty());
+		return new SaplingGenerator("elder", Optional.empty(), Optional.of(BWWorldGenerators.ELDER), Optional.empty());
 	}
 }
