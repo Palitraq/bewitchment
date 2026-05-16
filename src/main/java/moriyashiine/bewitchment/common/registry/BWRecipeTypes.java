@@ -63,17 +63,7 @@ public class BWRecipeTypes {
 	}
 
 	public static void init() {
-		RECIPE_SERIALIZERS.forEach((serializer, id) -> {
-			System.out.println("Registering serializer: " + id);
-			RecipeSerializer.register(id.toString(), serializer);
-		});
+		RECIPE_SERIALIZERS.forEach((serializer, id) -> Registry.register(Registries.RECIPE_SERIALIZER, id, serializer));
 		RECIPE_TYPES.keySet().forEach(recipeType -> Registry.register(Registries.RECIPE_TYPE, RECIPE_TYPES.get(recipeType), recipeType));
-		Identifier testId = Bewitchment.id("ritual_recipe");
-		RecipeSerializer<?> found = Registries.RECIPE_SERIALIZER.get(testId);
-		System.out.println("Lookup " + testId + " -> " + found);
-		found = Registries.RECIPE_SERIALIZER.get(Identifier.ofVanilla("crafting_shaped"));
-		System.out.println("Lookup crafting_shaped -> " + found);
-		System.out.println("Recipe.CODEC = " + net.minecraft.recipe.Recipe.CODEC);
-		System.out.println("Recipe.CODEC type = " + (net.minecraft.recipe.Recipe.CODEC != null ? net.minecraft.recipe.Recipe.CODEC.getClass().getName() : "null"));
 	}
 }
