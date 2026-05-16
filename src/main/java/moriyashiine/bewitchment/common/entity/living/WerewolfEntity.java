@@ -12,7 +12,7 @@ import moriyashiine.bewitchment.common.registry.BWComponents;
 import moriyashiine.bewitchment.common.registry.BWEntityAttributes;
 import moriyashiine.bewitchment.common.registry.BWSoundEvents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBiomeTags;
 import net.minecraft.entity.*;
 import net.minecraft.entity.mob.IllagerEntity;
 import net.minecraft.entity.ai.goal.*;
@@ -117,12 +117,12 @@ public class WerewolfEntity extends BWHostileEntity {
 		EntityData data = super.initialize(world, difficulty, spawnReason, entityData);
 		if (dataTracker.get(VARIANT) != 0) {
 			RegistryEntry<Biome> biome = world.getBiome(getBlockPos());
-			if (biome.isIn(ConventionalBiomeTags.FOREST)) {
+			if (biome.isIn(ConventionalBiomeTags.IS_FOREST)) {
 				dataTracker.set(VARIANT, random.nextBoolean() ? 1 : 2);
-			} else if (biome.isIn(ConventionalBiomeTags.TAIGA)) {
+			} else if (biome.isIn(ConventionalBiomeTags.IS_TAIGA)) {
 				dataTracker.set(VARIANT, random.nextBoolean() ? 3 : 4);
 			}
-			if (biome.isIn(ConventionalBiomeTags.ICY)) {
+			if (biome.isIn(ConventionalBiomeTags.IS_ICY)) {
 				dataTracker.set(VARIANT, random.nextBoolean() ? 5 : 6);
 			} else {
 				dataTracker.set(VARIANT, random.nextInt(getVariants() - 1) + 1);

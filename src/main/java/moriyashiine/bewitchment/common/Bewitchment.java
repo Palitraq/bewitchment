@@ -30,7 +30,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBiomeTags;
 
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
@@ -103,12 +103,12 @@ public class Bewitchment implements ModInitializer {
 							RegistryEntry<Biome> biome = world.getBiome(killedEntity.getBlockPos());
 							MobEntity boss = null;
 							if (chicken) {
-								if (biome.isIn(ConventionalBiomeTags.EXTREME_HILLS) || biome.isIn(ConventionalBiomeTags.ICY) || biome.isIn(ConventionalBiomeTags.MOUNTAIN)) {
+								if (biome.isIn(ConventionalBiomeTags.IS_HILL) || biome.isIn(ConventionalBiomeTags.IS_ICY) || biome.isIn(ConventionalBiomeTags.IS_MOUNTAIN)) {
 									boss = BWEntityTypes.LILITH.create(world);
 								}
 							}
 							if (wolf) {
-								if (biome.isIn(ConventionalBiomeTags.TAIGA) || biome.isIn(ConventionalBiomeTags.FOREST)) {
+								if (biome.isIn(ConventionalBiomeTags.IS_TAIGA) || biome.isIn(ConventionalBiomeTags.IS_FOREST)) {
 									boss = BWEntityTypes.HERNE.create(world);
 								}
 							}
