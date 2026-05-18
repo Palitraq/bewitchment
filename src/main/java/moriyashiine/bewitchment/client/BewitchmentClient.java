@@ -84,6 +84,7 @@ public class BewitchmentClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		MagicSyncPacket.register();
 		SyncContractsPacket.register();
 		SyncDemonTradesPacket.register();
 		SyncPoppetShelfPacket.register();

@@ -40,7 +40,7 @@ public class DragonsBloodChestBlock extends BWChestBlock {
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-		return (tickerWorld, pos, tickerState, blockEntity) -> DragonsBloodChestBlockEntity.tick(tickerWorld, pos, tickerState, (DragonsBloodChestBlockEntity) blockEntity);
+		return type == BWBlockEntityTypes.DRAGONS_BLOOD_CHEST ? (tickerWorld, pos, tickerState, blockEntity) -> DragonsBloodChestBlockEntity.tick(tickerWorld, pos, tickerState, (DragonsBloodChestBlockEntity) blockEntity) : null;
 	}
 
 	@Override

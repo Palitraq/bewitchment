@@ -6,7 +6,6 @@ package moriyashiine.bewitchment.common.block.entity;
 
 import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.common.registry.*;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,8 +18,8 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
@@ -110,12 +109,13 @@ public class WitchAltarBlockEntity extends BlockEntity implements Inventory {
 					} else {
 						blockEntity.power = Math.min(blockEntity.power + blockEntity.gain, blockEntity.maxPower);
 					}
-					PlayerLookup.around((ServerWorld) world, Vec3d.of(pos), 24).forEach(player -> {
-						if (player.isPartOfGame() && !player.isCreative() && !BWComponents.CURSES_COMPONENT.get(player).hasCurse(BWCurses.APATHY) && BewitchmentAPI.fillMagic(player, 5, true) && blockEntity.drain(10, true)) {
-							BewitchmentAPI.fillMagic(player, 5, false);
-							blockEntity.drain(10, false);
-						}
-					});
+					Vec3d altarPos = Vec3d.of(pos);
+				for (ServerPlayerEntity player : ((ServerWorld) world).getPlayers()) {
+					if (player.isPartOfGame() && !player.isCreative() && !BWComponents.CURSES_COMPONENT.get(player).hasCurse(BWCurses.APATHY) && player.squaredDistanceTo(altarPos) <= 576 && BewitchmentAPI.fillMagic(player, 5, true) && blockEntity.drain(10, true)) {
+						BewitchmentAPI.fillMagic(player, 5, false);
+						blockEntity.drain(10, false);
+					}
+				}
 				}
 			}
 		}

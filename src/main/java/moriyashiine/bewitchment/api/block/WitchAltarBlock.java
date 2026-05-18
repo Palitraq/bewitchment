@@ -11,6 +11,7 @@ import moriyashiine.bewitchment.api.registry.AltarMapEntry;
 import moriyashiine.bewitchment.common.BWConfig;
 import moriyashiine.bewitchment.common.block.entity.WitchAltarBlockEntity;
 import moriyashiine.bewitchment.common.misc.BWUtil;
+import moriyashiine.bewitchment.common.registry.BWBlockEntityTypes;
 import moriyashiine.bewitchment.common.registry.BWTags;
 import moriyashiine.bewitchment.common.world.BWWorldState;
 import net.minecraft.block.*;
@@ -66,8 +67,8 @@ public class WitchAltarBlock extends HorizontalFacingBlock implements BlockEntit
 
 	@Nullable
 	@Override
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world0, BlockState state0, BlockEntityType<T> type) {
-		return (world, pos, state, blockEntity) -> WitchAltarBlockEntity.tick(world, pos, state, (WitchAltarBlockEntity) blockEntity);
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+		return type == BWBlockEntityTypes.WITCH_ALTAR ? (tickerWorld, pos, tickerState, blockEntity) -> WitchAltarBlockEntity.tick(tickerWorld, pos, tickerState, (WitchAltarBlockEntity) blockEntity) : null;
 	}
 
 	@Override

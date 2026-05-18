@@ -4,17 +4,19 @@
 
 package moriyashiine.bewitchment.api.component;
 
+import moriyashiine.bewitchment.client.packet.MagicSyncPacket;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.ladysnake.cca.api.v3.component.Component;
 
 public class MagicComponent implements Component {
 	public static final int MAX_MAGIC = 100;
 
 	private final PlayerEntity obj;
-	private int magic = 0, magicTimer = 60;
+	private volatile int magic = 0, magicTimer = 60;
 
 	public MagicComponent(PlayerEntity obj) {
 		this.obj = obj;
@@ -43,6 +45,14 @@ public class MagicComponent implements Component {
 	public void setMagic(int magic) {
 		this.magic = magic;
 		BWComponents.MAGIC_COMPONENT.sync(obj);
+		if (obj instanceof ServerPlayerEntity serverPlayer && serverPlayer.networkHandler != null) {
+			MagicSyncPacket.send(serverPlayer, magic, magicTimer);
+		}
+	}
+
+	public void onClientSync(int magic, int magicTimer) {
+		this.magic = magic;
+		this.magicTimer = magicTimer;
 	}
 
 	public int getMagicTimer() {
@@ -52,6 +62,9 @@ public class MagicComponent implements Component {
 	public void setMagicTimer(int magicTimer) {
 		this.magicTimer = magicTimer;
 		BWComponents.MAGIC_COMPONENT.sync(obj);
+		if (obj instanceof ServerPlayerEntity serverPlayer && serverPlayer.networkHandler != null) {
+			MagicSyncPacket.send(serverPlayer, this.magic, magicTimer);
+		}
 	}
 
 	public boolean fillMagic(int amount, boolean simulate) {

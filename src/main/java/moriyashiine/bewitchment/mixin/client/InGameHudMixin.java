@@ -4,7 +4,6 @@
 
 package moriyashiine.bewitchment.mixin.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import moriyashiine.bewitchment.api.BewitchmentAPI;
 import moriyashiine.bewitchment.api.component.BloodComponent;
 import moriyashiine.bewitchment.api.component.MagicComponent;
@@ -35,15 +34,13 @@ public abstract class InGameHudMixin {
 	@Final
 	private MinecraftClient client;
 
-	@Inject(method = "renderStatusBars", at = @At(value = "INVOKE", shift = At.Shift.AFTER, ordinal = 2, target = "Lnet/minecraft/client/MinecraftClient;getProfiler()Lnet/minecraft/util/profiler/Profiler;"))
+	@Inject(method = "renderStatusBars", at = @At("TAIL"))
 	private void renderPre(DrawContext context, CallbackInfo ci) {
 		BWComponents.MAGIC_COMPONENT.maybeGet(client.player).ifPresent(magicComponent -> {
 			if (magicComponent.getMagicTimer() > 0) {
-				RenderSystem.setShaderColor(1, 1, 1, magicComponent.getMagicTimer() / 10f);
 				drawTexture(context, BEWITCHMENT_GUI_ICONS_TEXTURE, 13, (context.getScaledWindowHeight() - 74) / 2, 25, 0, 7, 74);
 				drawTexture(context, BEWITCHMENT_GUI_ICONS_TEXTURE, 13, (context.getScaledWindowHeight() - 74) / 2, 32, 0, 7, (int) (74 - (magicComponent.getMagic() * 74f / MagicComponent.MAX_MAGIC)));
 				drawTexture(context, BEWITCHMENT_GUI_ICONS_TEXTURE, 4, (context.getScaledWindowHeight() - 102) / 2, 0, 0, 25, 102);
-				RenderSystem.setShaderColor(1, 1, 1, 1);
 			}
 		});
 		if (BewitchmentAPI.isVampire(client.player, true)) {

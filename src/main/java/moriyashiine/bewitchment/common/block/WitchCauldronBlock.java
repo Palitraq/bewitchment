@@ -10,6 +10,7 @@ import moriyashiine.bewitchment.common.block.entity.WitchAltarBlockEntity;
 import moriyashiine.bewitchment.common.block.entity.WitchCauldronBlockEntity;
 import moriyashiine.bewitchment.common.misc.BWUtil;
 import moriyashiine.bewitchment.common.recipe.OilRecipe;
+import moriyashiine.bewitchment.common.registry.BWBlockEntityTypes;
 import moriyashiine.bewitchment.common.registry.BWProperties;
 import moriyashiine.bewitchment.common.registry.BWTags;
 import moriyashiine.bewitchment.common.world.BWWorldState;
@@ -66,7 +67,7 @@ public class WitchCauldronBlock extends Block implements BlockEntityProvider, Wa
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-		return (tickerWorld, pos, tickerState, blockEntity) -> WitchCauldronBlockEntity.tick(tickerWorld, pos, tickerState, (WitchCauldronBlockEntity) blockEntity);
+		return type == BWBlockEntityTypes.WITCH_CAULDRON ? (tickerWorld, pos, tickerState, blockEntity) -> WitchCauldronBlockEntity.tick(tickerWorld, pos, tickerState, (WitchCauldronBlockEntity) blockEntity) : null;
 	}
 
 	@Override

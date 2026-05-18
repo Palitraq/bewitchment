@@ -7,6 +7,7 @@ package moriyashiine.bewitchment.common.block;
 import moriyashiine.bewitchment.api.block.WitchAltarBlock;
 import moriyashiine.bewitchment.api.block.entity.UsesAltarPower;
 import moriyashiine.bewitchment.common.block.entity.GlyphBlockEntity;
+import moriyashiine.bewitchment.common.registry.BWBlockEntityTypes;
 import moriyashiine.bewitchment.common.registry.BWObjects;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
@@ -60,7 +61,7 @@ public class GlyphBlock extends HorizontalFacingBlock implements BlockEntityProv
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-		return state.getBlock() == BWObjects.GOLDEN_GLYPH ? (tickerWorld, pos, tickerState, blockEntity) -> GlyphBlockEntity.tick(tickerWorld, pos, tickerState, (GlyphBlockEntity) blockEntity) : null;
+		return type == BWBlockEntityTypes.GLYPH && state.getBlock() == BWObjects.GOLDEN_GLYPH ? (tickerWorld, pos, tickerState, blockEntity) -> GlyphBlockEntity.tick(tickerWorld, pos, tickerState, (GlyphBlockEntity) blockEntity) : null;
 	}
 
 	@Override

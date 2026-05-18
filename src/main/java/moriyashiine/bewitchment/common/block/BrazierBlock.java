@@ -7,6 +7,7 @@ package moriyashiine.bewitchment.common.block;
 import moriyashiine.bewitchment.api.block.WitchAltarBlock;
 import moriyashiine.bewitchment.api.block.entity.UsesAltarPower;
 import moriyashiine.bewitchment.common.block.entity.BrazierBlockEntity;
+import moriyashiine.bewitchment.common.registry.BWBlockEntityTypes;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -63,7 +64,7 @@ public class BrazierBlock extends LanternBlock implements BlockEntityProvider {
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-		return (tickerWorld, pos, tickerState, blockEntity) -> BrazierBlockEntity.tick(tickerWorld, pos, tickerState, (BrazierBlockEntity) blockEntity);
+		return type == BWBlockEntityTypes.BRAZIER ? (tickerWorld, pos, tickerState, blockEntity) -> BrazierBlockEntity.tick(tickerWorld, pos, tickerState, (BrazierBlockEntity) blockEntity) : null;
 	}
 
 	@Override

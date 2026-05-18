@@ -6,6 +6,7 @@ package moriyashiine.bewitchment.common.block.dragonsblood;
 
 import moriyashiine.bewitchment.common.block.entity.SigilBlockEntity;
 import moriyashiine.bewitchment.common.block.entity.interfaces.SigilHolder;
+import moriyashiine.bewitchment.common.registry.BWBlockEntityTypes;
 import moriyashiine.bewitchment.common.block.util.interfaces.SpecialDoor;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockSetType;
@@ -40,7 +41,7 @@ public class DragonsBloodDoorBlock extends DoorBlock implements BlockEntityProvi
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-		return (tickerWorld, pos, tickerState, blockEntity) -> SigilBlockEntity.tick(tickerWorld, pos, tickerState, (SigilBlockEntity) blockEntity);
+		return type == BWBlockEntityTypes.SIGIL ? (tickerWorld, pos, tickerState, blockEntity) -> SigilBlockEntity.tick(tickerWorld, pos, tickerState, (SigilBlockEntity) blockEntity) : null;
 	}
 
 	@Override
