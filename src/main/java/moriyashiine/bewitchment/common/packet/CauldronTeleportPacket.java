@@ -11,6 +11,7 @@ import moriyashiine.bewitchment.common.block.entity.WitchAltarBlockEntity;
 import moriyashiine.bewitchment.common.misc.BWUtil;
 import moriyashiine.bewitchment.common.registry.BWPledges;
 import moriyashiine.bewitchment.common.world.BWWorldState;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.entity.BlockEntity;
@@ -41,6 +42,7 @@ public class CauldronTeleportPacket implements CustomPayload {
 	}
 
 	public static void send(BlockPos cauldronPos, String message) {
+		ClientPlayNetworking.send(new CauldronTeleportPacket(cauldronPos, message));
 	}
 
 	public static void register() {
