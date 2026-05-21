@@ -36,6 +36,6 @@ public class SynchronizedStatusEffect extends StatusEffect {
 	@Override
 	public void onApplied(LivingEntity entity, int amplifier) {
 		super.onApplied(entity, amplifier);
-		entity.removeStatusEffect(RegistryEntry.of(BWStatusEffects.THEFT));
+		entity.removeStatusEffect(BWStatusEffects.THEFT);
 	}
 }

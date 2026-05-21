@@ -10,7 +10,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.registry.entry.RegistryEntry;
 
 public class BWFoodComponents {
-	public static final FoodComponent DEMON_HEART = new FoodComponent.Builder().nutrition(8).saturationModifier(0.6f).statusEffect(new StatusEffectInstance(RegistryEntry.of(BWStatusEffects.CORRUPTION), 1), 1).statusEffect(new StatusEffectInstance(StatusEffects.WITHER, 800, 2), 1).statusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 800, 2), 1).statusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 800, 2), 1).build();
+	public static final FoodComponent DEMON_HEART = new FoodComponent.Builder().nutrition(8).saturationModifier(0.6f).statusEffect(new StatusEffectInstance(BWStatusEffects.CORRUPTION, 1), 1).statusEffect(new StatusEffectInstance(StatusEffects.WITHER, 800, 2), 1).statusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 800, 2), 1).statusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 800, 2), 1).build();
 
 	public static final FoodComponent GARLIC_BREAD = new FoodComponent.Builder().nutrition(10).saturationModifier(0.5f).build();
 

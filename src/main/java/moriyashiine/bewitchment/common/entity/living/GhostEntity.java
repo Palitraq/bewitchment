@@ -162,7 +162,7 @@ public class GhostEntity extends BWHostileEntity {
 	}
 
 	public static StatusEffectInstance getEffect(int type, int duration) {
-		return new StatusEffectInstance(type == 1 ? StatusEffects.HUNGER : type == 2 ? StatusEffects.SLOWNESS : type == 3 ? RegistryEntry.of(BWStatusEffects.CORROSION) : RegistryEntry.of(BWStatusEffects.SINKING), duration);
+		return new StatusEffectInstance(type == 1 ? StatusEffects.HUNGER : type == 2 ? StatusEffects.SLOWNESS : type == 3 ? BWStatusEffects.CORROSION : BWStatusEffects.SINKING, duration);
 	}
 
 	private class GhostMoveControl extends MoveControl {

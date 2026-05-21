@@ -26,13 +26,13 @@ public class CorruptionStatusEffect extends StatusEffect {
 		INVERSE_EFFECTS.put(StatusEffects.NIGHT_VISION, StatusEffects.BLINDNESS);
 		INVERSE_EFFECTS.put(StatusEffects.HASTE, StatusEffects.MINING_FATIGUE);
 		INVERSE_EFFECTS.put(StatusEffects.SPEED, StatusEffects.SLOWNESS);
-		INVERSE_EFFECTS.put(StatusEffects.JUMP_BOOST, RegistryEntry.of(BWStatusEffects.SINKING));
-		INVERSE_EFFECTS.put(StatusEffects.FIRE_RESISTANCE, RegistryEntry.of(BWStatusEffects.IGNITION));
-		INVERSE_EFFECTS.put(StatusEffects.WATER_BREATHING, RegistryEntry.of(BWStatusEffects.GILLS));
+		INVERSE_EFFECTS.put(StatusEffects.JUMP_BOOST, BWStatusEffects.SINKING);
+		INVERSE_EFFECTS.put(StatusEffects.FIRE_RESISTANCE, BWStatusEffects.IGNITION);
+		INVERSE_EFFECTS.put(StatusEffects.WATER_BREATHING, BWStatusEffects.GILLS);
 		INVERSE_EFFECTS.put(StatusEffects.SLOW_FALLING, StatusEffects.LEVITATION);
-		INVERSE_EFFECTS.put(RegistryEntry.of(BWStatusEffects.HARDENING), RegistryEntry.of(BWStatusEffects.CORROSION));
-		INVERSE_EFFECTS.put(RegistryEntry.of(BWStatusEffects.ENCHANTED), RegistryEntry.of(BWStatusEffects.INHIBITED));
-		INVERSE_EFFECTS.put(RegistryEntry.of(BWStatusEffects.NOURISHING), StatusEffects.HUNGER);
+		INVERSE_EFFECTS.put(BWStatusEffects.HARDENING, BWStatusEffects.CORROSION);
+		INVERSE_EFFECTS.put(BWStatusEffects.ENCHANTED, BWStatusEffects.INHIBITED);
+		INVERSE_EFFECTS.put(BWStatusEffects.NOURISHING, StatusEffects.HUNGER);
 	}
 
 	public CorruptionStatusEffect(StatusEffectCategory category, int color) {

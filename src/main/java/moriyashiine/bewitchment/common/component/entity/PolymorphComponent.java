@@ -41,7 +41,7 @@ public class PolymorphComponent implements Component {
 	}
 
 	public void serverTick() {
-		if (obj instanceof PlayerEntity player && getUuid() != null && !player.hasStatusEffect(RegistryEntry.of(BWStatusEffects.POLYMORPH))) {
+		if (obj instanceof PlayerEntity player && getUuid() != null && !player.hasStatusEffect(BWStatusEffects.POLYMORPH)) {
 			setUuid(null);
 			setName(null);
 			Impersonator.get(player).stopImpersonation(PolymorphStatusEffect.IMPERSONATE_IDENTIFIER);

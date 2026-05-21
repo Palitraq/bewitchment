@@ -141,7 +141,7 @@ public abstract class LivingEntityMixin extends Entity {
 		if (!getWorld().isClient) {
 			Entity attacker = source.getAttacker();
 			if (attacker instanceof LeonardEntity) {
-				removeStatusEffect(RegistryEntry.of(BWStatusEffects.MAGIC_SPONGE));
+				removeStatusEffect(BWStatusEffects.MAGIC_SPONGE);
 			}
 			if (attacker instanceof BaphometEntity) {
 				removeStatusEffect(StatusEffects.FIRE_RESISTANCE);

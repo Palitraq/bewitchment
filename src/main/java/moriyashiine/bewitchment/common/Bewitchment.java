@@ -113,7 +113,7 @@ public class Bewitchment implements ModInitializer {
 								}
 							}
 							if (boss != null) {
-								BlockPos brazierPos = BWUtil.getClosestBlockPos(killedEntity.getBlockPos(), 8, currentPos -> world.getBlockEntity(currentPos) instanceof BrazierBlockEntity brazier && brazier.incenseRecipe.effect == BWStatusEffects.MORTAL_COIL);
+								BlockPos brazierPos = BWUtil.getClosestBlockPos(killedEntity.getBlockPos(), 8, currentPos -> world.getBlockEntity(currentPos) instanceof BrazierBlockEntity brazier && brazier.incenseRecipe.effect == BWStatusEffects.MORTAL_COIL.value());
 								if (brazierPos != null) {
 									world.breakBlock(brazierPos, false);
 									world.createExplosion(null, brazierPos.getX() + 0.5, brazierPos.getY() + 0.5, brazierPos.getZ() + 0.5, 3, World.ExplosionSourceType.TNT);
@@ -212,7 +212,7 @@ public class Bewitchment implements ModInitializer {
 		BWBoatTypes.init();
 		BWBlockEntityTypes.init();
 		BWEntityTypes.init();
-		BWStatusEffects.init();
+
 		BWEntityAttributes.init();
 		BWEnchantments.init();
 		BWRitualFunctions.init();

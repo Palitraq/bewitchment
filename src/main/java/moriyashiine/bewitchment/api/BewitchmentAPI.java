@@ -192,7 +192,7 @@ public class BewitchmentAPI {
 		if (player.isCreative()) {
 			return true;
 		}
-		if (player.hasStatusEffect(RegistryEntry.of(BWStatusEffects.INHIBITED))) {
+		if (player.hasStatusEffect(BWStatusEffects.INHIBITED)) {
 			return false;
 		}
 		return BWComponents.MAGIC_COMPONENT.get(player).drainMagic(amount, simulate);

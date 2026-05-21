@@ -19,6 +19,6 @@ public class SusceptibilityCurse extends Curse {
 	@Override
 	public void tick(LivingEntity target) {
 		target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 19, 1, true, false));
-		target.addStatusEffect(new StatusEffectInstance(RegistryEntry.of(BWStatusEffects.SINKING), 19, 0, true, false));
+		target.addStatusEffect(new StatusEffectInstance(BWStatusEffects.SINKING, 19, 0, true, false));
 	}
 }

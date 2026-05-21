@@ -40,6 +40,6 @@ public class TheftStatusEffect extends StatusEffect {
 	@Override
 	public void onApplied(LivingEntity entity, int amplifier) {
 		super.onApplied(entity, amplifier);
-		entity.removeStatusEffect(RegistryEntry.of(BWStatusEffects.SYNCHRONIZED));
+		entity.removeStatusEffect(BWStatusEffects.SYNCHRONIZED);
 	}
 }

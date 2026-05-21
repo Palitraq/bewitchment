@@ -63,7 +63,7 @@ public abstract class LivingEntityMixin extends Entity {
 	private DamageSource modifyDamage0(DamageSource source) {
 		if (!getWorld().isClient) {
 			Entity attacker = source.getSource();
-			if (attacker instanceof LivingEntity livingAttacker && livingAttacker.hasStatusEffect(RegistryEntry.of(BWStatusEffects.ENCHANTED))) {
+			if (attacker instanceof LivingEntity livingAttacker && livingAttacker.hasStatusEffect(BWStatusEffects.ENCHANTED)) {
 				return getWorld().getDamageSources().indirectMagic(livingAttacker, livingAttacker);
 			}
 		}
@@ -73,15 +73,15 @@ public abstract class LivingEntityMixin extends Entity {
 	@ModifyVariable(method = "applyArmorToDamage", at = @At("HEAD"), argsOnly = true)
 	private float modifyDamage1(float amount, DamageSource source) {
 		if (!getWorld().isClient) {
-			if (!source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY) && (hasStatusEffect(RegistryEntry.of(BWStatusEffects.ETHEREAL)) || (source.getAttacker() instanceof LivingEntity livingAttacker && livingAttacker.hasStatusEffect(RegistryEntry.of(BWStatusEffects.ETHEREAL))))) {
+			if (!source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY) && (hasStatusEffect(BWStatusEffects.ETHEREAL) || (source.getAttacker() instanceof LivingEntity livingAttacker && livingAttacker.hasStatusEffect(BWStatusEffects.ETHEREAL)))) {
 				return 0;
 			}
-			if (source.getSource() instanceof LivingEntity livingSource && livingSource.hasStatusEffect(RegistryEntry.of(BWStatusEffects.ENCHANTED))) {
+			if (source.getSource() instanceof LivingEntity livingSource && livingSource.hasStatusEffect(BWStatusEffects.ENCHANTED)) {
 				amount /= 4;
-				amount += livingSource.getStatusEffect(RegistryEntry.of(BWStatusEffects.ENCHANTED)).getAmplifier();
+				amount += livingSource.getStatusEffect(BWStatusEffects.ENCHANTED).getAmplifier();
 			}
-			if (hasStatusEffect(RegistryEntry.of(BWStatusEffects.MAGIC_SPONGE)) && source.isIn(DamageTypeTags.WITCH_RESISTANT_TO)) {
-				float magicAmount = (0.3f + (0.1f * getStatusEffect(RegistryEntry.of(BWStatusEffects.MAGIC_SPONGE)).getAmplifier()));
+			if (hasStatusEffect(BWStatusEffects.MAGIC_SPONGE) && source.isIn(DamageTypeTags.WITCH_RESISTANT_TO)) {
+				float magicAmount = (0.3f + (0.1f * getStatusEffect(BWStatusEffects.MAGIC_SPONGE).getAmplifier()));
 				amount *= (1 - magicAmount);
 				if ((Object) this instanceof PlayerEntity player) {
 					BewitchmentAPI.fillMagic(player, (int) (amount * magicAmount), false);
@@ -95,28 +95,28 @@ public abstract class LivingEntityMixin extends Entity {
 	private void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> callbackInfo) {
 		if (!getWorld().isClient) {
 			Entity directSource = source.getSource();
-			if (hasStatusEffect(RegistryEntry.of(BWStatusEffects.DEFLECTION)) && directSource != null && directSource.getType().isIn(EntityTypeTags.ARROWS)) {
-				int amplifier = getStatusEffect(RegistryEntry.of(BWStatusEffects.DEFLECTION)).getAmplifier() + 1;
+			if (hasStatusEffect(BWStatusEffects.DEFLECTION) && directSource != null && directSource.getType().isIn(EntityTypeTags.ARROWS)) {
+				int amplifier = getStatusEffect(BWStatusEffects.DEFLECTION).getAmplifier() + 1;
 				Vec3d velocity = directSource.getVelocity();
 				directSource.setVelocity(velocity.getX() * 2 * amplifier, velocity.getY() * 2 * amplifier, velocity.getZ() * 2 * amplifier);
 				callbackInfo.setReturnValue(false);
 			} else if (amount > 0 && hurtTime == 0) {
-				if (!hasStatusEffect(StatusEffects.STRENGTH) && !hasStatusEffect(StatusEffects.REGENERATION) && !hasStatusEffect(StatusEffects.RESISTANCE) && directSource instanceof LivingEntity livingSource && livingSource.hasStatusEffect(RegistryEntry.of(BWStatusEffects.LEECHING))) {
-					livingSource.heal(amount * (livingSource.getStatusEffect(RegistryEntry.of(BWStatusEffects.LEECHING)).getAmplifier() + 1) / 8);
+				if (!hasStatusEffect(StatusEffects.STRENGTH) && !hasStatusEffect(StatusEffects.REGENERATION) && !hasStatusEffect(StatusEffects.RESISTANCE) && directSource instanceof LivingEntity livingSource && livingSource.hasStatusEffect(BWStatusEffects.LEECHING)) {
+					livingSource.heal(amount * (livingSource.getStatusEffect(BWStatusEffects.LEECHING).getAmplifier() + 1) / 8);
 				}
-				if (directSource != null && hasStatusEffect(RegistryEntry.of(BWStatusEffects.THORNS)) && source.isOf(DamageTypes.THORNS)) {
-					directSource.damage(getWorld().getDamageSources().thorns(directSource), 2 * (getStatusEffect(RegistryEntry.of(BWStatusEffects.THORNS)).getAmplifier() + 1));
+				if (directSource != null && hasStatusEffect(BWStatusEffects.THORNS) && source.isOf(DamageTypes.THORNS)) {
+					directSource.damage(getWorld().getDamageSources().thorns(directSource), 2 * (getStatusEffect(BWStatusEffects.THORNS).getAmplifier() + 1));
 				}
-				if (hasStatusEffect(RegistryEntry.of(BWStatusEffects.VOLATILITY)) && !source.isIn(DamageTypeTags.IS_EXPLOSION)) {
+				if (hasStatusEffect(BWStatusEffects.VOLATILITY) && !source.isIn(DamageTypeTags.IS_EXPLOSION)) {
 					for (LivingEntity entity : getWorld().getEntitiesByClass(LivingEntity.class, getBoundingBox().expand(3), foundEntity -> foundEntity.isAlive() && !foundEntity.getUuid().equals(getUuid()))) {
-						entity.damage(getWorld().getDamageSources().explosion(((LivingEntity) (Object) this), ((LivingEntity) (Object) this)), 4 * (getStatusEffect(RegistryEntry.of(BWStatusEffects.VOLATILITY)).getAmplifier() + 1));
+						entity.damage(getWorld().getDamageSources().explosion(((LivingEntity) (Object) this), ((LivingEntity) (Object) this)), 4 * (getStatusEffect(BWStatusEffects.VOLATILITY).getAmplifier() + 1));
 					}
 					getWorld().playSound(null, getBlockPos(), SoundEvents.ENTITY_GENERIC_EXPLODE.value(), SoundCategory.NEUTRAL, 1, 1);
 					PlayerLookup.tracking(this).forEach(trackingPlayer -> ServerPlayNetworking.send(trackingPlayer, new SpawnExplosionParticlesPacket(this)));
 					if (((Object) this) instanceof ServerPlayerEntity player) {
 						ServerPlayNetworking.send(player, new SpawnExplosionParticlesPacket(this));
 					}
-					removeStatusEffect(RegistryEntry.of(BWStatusEffects.VOLATILITY));
+					removeStatusEffect(BWStatusEffects.VOLATILITY);
 				}
 			}
 		}
@@ -124,7 +124,7 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@Inject(method = "addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z", at = @At(value = "HEAD"))
 	private void addStatusEffect(StatusEffectInstance effect, Entity source, CallbackInfoReturnable<Boolean> cir) {
-		if (effect.getEffectType() == RegistryEntry.of(BWStatusEffects.POLYMORPH) && source instanceof AreaEffectCloudEntity) {
+		if (effect.getEffectType() == BWStatusEffects.POLYMORPH && source instanceof AreaEffectCloudEntity) {
 			BWComponents.POLYMORPH_COMPONENT.maybeGet(source).ifPresent(sourcePolymorphComponent -> {
 				if (sourcePolymorphComponent.getUuid() != null) {
 					BWComponents.POLYMORPH_COMPONENT.maybeGet(LivingEntity.class.cast(this)).ifPresent(entityPolymorphComponent -> {
@@ -138,14 +138,14 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@Inject(method = "canBreatheInWater", at = @At("RETURN"), cancellable = true)
 	private void canBreatheInWater(CallbackInfoReturnable<Boolean> callbackInfo) {
-		if (!callbackInfo.getReturnValueZ() && !getWorld().isClient && hasStatusEffect(RegistryEntry.of(BWStatusEffects.GILLS))) {
+		if (!callbackInfo.getReturnValueZ() && !getWorld().isClient && hasStatusEffect(BWStatusEffects.GILLS)) {
 			callbackInfo.setReturnValue(true);
 		}
 	}
 
 	@Inject(method = "isClimbing", at = @At("RETURN"), cancellable = true)
 	private void isClimbing(CallbackInfoReturnable<Boolean> callbackInfo) {
-		if (!callbackInfo.getReturnValueZ() && hasStatusEffect(RegistryEntry.of(BWStatusEffects.CLIMBING)) && horizontalCollision) {
+		if (!callbackInfo.getReturnValueZ() && hasStatusEffect(BWStatusEffects.CLIMBING) && horizontalCollision) {
 			callbackInfo.setReturnValue(true);
 		}
 	}

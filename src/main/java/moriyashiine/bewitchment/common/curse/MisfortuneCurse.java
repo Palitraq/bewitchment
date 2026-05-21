@@ -32,8 +32,8 @@ public class MisfortuneCurse extends Curse {
 		else if (value == 4) effect = StatusEffects.BLINDNESS;
 		else if (value == 5) effect = StatusEffects.NAUSEA;
 		else if (value == 6) effect = StatusEffects.MINING_FATIGUE;
-		else if (value == 7) effect = RegistryEntry.of(BWStatusEffects.CORROSION);
-		else effect = RegistryEntry.of(BWStatusEffects.SINKING);
+		else if (value == 7) effect = BWStatusEffects.CORROSION;
+		else effect = BWStatusEffects.SINKING;
 		return new StatusEffectInstance(effect, 400);
 	}
 }

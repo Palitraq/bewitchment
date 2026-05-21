@@ -347,9 +347,9 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 			}
 			List<StatusEffectInstance> finalEffects = new ArrayList<>();
 			for (int i = effects.size() - 1; i >= 0; i--) {
-				if (effects.get(i).getEffectType().value() == BWStatusEffects.CORRUPTION) {
+				if (effects.get(i).getEffectType() == BWStatusEffects.CORRUPTION) {
 					finalEffects.add(effects.remove(i));
-				} else if (effects.get(i).getEffectType().value() == BWStatusEffects.POLYMORPH) {
+				} else if (effects.get(i).getEffectType() == BWStatusEffects.POLYMORPH) {
 					StatusEffectInstance removed = effects.remove(i);
 					finalEffects.add(new StatusEffectInstance(removed.getEffectType(), removed.getDuration(), removed.getAmplifier(), removed.isAmbient(), false, removed.shouldShowIcon()));
 				}
@@ -410,7 +410,7 @@ public class WitchCauldronBlockEntity extends BlockEntity implements Inventory, 
 		if (cauldronBrewingRecipe == null) {
 			return false;
 		}
-		return BWConfig.enablePolymorph || cauldronBrewingRecipe.output != BWStatusEffects.POLYMORPH;
+		return BWConfig.enablePolymorph || cauldronBrewingRecipe.output != BWStatusEffects.POLYMORPH.value();
 	}
 
 	public enum Mode {
