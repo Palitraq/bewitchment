@@ -4,14 +4,12 @@
 
 package moriyashiine.bewitchment.client.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import moriyashiine.bewitchment.common.Bewitchment;
 import moriyashiine.bewitchment.common.entity.living.DemonEntity;
 import moriyashiine.bewitchment.common.registry.BWComponents;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.util.Window;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
@@ -19,7 +17,9 @@ import net.minecraft.util.Identifier;
 
 @SuppressWarnings("ConstantConditions")
 public class DemonScreen extends HandledScreen<DemonScreenHandler> {
-	private static final Identifier HEARTS = Identifier.ofVanilla("textures/gui/icons.png");
+	private static final Identifier CONTAINER = Identifier.ofVanilla("hud/heart/container");
+	private static final Identifier FULL = Identifier.ofVanilla("hud/heart/full");
+	private static final Identifier HALF = Identifier.ofVanilla("hud/heart/half");
 
 	public DemonScreen(DemonScreenHandler handler, PlayerInventory inventory, Text title) {
 		super(handler, inventory, title);
@@ -47,20 +47,11 @@ public class DemonScreen extends HandledScreen<DemonScreenHandler> {
 		}
 		int x = (width - backgroundWidth) / 2 + 56;
 		int y = (height - backgroundHeight) / 2 + 16;
-		Window window = client.getWindow();
-		int scissorX = unscale(x, window.getScaledWidth(), window.getWidth());
-		int scissorY = unscale(window.getScaledHeight() - (y + 68), window.getScaledHeight(), window.getHeight());
-		int scissorWidth = unscale(64, window.getScaledWidth(), window.getWidth());
-		int scissorHeight = unscale(64, window.getScaledHeight(), window.getHeight());
-		RenderSystem.enableScissor(scissorX, scissorY, scissorWidth, scissorHeight);
+		context.enableScissor(x, y, 64, 72);
 		context.drawTexture(getBackground(), x, y, 176, 16, 64, 72);
 		int height = (int) (handler.demonMerchant.getDemonTrader().getHeight() * 55);
 		InventoryScreen.drawEntity(context, x + 32, y + height, 50, mouseX, mouseY, (float) (x + 32) - mouseX, (float) (y + 105 - 50) - mouseY, 1.0f, handler.demonMerchant.getDemonTrader());
-		RenderSystem.disableScissor();
-	}
-
-	private static int unscale(int scaled, float windowScaled, int windowReal) {
-		return (int) ((scaled / windowScaled) * windowReal);
+		context.disableScissor();
 	}
 
 	@Override
@@ -80,24 +71,22 @@ public class DemonScreen extends HandledScreen<DemonScreenHandler> {
 		int fullGroups = cost / 2;
 		int heartX = (this.x + x - 6 - ((cost - 1) / 2 * 4));
 		int heartY = this.y + y + 18;
-		context.getMatrices().push();
 		for (int i = 0; i < cost; i++) {
 			heartX += 9;
-			context.drawTexture(HEARTS, heartX, heartY, 16, 0, 9, 9);
+			context.drawGuiTexture(CONTAINER, heartX, heartY, 9, 9);
 			if (!BWComponents.CONTRACTS_COMPONENT.get(client.player).hasContract(offer.getContract())) {
 				if (fullGroups > 0) {
 					fullGroups--;
 					i++;
-					context.drawTexture(HEARTS, heartX, heartY, 52, 0, 9, 9);
+					context.drawGuiTexture(FULL, heartX, heartY, 9, 9);
 				} else {
-					context.drawTexture(HEARTS, heartX, heartY, 61, 0, 9, 9);
+					context.drawGuiTexture(HALF, heartX, heartY, 9, 9);
 				}
 			} else if (fullGroups > 0) {
 				fullGroups--;
 				i++;
 			}
 		}
-		context.getMatrices().pop();
 	}
 
 	@Override

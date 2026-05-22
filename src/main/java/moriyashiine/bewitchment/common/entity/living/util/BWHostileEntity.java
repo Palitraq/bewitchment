@@ -48,9 +48,7 @@ public abstract class BWHostileEntity extends HostileEntity {
 	@Override
 	protected void initDataTracker(DataTracker.Builder builder) {
 		super.initDataTracker(builder);
-		if (getVariants() > 1) {
-			builder.add(VARIANT, 1);
-		}
+		builder.add(VARIANT, 1);
 	}
 
 	@Override
