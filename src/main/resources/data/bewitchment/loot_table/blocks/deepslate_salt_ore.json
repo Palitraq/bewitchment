@@ -11,16 +11,18 @@
 			  "type": "minecraft:item",
 			  "conditions": [
 				{
-				  "condition": "match_tool",
+				  "condition": "minecraft:match_tool",
 				  "predicate": {
-					"enchantments": [
-					  {
-						"enchantment": "silk_touch",
-						"levels": {
-						  "min": 1
+					"predicates": {
+					  "minecraft:enchantments": [
+						{
+						  "enchantments": "minecraft:silk_touch",
+						  "levels": {
+							"min": 1
+						  }
 						}
-					  }
-					]
+					  ]
+					}
 				  }
 				}
 			  ],
@@ -30,17 +32,17 @@
 			  "type": "minecraft:item",
 			  "functions": [
 				{
-				  "function": "set_count",
+				  "function": "minecraft:set_count",
 				  "count": {
 					"min": 1.0,
 					"max": 2.0,
-					"type": "uniform"
+					"type": "minecraft:uniform"
 				  }
 				},
 				{
-				  "function": "apply_bonus",
-				  "enchantment": "fortune",
-				  "formula": "uniform_bonus_count",
+				  "function": "minecraft:apply_bonus",
+				  "enchantment": "minecraft:fortune",
+				  "formula": "minecraft:uniform_bonus_count",
 				  "parameters": {
 					"bonusMultiplier": 1
 				  }
