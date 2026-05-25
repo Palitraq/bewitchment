@@ -12,6 +12,7 @@ import moriyashiine.bewitchment.api.component.TransformationComponent;
 import moriyashiine.bewitchment.client.packet.SpawnSmokeParticlesPacket;
 import moriyashiine.bewitchment.common.Bewitchment;
 import moriyashiine.bewitchment.common.registry.*;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -40,6 +41,7 @@ public class TransformationAbilityPacket implements CustomPayload {
 	public TransformationAbilityPacket(PacketByteBuf buf) {}
 
 	public static void send() {
+		ClientPlayNetworking.send(new TransformationAbilityPacket());
 	}
 
 	private static boolean canUseAbility(PlayerEntity player) {
