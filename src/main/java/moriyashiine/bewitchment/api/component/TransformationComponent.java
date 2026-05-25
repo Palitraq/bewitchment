@@ -178,8 +178,8 @@ public class TransformationComponent implements Component {
 		EntityAttributeInstance armorAttribute = obj.getAttributeInstance(EntityAttributes.GENERIC_ARMOR);
 		EntityAttributeInstance armorToughnessAttribute = obj.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS);
 		EntityAttributeInstance movementSpeedAttribute = obj.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
-		EntityAttributeInstance attackRange = obj.getAttributeInstance(BWEntityAttributes.ATTACK_RANGE);
-		EntityAttributeInstance reach = obj.getAttributeInstance(BWEntityAttributes.REACH);
+		EntityAttributeInstance attackRange = obj.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE);
+		EntityAttributeInstance reach = obj.getAttributeInstance(EntityAttributes.PLAYER_BLOCK_INTERACTION_RANGE);
 		EntityAttributeInstance stepHeight = obj.getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT);
 		boolean shouldHave = vampire && !BewitchmentAPI.isPledged(obj, BWPledges.LILITH);
 		if (shouldHave && !attackDamageAttribute.hasModifier(VAMPIRE_ATTACK_DAMAGE_MODIFIER_0.id())) {
