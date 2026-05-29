@@ -13,6 +13,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.projectile.ArrowEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings("ConstantConditions")
-@Mixin(ArrowEntity.class)
+@Mixin(PersistentProjectileEntity.class)
 public abstract class ArrowEntityMixin extends Entity {
 	public ArrowEntityMixin(EntityType<?> type, World world) {
 		super(type, world);
@@ -56,8 +57,8 @@ public abstract class ArrowEntityMixin extends Entity {
 		});
 	}
 
-	@Inject(method = "getItemStack", at = @At("RETURN"))
-	private void asItemStack(CallbackInfoReturnable<ItemStack> callbackInfo) {
+	@Inject(method = "asItemStack", at = @At("RETURN"))
+	private void onAsItemStack(CallbackInfoReturnable<ItemStack> callbackInfo) {
 		BWComponents.POLYMORPH_COMPONENT.maybeGet(this).ifPresent(polymorphComponent -> {
 			if (polymorphComponent.getUuid() != null) {
 				ItemStack stack = callbackInfo.getReturnValue();
