@@ -30,6 +30,8 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -77,55 +79,61 @@ public class WitchAltarBlock extends HorizontalFacingBlock implements BlockEntit
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-		boolean client = world.isClient;
-		ItemStack stack = player.getStackInHand(player.getActiveHand());
+	public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		if (!formed) {
 			AltarMapEntry entry = BewitchmentAPI.ALTAR_MAP_ENTRIES.stream().filter(e -> e.unformed() == this && e.carpet() == stack.getItem()).findFirst().orElse(null);
 			if (entry != null) {
-				if (!client) {
+				if (!world.isClient) {
 					if (!player.isCreative()) {
 						stack.decrement(1);
 					}
 					Direction facing = world.getBlockState(pos).get(FACING);
 					world.breakBlock(pos, false);
-					world.setBlockState(pos, entry.formed().getPlacementState(new ItemPlacementContext(player, player.getActiveHand(), stack, hit)).with(FACING, facing));
+					world.setBlockState(pos, entry.formed().getPlacementState(new ItemPlacementContext(player, hand, stack, hit)).with(FACING, facing));
 				}
-				return ActionResult.success(client);
+				return ItemActionResult.success(world.isClient);
 			}
-		} else {
-			WitchAltarBlockEntity blockEntity = (WitchAltarBlockEntity) world.getBlockEntity(pos);
-			if (!client) {
-				if (!stack.isEmpty()) {
-					boolean sword = stack.isIn(BWTags.SWORDS);
-					boolean pentacle = stack.isIn(BWTags.PENTACLES);
-					boolean wand = stack.isIn(BWTags.WANDS);
-					if (sword || pentacle || wand) {
-						int slot = sword ? 0 : pentacle ? 1 : 2;
-						ItemScatterer.spawn(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, blockEntity.removeStack(slot, 1));
-						blockEntity.setStack(slot, stack.split(1));
-						world.setBlockState(pos, state.with(Properties.LEVEL_15, calculateLuminance(blockEntity)), 11);
-						world.updateComparators(pos, this);
-						blockEntity.markedForScan = true;
-						blockEntity.markDirty();
-						blockEntity.sync();
-					}
-				} else {
-					if (player.isSneaking()) {
-						ItemScatterer.spawn(world, pos.add(0, 1, 0), blockEntity);
-						world.setBlockState(pos, state.with(Properties.LEVEL_15, 0), 11);
-						world.updateComparators(pos, this);
-						blockEntity.markedForScan = true;
-						blockEntity.markDirty();
-						blockEntity.sync();
-					} else {
-						player.sendMessage(Text.literal(blockEntity.power + " / " + blockEntity.maxPower + " (" + blockEntity.gain + "x)"), true);
-					}
-				}
-			}
-			return ActionResult.success(client);
+			return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
-		return super.onUse(state, world, pos, player, hit);
+		WitchAltarBlockEntity blockEntity = (WitchAltarBlockEntity) world.getBlockEntity(pos);
+		if (!world.isClient && !stack.isEmpty()) {
+			boolean sword = stack.isIn(BWTags.SWORDS);
+			boolean pentacle = stack.isIn(BWTags.PENTACLES);
+			boolean wand = stack.isIn(BWTags.WANDS);
+			if (sword || pentacle || wand) {
+				int slot = sword ? 0 : pentacle ? 1 : 2;
+				ItemScatterer.spawn(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, blockEntity.removeStack(slot, 1));
+				blockEntity.setStack(slot, stack.split(1));
+				world.setBlockState(pos, state.with(Properties.LEVEL_15, calculateLuminance(blockEntity)), 11);
+				world.updateComparators(pos, this);
+				blockEntity.markedForScan = true;
+				blockEntity.markDirty();
+				blockEntity.sync();
+				return ItemActionResult.success(world.isClient);
+			}
+		}
+		return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+	}
+
+	@Override
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+		if (formed) {
+			WitchAltarBlockEntity blockEntity = (WitchAltarBlockEntity) world.getBlockEntity(pos);
+			if (!world.isClient) {
+				if (player.isSneaking()) {
+					ItemScatterer.spawn(world, pos.add(0, 1, 0), blockEntity);
+					world.setBlockState(pos, state.with(Properties.LEVEL_15, 0), 11);
+					world.updateComparators(pos, this);
+					blockEntity.markedForScan = true;
+					blockEntity.markDirty();
+					blockEntity.sync();
+				} else {
+					player.sendMessage(Text.literal(blockEntity.power + " / " + blockEntity.maxPower + " (" + blockEntity.gain + "x)"), true);
+				}
+			}
+			return ActionResult.success(world.isClient);
+		}
+		return ActionResult.PASS;
 	}
 
 	@Override
