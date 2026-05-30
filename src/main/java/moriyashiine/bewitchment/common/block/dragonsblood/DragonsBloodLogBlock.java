@@ -49,7 +49,7 @@ public class DragonsBloodLogBlock extends PillarBlock {
 	}
 
 	@Override
-	public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+	public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
 		if (state.get(BWProperties.CUT)) {
 			if (random.nextInt(10) == 0) {
 				for (int i = 0; i < 8; i++) {
